@@ -1,14 +1,12 @@
-import sys
-import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 
 Base = declarative_base()
 
-from models import *
+from alchemy.base_models import *
 
-engine = create_engine('sqlite:///test.db')
+engine = create_engine("sqlite:///data.db")
 
 Base.metadata.create_all(engine)
 
