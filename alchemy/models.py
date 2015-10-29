@@ -1,7 +1,9 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
-from alchemy.setup import Base
 import uuid
 import datetime
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 def uuid_gen():
     return str(uuid.uuid4())

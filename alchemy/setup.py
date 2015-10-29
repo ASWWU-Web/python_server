@@ -1,11 +1,10 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 import logging
 logger = logging.getLogger("aswwu")
 
-Base = declarative_base()
 OldBase = declarative_base()
 
 from alchemy.models import *
