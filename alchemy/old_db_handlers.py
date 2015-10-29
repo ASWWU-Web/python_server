@@ -1,6 +1,4 @@
 import logging
-from alchemy.setup import OldBase
-
 from alchemy.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")

@@ -1,10 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
-from alchemy.setup import *
-import uuid
-import datetime
-
-def uuid_gen():
-    return str(uuid.uuid4())
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from alchemy.setup import OldBase
 
 
 class OldUser(OldBase):
@@ -16,26 +11,10 @@ class OldUser(OldBase):
     status = Column(String(250))
     roles = Column(String(500))
 
-class OldToken(OldBase):
-    __tablename__ = 'tokens'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
-    auth_salt = Column(String(250), nullable=False)
-    auth_time = Column(Integer, nullable=False)
-
-class OldMessage(OldBase):
-    __tablename__ = 'messaages'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    sender = Column(Integer, ForeignKey('users.wwuid'))
-    receiver = Column(Integer, ForeignKey('users.wwuid'))
-    message = Column(String(1000))
-    created_at = Column(DateTime, default=datetime.datetime.now)
-    read_at = Column(DateTime, onupdate=datetime.datetime.now)
-
 
 class OldProfile(OldBase):
     __tablename__ = 'profiles'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
+    id = Column(String(50), primary_key=True)
     wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250))
     fullname = Column(String(250))
@@ -72,7 +51,7 @@ class OldProfile(OldBase):
 
 class OldVolunteer(OldBase):
     __tablename__ = 'volunteers'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
+    id = Column(String(50), primary_key=True)
     user_id = Column(String(50))
     wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
     campus_ministries = Column(Boolean, default=False)
