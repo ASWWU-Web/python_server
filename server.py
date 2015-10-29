@@ -8,10 +8,12 @@ import tornado.autoreload
 from tornado.options import define, options
 
 from alchemy.base_handlers import *
+from alchemy.old_db_handlers import *
 
 define("port", default=8888, help="run on the given port", type=int)
-define("log_name", default="pyserver", help="name of the logfile")
+define("log_name", default="aswwu", help="name of the logfile")
 define("auth_url", default="/auth")
+
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -21,12 +23,14 @@ class Application(tornado.web.Application):
         }
 
         handlers = [
+            (r"/old_db", LookUpOldHandler),
+            (r"/old_db/(.*)", LookUpOldHandler),
             (r"/login", LoginHandler),
             (r"/", IndexHandler),
         ]
 
         self.options = options
-        logger = logging.getLogger("pyserver")
+        logger = logging.getLogger(options.log_name)
         logger.setLevel(logging.DEBUG)
         fh = logging.FileHandler("etc/logs/"+options.log_name+".py")
         fh.setLevel(logging.DEBUG)
