@@ -41,10 +41,26 @@ def query_by_wwuid(model, wwuid):
     thing = None
     s = dbs()
     try:
-        thing = s.query(model).filter_by(wwuid=wwuid).first()
+        thing = s.query(model).filter_by(wwuid=wwuid).all()
     except Exception as e:
         logger.info(e)
         s.rollback()
+    return thing
+
+def query_by_id(model, id):
+    thing = None
+    s = dbs()
+    try:
+        thing = s.query(model).filter_by(id=id).first()
+    except Exception as e:
+        logger.info(e)
+        s.rollback()
+    return thing
+
+def query_user(wwuid):
+    thing = query_by_wwuid(User, wwuid)
+    if thing:
+        thing = thing[0]
     return thing
 
 

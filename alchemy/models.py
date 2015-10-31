@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
 import uuid
 import datetime
 from sqlalchemy.ext.declarative import declarative_base
+import hashlib
 
 Base = declarative_base()
 
@@ -16,13 +17,18 @@ class User(Base):
     full_name = Column(String(250))
     status = Column(String(250))
     roles = Column(String(500))
+    def to_json(self):
+        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'status': str(self.status), 'roles': str(self.roles)}
 
 class Token(Base):
     __tablename__ = 'tokens'
     id = Column(String(50), primary_key=True, default=uuid_gen)
     wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
-    auth_salt = Column(String(250), nullable=False)
-    auth_time = Column(Integer, nullable=False)
+    auth_salt = Column(String(250), default=uuid_gen)
+    auth_time = Column(DateTime, default=datetime.datetime.now)
+    def __repr__(self):
+        t = hashlib.sha512(str(self.wwuid)+str(self.auth_salt)).hexdigest()
+        return str(self.id)+'|'+str(self.wwuid)+'|'+str(t)
 
 class Message(Base):
     __tablename__ = 'messaages'
