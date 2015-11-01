@@ -17,7 +17,7 @@ class VolunteerHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, wwuid):
         user = self.current_user
-        if user.wwuid == wwuid or 'volunteer' in user.roles.split(','):
+        if user.wwuid == wwuid or 'volunteer' in user.roles:
             volunteer = query_by_wwuid(Volunteer, wwuid)
             if len(volunteer) == 0:
                 volunteer = Volunteer(wwuid=user.wwuid)
@@ -77,5 +77,6 @@ class VolunteerHandler(BaseHandler):
         volunteer.languages = self.get_argument('languages', '')
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
+        logger.debug(volunteer.only_true())
         addOrUpdate(volunteer)
         self.write(json.dumps('success'))

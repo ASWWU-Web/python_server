@@ -34,7 +34,10 @@ class SearchHandler(BaseHandler):
                 v = '%'+f[0].replace(' ','%').replace('.','%')+'%'
                 results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
             else:
-                results = results.filter(getattr(model,f[0]).ilike('%'+f[1]))
+                if f[0] in ['gender']:
+                    results = results.filter(getattr(model,f[0]).ilike(f[1]))
+                else:
+                    results = results.filter(getattr(model,f[0]).ilike('%'+f[1]+'%'))
         self.write({'results': [r.base_info() for r in results]})
 
 
@@ -61,7 +64,7 @@ class UpdateProfileHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, username):
         user = self.current_user
-        if user.username == username or 'administrator' in user.roles.split(','):
+        if user.username == username or 'administrator' in user.roles:
             profile = s.query(Profile).filter_by(username=str(username)).one()
             profile.photo = self.get_argument('photo','')
             profile.gender = self.get_argument('gender','')

@@ -22,16 +22,18 @@ class LoggedInUser:
         self.username = user.username
         self.full_name = profile.full_name
         self.photo = profile.photo
-        self.roles = user.roles
+        self.roles = user.roles.split(',')
         self.status = user.status
 
     def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'roles': str(self.roles), 'status': str(self.status)}
+        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'roles': str(','.join(self.roles)), 'status': str(self.status)}
 
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         token = self.request.headers.get('token', None)
+        if not token:
+            token = self.get_argument('token', None)
         user = None
         if token:
             h = token.split('|')
