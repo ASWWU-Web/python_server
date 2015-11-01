@@ -35,6 +35,8 @@ class LookUpOldHandler(BaseHandler):
                 graduate=p.graduate,
                 preprofessional=p.preprofessional,
                 class_standing=p.class_standing,
+                high_school=p.high_school,
+                class_of=p.class_of,
                 relationship_status=p.relationship_status,
                 attached_to=p.attached_to,
                 quote=p.quote,

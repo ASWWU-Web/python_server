@@ -29,6 +29,8 @@ class OldProfile(OldBase):
     graduate = Column(String(250))
     preprofessional = Column(String(250))
     class_standing = Column(String(250))
+    high_school = Column(String(250))
+    class_of = Column(String(250))
     relationship_status = Column(String(250))
     attached_to = Column(String(250))
     quote = Column(String(1000))

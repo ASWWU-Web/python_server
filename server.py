@@ -8,23 +8,33 @@ import tornado.autoreload
 from tornado.options import define, options
 
 from alchemy.base_handlers import *
+from alchemy.search_handlers import *
+from alchemy.role_handlers import *
+from alchemy.volunteer_handlers import *
 from alchemy.old_db_handlers import *
 
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
 define("auth_url", default="/auth")
+define("current_year", default="0607")
 
 
 class Application(tornado.web.Application):
     def __init__(self):
         settings = {
-            "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
-            "login_url": "/login"
+            "login_url": "login"
         }
 
         handlers = [
             (r"/old_db", LookUpOldHandler),
             (r"/old_db/(.*)", LookUpOldHandler),
+            (r"/search/all", ListProfilesHandler),
+            (r"/search/(.*)/(.*)", SearchHandler),
+            (r"/profile/(.*)/(.*)", ProfileHandler),
+            (r"/update/(.*)", UpdateProfileHandler),
+            (r"/volunteer/(.*)", VolunteerHandler),
+            (r"/role/administrator", AdministratorRoleHandler),
+            (r"/verify", VerifyLoginHandler),
             (r"/login", LoginHandler),
             (r"/", IndexHandler),
         ]

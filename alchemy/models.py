@@ -57,6 +57,8 @@ class Profile(Base):
     graduate = Column(String(250))
     preprofessional = Column(String(250))
     class_standing = Column(String(250))
+    high_school = Column(String(250))
+    class_of = Column(String(250))
     relationship_status = Column(String(250))
     attached_to = Column(String(250))
     quote = Column(String(1000))
@@ -75,6 +77,19 @@ class Profile(Base):
     office = Column(String(250))
     office_hours = Column(String(250))
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    def to_json(self):
+        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo),\
+                'gender': str(self.gender), 'birthday': str(self.birthday), 'email': str(self.email), 'phone': str(self.phone), 'website': str(self.website),\
+                'majors': str(self.majors), 'minors': str(self.minors), 'graduate': str(self.graduate), 'preprofessional': str(self.preprofessional),\
+                'class_standing': str(self.class_standing), 'high_school': str(self.high_school), 'class_of': str(self.class_of),
+                'relationship_status': str(self.relationship_status), 'attached_to': str(self.attached_to), 'quote': str(self.quote), 'quote_author': str(self.quote_author),\
+                'hobbies': str(self.hobbies), 'career_goals': str(self.career_goals), 'favorite_books': str(self.favorite_books), 'favorite_food': str(self.favorite_food),\
+                'favorite_movies': str(self.favorite_movies), 'favorite_music': str(self.favorite_music), 'pet_peeves': str(self.pet_peeves), 'personality': str(self.personality),\
+                'views': str(self.views), 'department': str(self.department), 'office': str(self.office), 'office_hours': str(self.office_hours)}
+
+    def base_info(self):
+        return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}
 
 
 class Volunteer(Base):
@@ -125,3 +140,21 @@ class Volunteer(Base):
     languages = Column(String(250), default=False)
     wants_to_be_involved = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    def to_json(self):
+        return {'campus_ministries': str(self.campus_ministries),
+                'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),\
+                'assist': str(self.assist),'lead': str(self.lead),'audio_slash_visual': str(self.audio_slash_visual),'health_promotion': str(self.health_promotion),\
+                'construction_experience': str(self.construction_experience),'outdoor_slash_camping': str(self.outdoor_slash_camping),'concert_assistance': str(self.concert_assistance),\
+                'event_set_up': str(self.event_set_up),'children_ministries': str(self.children_ministries),'children_story': str(self.children_story),\
+                'art_poetry_slash_painting_slash_sculpting': str(self.art_poetry_slash_painting_slash_sculpting),'organizing_events': str(self.organizing_events),\
+                'organizing_worship_opportunities': str(self.organizing_worship_opportunities),'organizing_community_outreach': str(self.organizing_community_outreach),\
+                'bible_study': str(self.bible_study),'wycliffe_bible_translator_representative': str(self.wycliffe_bible_translator_representative),\
+                'food_preparation': str(self.food_preparation),'graphic_design': str(self.graphic_design),'poems_slash_spoken_word': str(self.poems_slash_spoken_word),\
+                'prayer_team_slash_prayer_house': str(self.prayer_team_slash_prayer_house),'dorm_encouragement_and_assisting_chaplains': str(self.dorm_encouragement_and_assisting_chaplains),\
+                'scripture_reading': str(self.scripture_reading),'speaking': str(self.speaking),'videography': str(self.videography),'drama': str(self.drama),\
+                'public_school_outreach': str(self.public_school_outreach),'retirement_slash_nursing_home_outreach': str(self.retirement_slash_nursing_home_outreach),\
+                'helping_the_homeless_slash_disadvantaged': str(self.helping_the_homeless_slash_disadvantaged),'working_with_youth': str(self.working_with_youth),\
+                'working_with_children': str(self.working_with_children),'greeting': str(self.greeting),'shofar_for_vespers': str(self.shofar_for_vespers),\
+                'music': str(self.music), 'join_small_groups': str(self.join_small_groups), 'lead_small_groups': str(self.lead_small_groups),\
+                'can_transport_things': str(self.can_transport_things), 'languages': str(self.languages), 'wants_to_be_involved': str(self.wants_to_be_involved)}

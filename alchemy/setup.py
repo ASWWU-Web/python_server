@@ -5,20 +5,28 @@ from sqlalchemy import create_engine
 import logging
 logger = logging.getLogger("aswwu")
 
+ArchiveBase = declarative_base()
 OldBase = declarative_base()
 
 from alchemy.models import *
+from alchemy.archive_models import *
 from alchemy.old_models import *
 
 engine = create_engine("sqlite:///data.db")
+archive_engine = create_engine("sqlite:///archives.db")
 
 Base.metadata.create_all(engine)
 
+
 Base.metadata.bind = engine
 dbs = sessionmaker(bind=engine)
+s = dbs()
+
+ArchiveBase.metadata.bind = archive_engine
+archive_dbs = sessionmaker(bind=archive_engine)
+archive_s = archive_dbs()
 
 def addOrUpdate(model):
-    s = dbs()
     try:
         s.add(model)
         s.commit()
@@ -29,7 +37,6 @@ def addOrUpdate(model):
 
 def query_all(model):
     thing = None
-    s = dbs()
     try:
         thing = s.query(model).all()
     except Exception as e:
@@ -39,7 +46,6 @@ def query_all(model):
 
 def query_by_wwuid(model, wwuid):
     thing = None
-    s = dbs()
     try:
         thing = s.query(model).filter_by(wwuid=wwuid).all()
     except Exception as e:
@@ -49,7 +55,6 @@ def query_by_wwuid(model, wwuid):
 
 def query_by_id(model, id):
     thing = None
-    s = dbs()
     try:
         thing = s.query(model).filter_by(id=id).first()
     except Exception as e:
@@ -68,6 +73,7 @@ def query_user(wwuid):
 old_engine = create_engine("sqlite:////Users/brockhaugen/web/databases/people.db")
 OldBase.metadata.bind = old_engine
 old_dbs = sessionmaker(bind=old_engine)
+old_s = old_dbs()
 def query_old_all(table):
     thing = None
     if table == 'users':
@@ -76,10 +82,9 @@ def query_old_all(table):
         model = OldProfile
     elif table == 'volunteers':
         model = OldVolunteer
-    s = old_dbs()
     try:
-        thing = s.query(model).all()
+        thing = old_s.query(model).all()
     except Exception as e:
         logger.info(e)
-        s.rollback()
+        old_s.rollback()
     return thing
