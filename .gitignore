@@ -1,4 +1,4 @@
 *.pyc
 *.log
-#*.db
+*.db
 .DS_Store

@@ -13,7 +13,7 @@ from alchemy.archive_models import *
 from alchemy.old_models import *
 
 engine = create_engine("sqlite:///data.db")
-archive_engine = create_engine("sqlite:///archives.db")
+archive_engine = create_engine("sqlite:///../databases/archives2.db")
 
 Base.metadata.create_all(engine)
 
@@ -70,7 +70,7 @@ def query_user(wwuid):
 
 
 
-old_engine = create_engine("sqlite:////Users/brockhaugen/web/databases/people.db")
+old_engine = create_engine("sqlite:///../databases/people.db")
 OldBase.metadata.bind = old_engine
 old_dbs = sessionmaker(bind=old_engine)
 old_s = old_dbs()

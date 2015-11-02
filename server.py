@@ -22,7 +22,7 @@ define("current_year", default="0607")
 class Application(tornado.web.Application):
     def __init__(self):
         settings = {
-            "login_url": "login"
+            "login_url": "http://127.0.0.1:"+str(options.port)+"/login"
         }
 
         handlers = [
