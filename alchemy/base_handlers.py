@@ -22,7 +22,10 @@ class LoggedInUser:
         self.username = user.username
         self.full_name = profile.full_name
         self.photo = profile.photo
-        self.roles = user.roles.split(',')
+        if user.roles:
+            self.roles = user.roles.split(',')
+        else:
+            self.roles = []
         self.status = user.status
 
     def to_json(self):
