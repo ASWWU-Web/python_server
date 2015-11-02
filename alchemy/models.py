@@ -79,14 +79,14 @@ class Profile(Base):
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo),\
-                'gender': str(self.gender), 'birthday': str(self.birthday), 'email': str(self.email), 'phone': str(self.phone), 'website': str(self.website),\
-                'majors': str(self.majors), 'minors': str(self.minors), 'graduate': str(self.graduate), 'preprofessional': str(self.preprofessional),\
-                'class_standing': str(self.class_standing), 'high_school': str(self.high_school), 'class_of': str(self.class_of),
-                'relationship_status': str(self.relationship_status), 'attached_to': str(self.attached_to), 'quote': str(self.quote), 'quote_author': str(self.quote_author),\
-                'hobbies': str(self.hobbies), 'career_goals': str(self.career_goals), 'favorite_books': str(self.favorite_books), 'favorite_food': str(self.favorite_food),\
-                'favorite_movies': str(self.favorite_movies), 'favorite_music': str(self.favorite_music), 'pet_peeves': str(self.pet_peeves), 'personality': str(self.personality),\
-                'views': str(self.views), 'department': str(self.department), 'office': str(self.office), 'office_hours': str(self.office_hours)}
+        return {'wwuid': self.wwuid, 'username': self.username, 'full_name': self.full_name, 'photo': self.photo,\
+                'gender': self.gender, 'birthday': self.birthday, 'email': self.email, 'phone': self.phone, 'website': self.website,\
+                'majors': self.majors, 'minors': self.minors, 'graduate': self.graduate, 'preprofessional': self.preprofessional,\
+                'class_standing': self.class_standing, 'high_school': self.high_school, 'class_of': self.class_of,
+                'relationship_status': self.relationship_status, 'attached_to': self.attached_to, 'quote': self.quote, 'quote_author': self.quote_author,\
+                'hobbies': self.hobbies, 'career_goals': self.career_goals, 'favorite_books': self.favorite_books, 'favorite_food': self.favorite_food,\
+                'favorite_movies': self.favorite_movies, 'favorite_music': self.favorite_music, 'pet_peeves': self.pet_peeves, 'personality': self.personality,\
+                'views': self.views, 'department': self.department, 'office': self.office, 'office_hours': self.office_hours}
 
     def base_info(self):
         return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}

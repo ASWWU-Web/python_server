@@ -55,6 +55,26 @@ class LookUpOldHandler(BaseHandler):
                 office=p.office,
                 office_hours=p.office_hours
             )
+            if p.relationship_status:
+                new_profile.relationship_status = p.relationship_status.replace('?S?',"'")
+            if p.quote:
+                new_profile.quote = p.quote.replace('?S?',"'")
+            if p.quote_author:
+                new_profile.quote_author = p.quote_author.replace('?S?',"'")
+            if p.hobbies:
+                new_profile.hobbies = p.hobbies.replace('?S?',"'")
+            if p.career_goals:
+                new_profile.career_goals = p.career_goals.replace('?S?',"'")
+            if p.favorite_books:
+                new_profile.favorite_books = p.favorite_books.replace('?S?',"'")
+            if p.favorite_food:
+                new_profile.favorite_food = p.favorite_food.replace('?S?',"'")
+            if p.favorite_movies:
+                new_profile.favorite_movies = p.favorite_movies.replace('?S?',"'")
+            if p.favorite_music:
+                new_profile.favorite_music = p.favorite_music.replace('?S?',"'")
+            if p.pet_peeves:
+                new_profile.pet_peeves = p.pet_peeves.replace('?S?',"'")
             addOrUpdate(new_profile)
 
         for v in volunteers:
