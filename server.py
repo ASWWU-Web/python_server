@@ -15,14 +15,14 @@ from alchemy.old_db_handlers import *
 
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
-define("auth_url", default="/auth")
-define("current_year", default="0607")
+define("auth_url", default="https://aswwu.com/auth")
+define("current_year", default="1516")
 
 
 class Application(tornado.web.Application):
     def __init__(self):
         settings = {
-            "login_url": "http://127.0.0.1:"+str(options.port)+"/login"
+            "login_url": "/login"
         }
 
         handlers = [

@@ -12,7 +12,7 @@ def uuid_gen():
 
 class User(Base):
     __tablename__ = 'users'
-    wwuid = Column(Integer, primary_key=True)
+    wwuid = Column(String(7), primary_key=True)
     username = Column(String(250), nullable=False)
     full_name = Column(String(250))
     status = Column(String(250))
@@ -23,7 +23,7 @@ class User(Base):
 class Token(Base):
     __tablename__ = 'tokens'
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
+    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     auth_salt = Column(String(250), default=uuid_gen)
     auth_time = Column(DateTime, default=datetime.datetime.now)
     def __repr__(self):
@@ -33,8 +33,8 @@ class Token(Base):
 class Message(Base):
     __tablename__ = 'messaages'
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    sender = Column(Integer, ForeignKey('users.wwuid'))
-    receiver = Column(Integer, ForeignKey('users.wwuid'))
+    sender = Column(String(7), ForeignKey('users.wwuid'))
+    receiver = Column(String(7), ForeignKey('users.wwuid'))
     message = Column(String(1000))
     created_at = Column(DateTime, default=datetime.datetime.now)
     read_at = Column(DateTime, onupdate=datetime.datetime.now)
@@ -43,7 +43,7 @@ class Message(Base):
 class Profile(Base):
     __tablename__ = 'profiles'
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
+    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250))
     full_name = Column(String(250))
     photo = Column(String(250))
@@ -95,7 +95,7 @@ class Profile(Base):
 class Volunteer(Base):
     __tablename__ = 'volunteers'
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(Integer, ForeignKey('users.wwuid'), nullable=False)
+    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     campus_ministries = Column(Boolean, default=False)
     student_missions = Column(Boolean, default=False)
     aswwu = Column(Boolean, default=False)
@@ -171,3 +171,28 @@ class Volunteer(Base):
                 elif f == 'languages':
                     data.append({'languages': self.languages})
         return data
+
+
+class Form(Base):
+    __tablename__ = "forms"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    title = Column(String(250))
+    limits = Column(String(250))
+    administrators = Column(String(2500))
+
+class Question(Base):
+    __tablename__ = "form_questions"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    form_id = Column(String(50), ForeignKey("forms.id"), nullable=False)
+    label = Column(String(250), nullable=False)
+    placeholder = Column(String(250))
+    type = Column(String(250), default="text")
+    possible_values = Column(String(2500))
+    def to_json(self):
+        return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values)}
+
+class Answer(Base):
+    __tablename__ = "form_answers"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    question_id = Column(String(50), ForeignKey("form_questions.id"), nullable=False)
+    wwuid = Column(String(7), ForeignKey("users.wwuid"))
