@@ -14,7 +14,7 @@ class FormHandler(BaseHandler):
         if not form:
             return self.write({'error': 'no form exists with that ID'})
         questions = query_by_field(Question, "form_id", id)
-        self.write({'questions': [q.to_json() for q in questions]})
+        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions]})
 
     @tornado.web.authenticated
     def put(self):
@@ -54,7 +54,7 @@ class QuestionHandler(BaseHandler):
         if not question:
             return self.write({'error': 'no question exists with that ID'})
         answers = query_by_field(Answer, "question_id", id)
-        self.write({'answers': [a.to_json() for a in answers]})
+        self.write({'question': question.to_json(), 'answers': [a.to_json() for a in answers]})
 
     @tornado.web.authenticated
     def put(self, form_id):
@@ -115,8 +115,10 @@ class AnswerHandler(BaseHandler):
         if not question or not value:
             return self.write({'error': 'you must give the answer a value'})
         if question.type in ["checkbox","radio","autocomplete"]:
-            if value not in [q.strip() for q in question.possible_values.split(",")]:
-                return self.write({'error': 'you must select a valid option for this question'})
+            values = value.split(",")
+            for v in values:
+                if v.strip() not in [q.strip() for q in question.possible_values.split(",")]:
+                    return self.write({'error': 'you must select a valid option for this question'})
         previous = s.query(Answer).filter_by(question_id=question_id).filter_by(wwuid=wwuid).all()
         if len(previous) > 0:
             answer = previous[0]
