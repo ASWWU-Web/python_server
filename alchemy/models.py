@@ -192,7 +192,7 @@ class Question(Base):
     possible_values = Column(String(2500))
     limits = Column(String(250))
     def to_json(self):
-        return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values)}
+        return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values), 'limits': str(self.limits)}
 
 class Answer(Base):
     __tablename__ = "answers"
