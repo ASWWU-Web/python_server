@@ -179,20 +179,27 @@ class Form(Base):
     title = Column(String(250))
     limits = Column(String(250))
     administrators = Column(String(2500))
+    def to_json(self):
+        return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'administrators': str(self.administrators)}
 
 class Question(Base):
-    __tablename__ = "form_questions"
+    __tablename__ = "questions"
     id = Column(String(50), primary_key=True, default=uuid_gen)
     form_id = Column(String(50), ForeignKey("forms.id"), nullable=False)
     label = Column(String(250), nullable=False)
     placeholder = Column(String(250))
     type = Column(String(250), default="text")
     possible_values = Column(String(2500))
+    limits = Column(String(250))
     def to_json(self):
         return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values)}
 
 class Answer(Base):
-    __tablename__ = "form_answers"
+    __tablename__ = "answers"
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    question_id = Column(String(50), ForeignKey("form_questions.id"), nullable=False)
+    question_id = Column(String(50), ForeignKey("questions.id"), nullable=False)
     wwuid = Column(String(7), ForeignKey("users.wwuid"))
+    value = Column(String(1000), nullable=False)
+    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    def to_json(self):
+        return {'id': str(self.id), 'question_id': str(self.question_id), 'wwuid': str(self.wwuid), 'value': str(self.value), 'updated_at': str(self.updated_at)}

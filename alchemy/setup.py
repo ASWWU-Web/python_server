@@ -26,11 +26,11 @@ ArchiveBase.metadata.bind = archive_engine
 archive_dbs = sessionmaker(bind=archive_engine)
 archive_s = archive_dbs()
 
-def addOrUpdate(model):
+def addOrUpdate(thing):
     try:
-        s.add(model)
+        s.add(thing)
         s.commit()
-        return model
+        return thing
     except Exception as e:
         logger.info(e)
         s.rollback()
@@ -62,11 +62,29 @@ def query_by_id(model, id):
         s.rollback()
     return thing
 
+def query_by_field(model, field, value):
+    thing = None
+    try:
+        thing = s.query(model).filter(getattr(model, field).like(value)).all()
+    except Exception as e:
+        logger.info(e)
+        s.rollback()
+    return thing
+
 def query_user(wwuid):
     thing = query_by_wwuid(User, wwuid)
     if thing:
         thing = thing[0]
     return thing
+
+def delete_thing(thing):
+    try:
+        s.delete(thing)
+        s.commit()
+    except Exception as e:
+        logger.info(e)
+        s.rollback()
+
 
 
 

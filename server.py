@@ -9,8 +9,11 @@ from tornado.options import define, options
 
 from alchemy.base_handlers import *
 from alchemy.search_handlers import *
+
+from alchemy.form_handlers import *
 from alchemy.role_handlers import *
 from alchemy.volunteer_handlers import *
+
 from alchemy.old_db_handlers import *
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -26,18 +29,23 @@ class Application(tornado.web.Application):
         }
 
         handlers = [
+            (r"/form", FormHandler),
+            (r"/form/(.*)", FormHandler),
+            (r"/question", QuestionHandler),
+            (r"/question/(.*)", QuestionHandler),
+            (r"/answer", AnswerHandler),
+            (r"/answer/(.*)", AnswerHandler),
+            (r"/login", LoginHandler),
             (r"/old_db", LookUpOldHandler),
-            (r"/old_db/(.*)", LookUpOldHandler),
+            (r"/profile/(.*)/(.*)", ProfileHandler),
+            (r"/role/administrator", AdministratorRoleHandler),
+            (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", ListProfilesHandler),
             (r"/search/(.*)/(.*)", SearchHandler),
-            (r"/profile/(.*)/(.*)", ProfileHandler),
             (r"/update/(.*)", UpdateProfileHandler),
             (r"/volunteer", VolunteerHandler),
             (r"/volunteer/(.*)", VolunteerHandler),
-            (r"/role/administrator", AdministratorRoleHandler),
-            (r"/role/volunteer", VolunteerRoleHandler),
             (r"/verify", VerifyLoginHandler),
-            (r"/login", LoginHandler),
             (r"/", IndexHandler),
         ]
 

@@ -35,7 +35,7 @@ class LoggedInUser:
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
-        
+
     def get_current_user(self):
         token = self.request.headers.get('token', None)
         if not token:
@@ -48,7 +48,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 if str(t.wwuid) == str(h[1]):
                     if str(hashlib.sha512(str(t.wwuid)+str(t.auth_salt)).hexdigest()) == str(h[2]):
                         now = datetime.datetime.now()
-                        if (now - t.auth_time).seconds/60/60 <= 24:
+                        if (now - t.auth_time).seconds/60/60/24 <= 14: # 14 day
                             t.auth_time = now
                             addOrUpdate(t)
                             user = LoggedInUser(t.wwuid)
