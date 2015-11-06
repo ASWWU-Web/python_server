@@ -60,7 +60,7 @@ class ProfileHandler(BaseHandler):
             self.write(profile.to_json())
 
 class ProfilePhotoHandler(BaseHandler):
-    def get(self, size, year, wwuidOrUsername):
+    def get(self, year, wwuidOrUsername):
         wwuid = None
         username = None
         if len(wwuidOrUsername.split(".")) == 1:
@@ -83,7 +83,7 @@ class ProfilePhotoHandler(BaseHandler):
             self.write({'error': 'too many profiles found'})
         else:
             profile = profile[0]
-            self.redirect("https://aswwu.com/media/"+str(size)+"/"+str(profile.photo))
+            self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
 
 class UpdateProfileHandler(BaseHandler):
     @tornado.web.authenticated
