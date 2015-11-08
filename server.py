@@ -38,6 +38,7 @@ class Application(tornado.web.Application):
             (r"/login", LoginHandler),
             (r"/old_db", LookUpOldHandler),
             (r"/profile/(.*)/(.*)", ProfileHandler),
+            (r"/profile_photo/(.*)/(.*)", ProfilePhotoHandler),
             (r"/role/administrator", AdministratorRoleHandler),
             (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", ListProfilesHandler),

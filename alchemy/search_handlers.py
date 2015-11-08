@@ -59,6 +59,31 @@ class ProfileHandler(BaseHandler):
                 addOrUpdate(profile)
             self.write(profile.to_json())
 
+class ProfilePhotoHandler(BaseHandler):
+    def get(self, year, wwuidOrUsername):
+        wwuid = None
+        username = None
+        if len(wwuidOrUsername.split(".")) == 1:
+            wwuid = wwuidOrUsername
+        else:
+            username = wwuidOrUsername
+        if year == self.application.options.current_year:
+            if wwuid:
+                profile = query_by_wwuid(Profile, wwuid)
+            else:
+                profile = s.query(Profile).filter_by(username=str(username)).all()
+        else:
+            if wwuid:
+                profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(wwuid=str(wwuid)).all()
+            else:
+                profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
+        if len(profile) == 0:
+            self.write({'error': 'no profile found'})
+        elif len(profile) > 1:
+            self.write({'error': 'too many profiles found'})
+        else:
+            profile = profile[0]
+            self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
 
 class UpdateProfileHandler(BaseHandler):
     @tornado.web.authenticated
