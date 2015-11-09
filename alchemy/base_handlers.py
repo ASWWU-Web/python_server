@@ -77,7 +77,6 @@ class LoginHandler(BaseHandler):
                 o = json.loads(r.text)
                 if 'user' in o:
                     o = o['user']
-                    o['wwuid'] = '0303030'
                     user = query_user(o['wwuid'])
                     if not user:
                         user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
