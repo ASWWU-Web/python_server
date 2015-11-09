@@ -81,6 +81,7 @@ class LoginHandler(BaseHandler):
                     if not user:
                         user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
                         addOrUpdate(user)
+                    logger.debug(user.to_json())
                     token = Token(wwuid=o['wwuid'])
                     addOrUpdate(token)
                     user = LoggedInUser(o['wwuid'])
