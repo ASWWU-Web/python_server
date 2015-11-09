@@ -13,12 +13,11 @@ class LoggedInUser:
         self.wwuid = wwuid
         profile = query_by_wwuid(Profile, wwuid)
         user = query_user(wwuid)
-        if not profile[0]:
+        if len(profile) == 0:
             new_profile = Profile(wwuid=wwuid, username=user.username, full_name=user.full_name)
             profile = addOrUpdate(new_profile)
         else:
             profile = profile[0]
-
         self.username = user.username
         self.full_name = profile.full_name
         self.photo = profile.photo
@@ -29,7 +28,7 @@ class LoggedInUser:
         self.status = user.status
 
     def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'roles': str(','.join(self.roles)), 'status': str(self.status)}
+        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': str(self.status)}
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -78,9 +77,10 @@ class LoginHandler(BaseHandler):
                 o = json.loads(r.text)
                 if 'user' in o:
                     o = o['user']
+                    o['wwuid'] = '0303030'
                     user = query_user(o['wwuid'])
                     if not user:
-                        user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['fullname'], status=o['status'])
+                        user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
                         addOrUpdate(user)
                     token = Token(wwuid=o['wwuid'])
                     addOrUpdate(token)
