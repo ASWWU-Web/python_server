@@ -14,7 +14,7 @@ class LoggedInUser:
         profile = query_by_wwuid(Profile, wwuid)
         user = query_user(wwuid)
         if len(profile) == 0:
-            new_profile = Profile(wwuid=wwuid, username=user.username, full_name=user.full_name)
+            new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             profile = addOrUpdate(new_profile)
         else:
             profile = profile[0]
@@ -81,7 +81,6 @@ class LoginHandler(BaseHandler):
                     if not user:
                         user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
                         addOrUpdate(user)
-                    logger.debug(user.to_json())
                     token = Token(wwuid=o['wwuid'])
                     addOrUpdate(token)
                     user = LoggedInUser(o['wwuid'])

@@ -47,7 +47,7 @@ def query_all(model):
 def query_by_wwuid(model, wwuid):
     thing = None
     try:
-        thing = s.query(model).filter_by(wwuid=wwuid).all()
+        thing = s.query(model).filter_by(wwuid=str(wwuid)).all()
     except Exception as e:
         logger.info(e)
         s.rollback()
@@ -72,7 +72,7 @@ def query_by_field(model, field, value):
     return thing
 
 def query_user(wwuid):
-    thing = query_by_wwuid(User, wwuid)
+    thing = query_by_wwuid(User, str(wwuid))
     if thing:
         thing = thing[0]
     return thing
