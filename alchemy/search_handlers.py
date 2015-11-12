@@ -55,7 +55,10 @@ class ProfileHandler(BaseHandler):
             profile = profile[0]
             user = self.current_user
             if user and str(user.wwuid) != str(profile.wwuid) and year == self.application.options.current_year:
-                profile.views = profile.views+1
+                if profile.views:
+                    profile.views = profile.views+1
+                else:
+                    profile.views = 1
                 addOrUpdate(profile)
             self.write(profile.to_json())
 
