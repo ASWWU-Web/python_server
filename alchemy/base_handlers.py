@@ -86,7 +86,7 @@ class LoginHandler(BaseHandler):
                     user = LoggedInUser(o['wwuid'])
                     self.write({'user': user.to_json(), 'token': str(token)})
                 else:
-                    logger.info("LoginHandler: error")
+                    logger.info("LoginHandler: error"+r.text)
                     self.write({'error':'invalid login credentials'})
             except Exception as e:
                 logger.error("LoginHandler exception: "+ str(e.message))
