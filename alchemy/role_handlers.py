@@ -35,6 +35,21 @@ class AdministratorRoleHandler(BaseHandler):
                     self.write(json.dumps('success'))
 
 
+# class CollegianArticleHandler(BaseHandler):
+#     @tornado.web.authenticated
+#     def put(self):
+#         user = self.current_user
+#         if 'collegian' not in users.roles:
+#             return self.write({'error': 'insufficient permissions'})
+#
+#
+#     @tornado.web.authenticated
+#     def post(self, id):
+#         user = self.current_user
+#         if 'collegian' not in users.roles:
+#             return self.write({'error': 'insufficient permissions'})
+
+
 class VolunteerRoleHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):

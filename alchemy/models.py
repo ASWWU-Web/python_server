@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Text
 import uuid
 import datetime
 from sqlalchemy.ext.declarative import declarative_base
@@ -203,3 +203,16 @@ class Answer(Base):
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     def to_json(self):
         return {'id': str(self.id), 'question_id': str(self.question_id), 'wwuid': str(self.wwuid), 'value': str(self.value), 'updated_at': str(self.updated_at)}
+
+class CollegianArticle(Base):
+    __tablename__ = "collegian_articles"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    volume = Column(Integer, nullable=False)
+    issue = Column(Integer, nullable=False)
+    title = Column(String(500), nullable=False)
+    author = Column(String(7), ForeignKey("users.wwuid"), nullable=False)
+    section = Column(String(500), nullable=False)
+    content = Column(Text, nullable=False)
+    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    def to_json(self):
+        return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': str(self.content), 'updated_at': str(self.updated_at)}
