@@ -38,6 +38,7 @@ class VolunteerHandler(BaseHandler):
         volunteer.aswwu = (True if self.get_argument('aswwu', 0) == '1' else False)
         volunteer.circle_church = (True if self.get_argument('circle_church', 0) == '1' else False)
         volunteer.university_church = (True if self.get_argument('university_church', 0) == '1' else False)
+        volunteer.buddy_program = (True if self.get_argument('buddy_program', 0) == '1' else False)
         volunteer.assist = (True if self.get_argument('assist', 0) == '1' else False)
         volunteer.lead = (True if self.get_argument('lead', 0) == '1' else False)
         volunteer.audio_slash_visual = (True if self.get_argument('audio_slash_visual', 0) == '1' else False)

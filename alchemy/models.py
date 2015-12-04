@@ -101,6 +101,7 @@ class Volunteer(Base):
     aswwu = Column(Boolean, default=False)
     circle_church = Column(Boolean, default=False)
     university_church = Column(Boolean, default=False)
+    buddy_program = Column(Boolean, default=False)
     assist = Column(Boolean, default=False)
     lead = Column(Boolean, default=False)
     audio_slash_visual = Column(Boolean, default=False)
@@ -143,7 +144,7 @@ class Volunteer(Base):
 
     def to_json(self):
         return {'campus_ministries': str(self.campus_ministries),
-                'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),\
+                'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),'buddy_program': str(self.buddy_program),\
                 'assist': str(self.assist),'lead': str(self.lead),'audio_slash_visual': str(self.audio_slash_visual),'health_promotion': str(self.health_promotion),\
                 'construction_experience': str(self.construction_experience),'outdoor_slash_camping': str(self.outdoor_slash_camping),'concert_assistance': str(self.concert_assistance),\
                 'event_set_up': str(self.event_set_up),'children_ministries': str(self.children_ministries),'children_story': str(self.children_story),\

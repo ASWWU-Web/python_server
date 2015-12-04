@@ -27,6 +27,8 @@ class AdministratorRoleHandler(BaseHandler):
                     self.write({'error': 'user does not exist'})
                 else:
                     fuser = fuser[0]
+                    if fuser.roles is None:
+                        fuser.roles = ''
                     roles = fuser.roles.split(',')
                     roles.append(self.get_argument('newRole', None))
                     roles = set(roles)
@@ -66,6 +68,8 @@ class VolunteerRoleHandler(BaseHandler):
                     self.write({'error': 'user does not exist'})
                 else:
                     fuser = fuser[0]
+                    if fuser.roles is None:
+                        fuser.roles = ''
                     roles = fuser.roles.split(',')
                     roles.append('volunteer')
                     roles = set(roles)
@@ -84,6 +88,8 @@ class VolunteerRoleHandler(BaseHandler):
                     volunteers = volunteers.filter_by(circle_church=True)
                 if self.get_argument('university_church', '') == 'on':
                     volunteers = volunteers.filter_by(university_church=True)
+                if self.get_argument('buddy_program', '') == 'on':
+                    volunteers = volunteers.filter_by(buddy_program=True)
                 if self.get_argument('assist', '') == 'on':
                     volunteers = volunteers.filter_by(assist=True)
                 if self.get_argument('lead', '') == 'on':
