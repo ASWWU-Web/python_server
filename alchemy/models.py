@@ -211,7 +211,7 @@ class CollegianArticle(Base):
     volume = Column(Integer, nullable=False)
     issue = Column(Integer, nullable=False)
     title = Column(String(500), nullable=False)
-    author = Column(String(7), ForeignKey("users.wwuid"), nullable=False)
+    author = Column(String(500), nullable=False)
     section = Column(String(500), nullable=False)
     content = Column(Text, nullable=False)
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)

@@ -40,6 +40,32 @@ class SearchHandler(BaseHandler):
                     results = results.filter(getattr(model,f[0]).ilike('%'+f[1]+'%'))
         self.write({'results': [r.base_info() for r in results]})
 
+class CollegianArticleSearch(BaseHandler):
+    def get(self, query):
+        collegian_articles = query_all(CollegianArticle)
+
+        id = self.get_argument('id', None)
+        volume = self.get_argument('volume', None)
+        issue = self.get_argument('issue', None)
+        title = self.get_argument('title', None)
+        author = self.get_argument('author', None)
+        section = self.get_argument('section', None)
+
+        if id:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.id) == str(id)]
+        if volume:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.volume) == str(volume)]
+        if issue:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.issue) == str(issue)]
+        if title:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.title) == str(title)]
+        if author:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.author).replace('.',' ').lower() == str(author.username).replace('.',' ').lower()]
+        if section:
+            collegian_articles = [ca for ca in collegian_articles if str(ca.section) == str(section)]
+
+        return self.write({'articles': [ca.to_json() for ca in collegian_articles]})
+
 
 class ProfileHandler(BaseHandler):
     def get(self, year, username):

@@ -29,17 +29,19 @@ class Application(tornado.web.Application):
         }
 
         handlers = [
-            (r"/form", FormHandler),
-            (r"/form/(.*)", FormHandler),
-            (r"/question", QuestionHandler),
-            (r"/question/(.*)", QuestionHandler),
             (r"/answer", AnswerHandler),
             (r"/answer/(.*)", AnswerHandler),
+            (r"/collegian_search/(.*)", CollegianArticleSearch),
+            (r"/form", FormHandler),
+            (r"/form/(.*)", FormHandler),
             (r"/login", LoginHandler),
             (r"/old_db", LookUpOldHandler),
             (r"/profile/(.*)/(.*)", ProfileHandler),
             (r"/profile_photo/(.*)/(.*)", ProfilePhotoHandler),
+            (r"/question", QuestionHandler),
+            (r"/question/(.*)", QuestionHandler),
             (r"/role/administrator", AdministratorRoleHandler),
+            (r"/role/collegian", CollegianRoleHandler),
             (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", ListProfilesHandler),
             (r"/search/(.*)/(.*)", SearchHandler),

@@ -34,22 +34,44 @@ class AdministratorRoleHandler(BaseHandler):
                     roles = set(roles)
                     fuser.roles = (',').join(roles)
                     addOrUpdate(fuser)
-                    self.write(json.dumps('success'))
+                    self.write({'response': 'success'})
 
 
-# class CollegianArticleHandler(BaseHandler):
-#     @tornado.web.authenticated
-#     def put(self):
-#         user = self.current_user
-#         if 'collegian' not in users.roles:
-#             return self.write({'error': 'insufficient permissions'})
-#
-#
-#     @tornado.web.authenticated
-#     def post(self, id):
-#         user = self.current_user
-#         if 'collegian' not in users.roles:
-#             return self.write({'error': 'insufficient permissions'})
+class CollegianRoleHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        user = self.current_user
+        if 'collegian' not in user.roles:
+            return self.write({'error': 'insufficient permissions'})
+
+        id = self.get_argument('id',None)
+        volume = self.get_argument('volume',None)
+        issue = self.get_argument('issue',None)
+        title = self.get_argument('title',None)
+        author = self.get_argument('author',None)
+        section = self.get_argument('section',None)
+        content = self.get_argument('content',None)
+
+        if not volume or not issue or not title or not author or not section or not content:
+            return self.write({'error': 'you must provide a volume, issue, title, author, section, and content for an article'})
+
+        logger.debug(id)
+        if id is not None and id != '':
+            collegian_article = query_by_id(CollegianArticle, id)
+            if not collegian_article:
+                return self.write({'error': 'no Collegian Article with that ID exists'})
+        else:
+            collegian_article = CollegianArticle()
+
+        collegian_article.volume = volume
+        collegian_article.issue = issue
+        collegian_article.title = title
+        collegian_article.author = author
+        collegian_article.section = section
+        collegian_article.content = content
+
+        addOrUpdate(collegian_article)
+        self.write({'response': 'success'})
 
 
 class VolunteerRoleHandler(BaseHandler):
@@ -75,7 +97,7 @@ class VolunteerRoleHandler(BaseHandler):
                     roles = set(roles)
                     fuser.roles = (',').join(roles)
                     addOrUpdate(fuser)
-                    self.write(json.dumps('success'))
+                    self.write({'response': 'success'})
             elif cmd == 'search' or cmd == 'viewPrintOut':
                 volunteers = s.query(Volunteer)
                 if self.get_argument('campus_ministries', '') == 'on':
