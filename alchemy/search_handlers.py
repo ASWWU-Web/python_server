@@ -140,7 +140,7 @@ class UpdateProfileHandler(BaseHandler):
             profile.career_goals = self.get_argument('career_goals','')
             profile.favorite_books = self.get_argument('favorite_books','')
             profile.favorite_food = self.get_argument('favorite_food','')
-            profile.favorite_movies = self.get_argument('favorite_food','')
+            profile.favorite_movies = self.get_argument('favorite_movies','')
             profile.favorite_music = self.get_argument('favorite_music','')
             profile.pet_peeves = self.get_argument('pet_peeves','')
             profile.personality = self.get_argument('personality','')
