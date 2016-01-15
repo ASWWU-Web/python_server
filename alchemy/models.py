@@ -86,7 +86,7 @@ class Profile(Base):
                 'relationship_status': self.relationship_status, 'attached_to': self.attached_to, 'quote': self.quote, 'quote_author': self.quote_author,\
                 'hobbies': self.hobbies, 'career_goals': self.career_goals, 'favorite_books': self.favorite_books, 'favorite_food': self.favorite_food,\
                 'favorite_movies': self.favorite_movies, 'favorite_music': self.favorite_music, 'pet_peeves': self.pet_peeves, 'personality': self.personality,\
-                'views': self.views, 'department': self.department, 'office': self.office, 'office_hours': self.office_hours}
+                'views': self.views, 'department': self.department, 'office': self.office, 'office_hours': self.office_hours, 'privacy': self.privacy}
 
     def base_info(self):
         return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}

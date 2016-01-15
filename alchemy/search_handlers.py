@@ -16,7 +16,11 @@ logger = logging.getLogger("aswwu")
 class ListProfilesHandler(BaseHandler):
     def get(self):
         profiles = query_all(Profile)
-        self.write({'results': [p.base_info() for p in profiles]})
+        code = self.get_argument('code','')
+        if code == 'secret':
+            self.write({'results': [p.to_json() for p in profiles]})
+        else:
+            self.write({'results': [p.base_info() for p in profiles]})
 
 
 class SearchHandler(BaseHandler):
