@@ -41,7 +41,7 @@ class CollegianRoleHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         user = self.current_user
-        if 'collegian' not in user.roles:
+        if 'collegian' not in user.roles and 'collegian_admin' not in user.roles:
             return self.write({'error': 'insufficient permissions'})
 
         id = self.get_argument('id',None)
@@ -49,6 +49,8 @@ class CollegianRoleHandler(BaseHandler):
         issue = self.get_argument('issue',None)
         title = self.get_argument('title',None)
         author = self.get_argument('author',None)
+        if 'collegian_admin' not in user.roles:
+            author = user.full_name
         section = self.get_argument('section',None)
         content = self.get_argument('content',None)
 

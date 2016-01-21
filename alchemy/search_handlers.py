@@ -64,7 +64,7 @@ class CollegianArticleSearch(BaseHandler):
         if title:
             collegian_articles = [ca for ca in collegian_articles if str(ca.title) == str(title)]
         if author:
-            collegian_articles = [ca for ca in collegian_articles if str(ca.author).replace('.',' ').lower() == str(author.username).replace('.',' ').lower()]
+            collegian_articles = [ca for ca in collegian_articles if str(ca.author).replace('.',' ').lower() == str(author).replace('.',' ').lower()]
         if section:
             collegian_articles = [ca for ca in collegian_articles if str(ca.section) == str(section)]
 
