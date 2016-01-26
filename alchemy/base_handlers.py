@@ -70,6 +70,7 @@ class LoginHandler(BaseHandler):
         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
         username = self.get_argument('username', None)
         password = self.get_argument('password', None)
+        withFire = self.get_argument('withFire', False)
 
         if username and password:
             try:
@@ -81,7 +82,13 @@ class LoginHandler(BaseHandler):
                     if not user:
                         user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
                         addOrUpdate(user)
-                    token = Token(wwuid=o['wwuid'])
+                    if withFire:
+                        from firebase_token_generator import create_token
+                        auth_payload = user.to_json()
+                        auth_payload['uid'] = user.wwuid;
+                        token = create_token("peP0kwjeCWvjslEBN1gFQk38Y0UqaivhHGdnFPSO", auth_payload)
+                    else:
+                        token = Token(wwuid=o['wwuid'])
                     addOrUpdate(token)
                     user = LoggedInUser(o['wwuid'])
                     self.write({'user': user.to_json(), 'token': str(token)})
