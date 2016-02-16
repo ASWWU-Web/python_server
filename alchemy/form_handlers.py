@@ -158,3 +158,37 @@ class AnswerHandler(BaseHandler):
             return self.write({'error': 'no question matches that answer'})
         delete_thing(answer)
         self.write(json.dumps('success'))
+
+class ElectionFormHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        wwuid = self.current_user.wwuid
+        vote = query_by_wwuid(ElectionVote, wwuid)
+        if not vote:
+            self.write({'vote': ''})
+        else:
+            self.write({'vote': vote[0].to_json()})
+
+    @tornado.web.authenticated
+    def post(self):
+        wwuid = self.current_user.wwuid
+        executive_vp = self.get_argument("executive_vp", None)
+        social_vp = self.get_argument("social_vp", None)
+        spiritual_vp = self.get_argument("spiritual_vp", None)
+        president = self.get_argument("president", None)
+
+        if not executive_vp or not social_vp or not spiritual_vp or not president:
+            return self.write({'error': 'You must select at least one person for each position'})
+
+        vote = query_by_wwuid(ElectionVote, wwuid)
+        if not vote:
+            vote = ElectionVote(wwuid=wwuid)
+        else:
+            vote = vote[0]
+        vote.executive_vp = executive_vp
+        vote.social_vp = social_vp
+        vote.spiritual_vp = spiritual_vp
+        vote.president = president
+
+        vote = addOrUpdate(vote)
+        self.write({'vote': vote.to_json()})

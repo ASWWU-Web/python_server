@@ -32,6 +32,7 @@ class Application(tornado.web.Application):
             (r"/answer", AnswerHandler),
             (r"/answer/(.*)", AnswerHandler),
             (r"/collegian_search/(.*)", CollegianArticleSearch),
+            (r"/election", ElectionFormHandler),
             (r"/form", FormHandler),
             (r"/form/(.*)", FormHandler),
             (r"/login", LoginHandler),

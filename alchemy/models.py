@@ -217,3 +217,15 @@ class CollegianArticle(Base):
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     def to_json(self):
         return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': self.content.encode('utf-8', 'ignore'), 'updated_at': str(self.updated_at)}
+
+class ElectionVote(Base):
+    __tablename__ = "election_votes"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    wwuid = Column(String(7), ForeignKey("users.wwuid"))
+    executive_vp = Column(String(200), nullable=False)
+    social_vp = Column(String(200), nullable=False)
+    spiritual_vp = Column(String(200), nullable=False)
+    president = Column(String(200), nullable=False)
+    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    def to_json(self):
+        return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
