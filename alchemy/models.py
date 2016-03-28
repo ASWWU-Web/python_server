@@ -89,7 +89,7 @@ class Profile(Base):
                 'views': self.views, 'department': self.department, 'office': self.office, 'office_hours': self.office_hours, 'privacy': self.privacy}
 
     def base_info(self):
-        return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}
+        return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'email': self.email, 'views': str(self.views)}
 
 
 class Volunteer(Base):
