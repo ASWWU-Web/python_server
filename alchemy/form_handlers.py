@@ -52,7 +52,8 @@ class FormHandler(BaseHandler):
         form.title = title
         form.limits = limits
         form.details = details
-        form.administrators = administrators
+        if administrators:
+            form.administrators = administrators
         form = addOrUpdate(form)
         self.write({'form': form.to_json()})
 
