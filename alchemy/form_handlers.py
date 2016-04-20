@@ -14,7 +14,16 @@ class FormHandler(BaseHandler):
         if not form:
             return self.write({'error': 'no form exists with that ID'})
         questions = query_by_field(Question, "form_id", id)
-        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions]})
+        count = 0
+        for q in questions:
+            l = len(query_by_field(Answer, "question_id", q.id))
+            if l > count: count = l
+        for limit in form.limits.split(';'):
+            kv = limit.split('=')
+            if kv[0] == 'max':
+                if kv[1] <= count:
+                    questions = []
+        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'submissions': l})
 
     @tornado.web.authenticated
     def put(self):
@@ -22,8 +31,9 @@ class FormHandler(BaseHandler):
         if not title:
             return self.write({'error': 'you must give the form a title'})
         limits = self.get_argument("limits", None)
+        details = self.get_argument("details", None)
         administrators = self.current_user.wwuid
-        form = Form(title=title, limits=limits, administrators=administrators)
+        form = Form(title=title, limits=limits, details=details, administrators=administrators)
         form = addOrUpdate(form)
         self.write({'form': form.to_json()})
 
@@ -37,13 +47,12 @@ class FormHandler(BaseHandler):
             return self.write({'error': 'insufficient permissions'})
         title = self.get_argument("title", None)
         limits = self.get_argument("limits", None)
+        details = self.get_argument("details", None)
         administrators = self.get_argument("administrators", None)
-        if title:
-            form.title = title
-        if limits:
-            form.limits = limits
-        if administrators:
-            form.administrators = administrators
+        form.title = title
+        form.limits = limits
+        form.details = details
+        form.administrators = administrators
         form = addOrUpdate(form)
         self.write({'form': form.to_json()})
 
@@ -54,7 +63,11 @@ class QuestionHandler(BaseHandler):
         if not question:
             return self.write({'error': 'no question exists with that ID'})
         answers = query_by_field(Answer, "question_id", id)
-        self.write({'question': question.to_json(), 'answers': [a.to_json() for a in answers]})
+        user_answers = []
+        for a in answers:
+            if a.wwuid == self.current_user.wwuid:
+                user_answers.append(a)
+        self.write({'question': question.to_json(), 'answers': [a.to_json() for a in user_answers]})
 
     @tornado.web.authenticated
     def put(self, form_id):

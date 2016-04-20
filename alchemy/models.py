@@ -179,9 +179,10 @@ class Form(Base):
     id = Column(String(50), primary_key=True, default=uuid_gen)
     title = Column(String(250))
     limits = Column(String(250))
+    details = Column(String(1000))
     administrators = Column(String(2500))
     def to_json(self):
-        return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'administrators': str(self.administrators)}
+        return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'details': str(self.details), 'administrators': str(self.administrators)}
 
 class Question(Base):
     __tablename__ = "questions"
