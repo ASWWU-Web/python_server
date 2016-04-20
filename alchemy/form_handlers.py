@@ -23,7 +23,7 @@ class FormHandler(BaseHandler):
             if kv[0] == 'max':
                 if kv[1] <= count:
                     questions = []
-        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'submissions': l})
+        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'submissions': count})
 
     @tornado.web.authenticated
     def put(self):
