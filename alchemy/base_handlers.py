@@ -32,6 +32,10 @@ class LoggedInUser:
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    def options(self):
+        self.set_header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+        pass
+
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
@@ -53,6 +57,13 @@ class BaseHandler(tornado.web.RequestHandler):
                             user = LoggedInUser(t.wwuid)
         return user
 
+    def prepare(self):
+        if "Content-Type" in self.request.headers and self.request.headers["Content-Type"].startswith("application/json") and len(self.request.arguments) == 0:
+            try:
+                json_data = json.loads(self.request.body)
+                self.request.arguments = json_data
+            except Exception as e:
+                pass
 
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
@@ -73,6 +84,7 @@ class LoginHandler(BaseHandler):
         withFire = self.get_argument('withFire', False)
 
         if username and password:
+            print username, password
             try:
                 r = requests.post(self.application.options.auth_url, data = {'username': username, 'password': password}, verify=False)
                 o = json.loads(r.text)
