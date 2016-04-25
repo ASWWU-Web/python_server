@@ -181,14 +181,20 @@ class FormAnswerHandler(BaseHandler):
             return self.write({'error': 'no form exists with that ID'})
         questions = query_by_field(Question, "form_id", id)
         answers = {}
+        responders = []
         for q in questions:
             question_answers = []
             for answer in query_by_field(Answer, "question_id", q.id):
                 wwuid = str(answer.wwuid)
                 if wwuid not in answers:
-                    answers[wwuid] = []
+                    answers[wwuid] = [wwuid]
+                    responders.append([wwuid, answer.updated_at])
                 answers[wwuid].append(str(answer.value))
-        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'answers': answers})
+        responders = sorted(responders, key=lambda x: x[1])
+        responder_answers = []
+        for resp in responders:
+            responder_answers.append(answers[resp[0]])
+        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'answers': responder_answers})
 
 
 class ElectionFormHandler(BaseHandler):
