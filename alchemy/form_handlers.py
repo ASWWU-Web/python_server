@@ -173,6 +173,24 @@ class AnswerHandler(BaseHandler):
         delete_thing(answer)
         self.write(json.dumps('success'))
 
+class FormAnswerHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, id):
+        form = query_by_id(Form, id)
+        if not form:
+            return self.write({'error': 'no form exists with that ID'})
+        questions = query_by_field(Question, "form_id", id)
+        answers = {}
+        for q in questions:
+            question_answers = []
+            for answer in query_by_field(Answer, "question_id", q.id):
+                wwuid = str(answer.wwuid)
+                if wwuid not in answers:
+                    answers[wwuid] = []
+                answers[wwuid].append(str(answer.value))
+        self.write({'form': form.to_json(), 'questions': [q.to_json() for q in questions], 'answers': answers})
+
+
 class ElectionFormHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
