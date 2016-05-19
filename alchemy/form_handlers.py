@@ -230,3 +230,26 @@ class ElectionFormHandler(BaseHandler):
 
         vote = addOrUpdate(vote)
         self.write({'vote': vote.to_json()})
+
+class TownathlonFormHandler(BaseHandler):
+    def get(self):
+        entries = [e.to_json() for e in query_all(TownathlonEntry)]
+        self.write({'count': len(entries), 'entries': entries})
+
+    def post(self):
+        name = self.get_argument("name", "")
+        email = self.get_argument("email", "")
+        phone = self.get_argument("phone", "")
+        age = self.get_argument("age", "")
+        address_1 = self.get_argument("address_1", "")
+        address_2 = self.get_argument("address_2", "")
+        city = self.get_argument("city", "")
+        state = self.get_argument("state", "")
+        zipcode = self.get_argument("zipcode", "")
+
+        if not name or not email or not phone or not age:
+            return self.write({'error': 'You must provide your name, email, phone number, and age at the time of the event to signup'})
+
+        tnt_entry = TownathlonEntry(name=name, email=email, phone=phone, age=age, address_1=address_1, address_2=address_2, city=city, state=state, zipcode=zipcode)
+        tnt_entry = addOrUpdate(tnt_entry)
+        self.write({'entry': tnt_entry.to_json()})

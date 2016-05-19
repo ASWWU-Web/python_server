@@ -47,6 +47,7 @@ class Application(tornado.web.Application):
             (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", ListProfilesHandler),
             (r"/search/(.*)/(.*)", SearchHandler),
+            (r"/townathlon_form", TownathlonFormHandler),
             (r"/update/(.*)", UpdateProfileHandler),
             (r"/volunteer", VolunteerHandler),
             (r"/volunteer/(.*)", VolunteerHandler),

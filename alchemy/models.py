@@ -230,3 +230,18 @@ class ElectionVote(Base):
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     def to_json(self):
         return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
+
+class TownathlonEntry(Base):
+    __tablename__ = "townathlon_entries"
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    name = Column(String(500))
+    email = Column(String(500))
+    phone = Column(String(500))
+    age = Column(String(500))
+    address_1 = Column(String(500))
+    address_2 = Column(String(500))
+    city = Column(String(500))
+    state = Column(String(500))
+    zipcode = Column(String(500))
+    def to_json(self):
+        return {'id': str(self.id), 'name': str(self.name), 'email': str(self.email), 'phone': str(self.phone), 'age': str(self.age), 'address_1': str(self.address_1), 'address_2': str(self.address_2), 'city': str(self.city), 'state': str(self.state), 'zipcode': str(self.zipcode)}
