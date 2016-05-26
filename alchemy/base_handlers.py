@@ -94,6 +94,14 @@ class IndexHandler(BaseHandler):
 
 
 class LoginHandler(BaseHandler):
+    def loginWithWWU(self, username, password):
+        mask_url = "https://www.wallawalla.edu/auth/mask.php"
+        r = requests.post(mask_url, data = {'username': username, 'password': password}, verify=True)
+        parsedUser = r.text.encode('utf-8')[6:-7]
+        parsedUser = json.loads(parsedUser)['user']
+        parsedUser['wwuid'] = parsedUser['wwcid']
+        return parsedUser
+
     def get(self):
         logger.debug("not logged in")
         self.write({'error': 'not logged in'})
@@ -102,29 +110,21 @@ class LoginHandler(BaseHandler):
         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
         username = self.get_argument('username', None)
         password = self.get_argument('password', None)
-        withFire = self.get_argument('withFire', False)
 
         if username and password:
             try:
-                r = requests.post(self.application.options.auth_url, data = {'username': username, 'password': password}, verify=False)
-                o = json.loads(r.text)
-                if 'user' in o:
-                    o = o['user']
-                    user = query_user(o['wwuid'])
+                # expects a dictionary to be returned here (JSON)
+                user_dict = self.loginWithWWU(username, password)
+                if user_dict:
+                    user = query_user(user_dict['wwuid'])
                     if not user:
-                        user = User(wwuid=o['wwuid'], username=o['username'], full_name=o['full_name'], status=o['status'])
+                        user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['full_name'], status=user_dict['status'])
                         addOrUpdate(user)
-                    if withFire:
-                        from firebase_token_generator import create_token
-                        auth_payload = user.to_json()
-                        auth_payload['uid'] = user.wwuid;
-                        token = create_token("peP0kwjeCWvjslEBN1gFQk38Y0UqaivhHGdnFPSO", auth_payload)
-                    else:
-                        token = self.generateToken(o['wwuid'])
-                    user = LoggedInUser(o['wwuid'])
+                    token = self.generateToken(user_dict['wwuid'])
+                    user = LoggedInUser(user_dict['wwuid'])
                     self.write({'user': user.to_json(), 'token': str(token)})
                 else:
-                    logger.info("LoginHandler: error"+r.text)
+                    logger.info("LoginHandler: error "+r.text)
                     self.write({'error':'invalid login credentials'})
             except Exception as e:
                 logger.error("LoginHandler exception: "+ str(e.message))
