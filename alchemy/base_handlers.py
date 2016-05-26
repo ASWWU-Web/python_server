@@ -2,9 +2,13 @@ import tornado.web
 import logging
 import requests
 import json
+import time
 import datetime
 from alchemy.models import *
 from alchemy.setup import *
+import hmac
+import base64
+import hashlib
 
 logger = logging.getLogger("aswwu")
 
@@ -39,22 +43,38 @@ class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
+    def generateHMACDigest(self, message):
+        secret = self.application.settings['secret_key']
+        signature = hmac.new(secret, message, digestmod=hashlib.sha256).hexdigest()
+        return signature
+
+    def generateToken(self, wwuid):
+        now = int(time.mktime(datetime.datetime.now().timetuple()))
+        message = wwuid+"|"+str(now)
+        return message+"|"+self.generateHMACDigest(message)
+
+    def validateToken(self, token):
+        token = token.split("|")
+        if len(token) != 3:
+            return false
+        compareTo = self.generateHMACDigest(token[0]+"|"+token[1])
+        return compareTo == token[2]
+
     def get_current_user(self):
-        token = self.request.headers.get('token', None)
-        if not token:
-            token = self.get_argument('token', None)
-        user = None
-        if token:
-            h = token.split('|')
-            t = query_by_id(Token,h[0])
-            if t:
-                if str(t.wwuid) == str(h[1]):
-                    if str(hashlib.sha512(str(t.wwuid)+str(t.auth_salt)).hexdigest()) == str(h[2]):
-                        now = datetime.datetime.now()
-                        if (now - t.auth_time).seconds/60/60/24 <= 14: # 14 day
-                            t.auth_time = now
-                            addOrUpdate(t)
-                            user = LoggedInUser(t.wwuid)
+        authorization = self.request.headers.get('Authorization', None)
+        token = authorization.split(" ")
+
+        try:
+            wwuid = token[1].split("|")[0]
+            dateCreated = int(token[1].split("|")[1])
+            now = int(time.mktime(datetime.datetime.now().timetuple()))
+            if len(token) != 2 or token[0] != "HMAC" or (now - dateCreated) > (60*60*24*14) or not self.validateToken(token[1]):
+                user = None
+            else:
+                user = LoggedInUser(wwuid)
+        except Exception as e:
+            user = None
+
         return user
 
     def prepare(self):
@@ -64,6 +84,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 self.request.arguments = json_data
             except Exception as e:
                 pass
+
 
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
@@ -99,8 +120,7 @@ class LoginHandler(BaseHandler):
                         auth_payload['uid'] = user.wwuid;
                         token = create_token("peP0kwjeCWvjslEBN1gFQk38Y0UqaivhHGdnFPSO", auth_payload)
                     else:
-                        token = Token(wwuid=o['wwuid'])
-                    addOrUpdate(token)
+                        token = self.generateToken(o['wwuid'])
                     user = LoggedInUser(o['wwuid'])
                     self.write({'user': user.to_json(), 'token': str(token)})
                 else:
@@ -118,7 +138,7 @@ class VerifyLoginHandler(BaseHandler):
     def get(self):
         user = self.current_user
         if user:
-            self.write(user.to_json())
+            self.write({'user': user.to_json(), 'token': self.generateToken(user.wwuid)})
         else:
             self.set_status(401)
-            self.write({'error':'not logged in'})
+            self.write({'error': 'not logged in'})

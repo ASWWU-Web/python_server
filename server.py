@@ -25,7 +25,8 @@ define("current_year", default="1516")
 class Application(tornado.web.Application):
     def __init__(self):
         settings = {
-            "login_url": "/login"
+            "login_url": "/login",
+            "secret_key": "qtB91kGZF0ysv39GLaA5a6fVK7TnE6d5"
         }
 
         handlers = [
@@ -58,7 +59,7 @@ class Application(tornado.web.Application):
         self.options = options
         logger = logging.getLogger(options.log_name)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler("etc/logs/"+options.log_name+".log")
+        fh = logging.FileHandler("etc/"+options.log_name+".log")
         fh.setLevel(logging.DEBUG)
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     else:
         conf_name = config[0]
     io_loop = tornado.ioloop.IOLoop.instance()
-    tornado.options.parse_config_file("etc/conf/"+conf_name+".conf")
+    tornado.options.parse_config_file("etc/"+conf_name+".conf")
     application = Application()
     application.listen(options.port)
     tornado.autoreload.start()
