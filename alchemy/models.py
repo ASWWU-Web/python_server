@@ -1,48 +1,47 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Text
 import uuid
 import datetime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 import hashlib
-
-Base = declarative_base()
+from pattern.en import pluralize
 
 def uuid_gen():
     return str(uuid.uuid4())
 
+class Base(object):
+    @declared_attr
+    def __tablename__(cls):
+        return pluralize(cls.__name__.lower())
+
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    def to_json(self, **kwargs):
+        obj = {}
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        skipList = ['id'] + kwargs.get('skipList', [])
+        limitList = kwargs.get('limitList', columns)
+        for key in limitList:
+            if key not in skipList:
+                value = getattr(self, key)
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+Base = declarative_base(cls=Base)
+
 
 class User(Base):
-    __tablename__ = 'users'
-    wwuid = Column(String(7), primary_key=True)
+    wwuid = Column(String(7), unique=True)
     username = Column(String(250), nullable=False)
     full_name = Column(String(250))
     status = Column(String(250))
     roles = Column(String(500))
-    def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'status': str(self.status), 'roles': str(self.roles)}
-
-# class Token(Base):
-#     __tablename__ = 'tokens'
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-#     auth_salt = Column(String(250), default=uuid_gen)
-#     auth_time = Column(DateTime, default=datetime.datetime.now)
-#     def __repr__(self):
-#         t = hashlib.sha512(str(self.wwuid)+str(self.auth_salt)).hexdigest()
-#         return str(self.id)+'|'+str(self.wwuid)+'|'+str(t)
-
-# class Message(Base):
-#     __tablename__ = 'messaages'
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     sender = Column(String(7), ForeignKey('users.wwuid'))
-#     receiver = Column(String(7), ForeignKey('users.wwuid'))
-#     message = Column(String(1000))
-#     created_at = Column(DateTime, default=datetime.datetime.now)
-#     read_at = Column(DateTime, onupdate=datetime.datetime.now)
 
 
 class Profile(Base):
-    __tablename__ = 'profiles'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250))
     full_name = Column(String(250))
@@ -76,25 +75,11 @@ class Profile(Base):
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
-
-    def to_json(self):
-        return {'wwuid': self.wwuid, 'username': self.username, 'full_name': self.full_name, 'photo': self.photo,\
-                'gender': self.gender, 'birthday': self.birthday, 'email': self.email, 'phone': self.phone, 'website': self.website,\
-                'majors': self.majors, 'minors': self.minors, 'graduate': self.graduate, 'preprofessional': self.preprofessional,\
-                'class_standing': self.class_standing, 'high_school': self.high_school, 'class_of': self.class_of,
-                'relationship_status': self.relationship_status, 'attached_to': self.attached_to, 'quote': self.quote, 'quote_author': self.quote_author,\
-                'hobbies': self.hobbies, 'career_goals': self.career_goals, 'favorite_books': self.favorite_books, 'favorite_food': self.favorite_food,\
-                'favorite_movies': self.favorite_movies, 'favorite_music': self.favorite_music, 'pet_peeves': self.pet_peeves, 'personality': self.personality,\
-                'views': self.views, 'department': self.department, 'office': self.office, 'office_hours': self.office_hours, 'privacy': self.privacy}
 
     def base_info(self):
-        return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'email': self.email, 'views': str(self.views)}
-
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
 
 class Volunteer(Base):
-    __tablename__ = 'volunteers'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     campus_ministries = Column(Boolean, default=False)
     student_missions = Column(Boolean, default=False)
@@ -142,23 +127,23 @@ class Volunteer(Base):
     wants_to_be_involved = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
-    def to_json(self):
-        return {'campus_ministries': str(self.campus_ministries),
-                'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),'buddy_program': str(self.buddy_program),\
-                'assist': str(self.assist),'lead': str(self.lead),'audio_slash_visual': str(self.audio_slash_visual),'health_promotion': str(self.health_promotion),\
-                'construction_experience': str(self.construction_experience),'outdoor_slash_camping': str(self.outdoor_slash_camping),'concert_assistance': str(self.concert_assistance),\
-                'event_set_up': str(self.event_set_up),'children_ministries': str(self.children_ministries),'children_story': str(self.children_story),\
-                'art_poetry_slash_painting_slash_sculpting': str(self.art_poetry_slash_painting_slash_sculpting),'organizing_events': str(self.organizing_events),\
-                'organizing_worship_opportunities': str(self.organizing_worship_opportunities),'organizing_community_outreach': str(self.organizing_community_outreach),\
-                'bible_study': str(self.bible_study),'wycliffe_bible_translator_representative': str(self.wycliffe_bible_translator_representative),\
-                'food_preparation': str(self.food_preparation),'graphic_design': str(self.graphic_design),'poems_slash_spoken_word': str(self.poems_slash_spoken_word),\
-                'prayer_team_slash_prayer_house': str(self.prayer_team_slash_prayer_house),'dorm_encouragement_and_assisting_chaplains': str(self.dorm_encouragement_and_assisting_chaplains),\
-                'scripture_reading': str(self.scripture_reading),'speaking': str(self.speaking),'videography': str(self.videography),'drama': str(self.drama),\
-                'public_school_outreach': str(self.public_school_outreach),'retirement_slash_nursing_home_outreach': str(self.retirement_slash_nursing_home_outreach),\
-                'helping_the_homeless_slash_disadvantaged': str(self.helping_the_homeless_slash_disadvantaged),'working_with_youth': str(self.working_with_youth),\
-                'working_with_children': str(self.working_with_children),'greeting': str(self.greeting),'shofar_for_vespers': str(self.shofar_for_vespers),\
-                'music': str(self.music), 'join_small_groups': str(self.join_small_groups), 'lead_small_groups': str(self.lead_small_groups),\
-                'can_transport_things': str(self.can_transport_things), 'languages': str(self.languages), 'wants_to_be_involved': str(self.wants_to_be_involved)}
+    # def to_json(self):
+    #     return {'campus_ministries': str(self.campus_ministries),
+    #             'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),'buddy_program': str(self.buddy_program),\
+    #             'assist': str(self.assist),'lead': str(self.lead),'audio_slash_visual': str(self.audio_slash_visual),'health_promotion': str(self.health_promotion),\
+    #             'construction_experience': str(self.construction_experience),'outdoor_slash_camping': str(self.outdoor_slash_camping),'concert_assistance': str(self.concert_assistance),\
+    #             'event_set_up': str(self.event_set_up),'children_ministries': str(self.children_ministries),'children_story': str(self.children_story),\
+    #             'art_poetry_slash_painting_slash_sculpting': str(self.art_poetry_slash_painting_slash_sculpting),'organizing_events': str(self.organizing_events),\
+    #             'organizing_worship_opportunities': str(self.organizing_worship_opportunities),'organizing_community_outreach': str(self.organizing_community_outreach),\
+    #             'bible_study': str(self.bible_study),'wycliffe_bible_translator_representative': str(self.wycliffe_bible_translator_representative),\
+    #             'food_preparation': str(self.food_preparation),'graphic_design': str(self.graphic_design),'poems_slash_spoken_word': str(self.poems_slash_spoken_word),\
+    #             'prayer_team_slash_prayer_house': str(self.prayer_team_slash_prayer_house),'dorm_encouragement_and_assisting_chaplains': str(self.dorm_encouragement_and_assisting_chaplains),\
+    #             'scripture_reading': str(self.scripture_reading),'speaking': str(self.speaking),'videography': str(self.videography),'drama': str(self.drama),\
+    #             'public_school_outreach': str(self.public_school_outreach),'retirement_slash_nursing_home_outreach': str(self.retirement_slash_nursing_home_outreach),\
+    #             'helping_the_homeless_slash_disadvantaged': str(self.helping_the_homeless_slash_disadvantaged),'working_with_youth': str(self.working_with_youth),\
+    #             'working_with_children': str(self.working_with_children),'greeting': str(self.greeting),'shofar_for_vespers': str(self.shofar_for_vespers),\
+    #             'music': str(self.music), 'join_small_groups': str(self.join_small_groups), 'lead_small_groups': str(self.lead_small_groups),\
+    #             'can_transport_things': str(self.can_transport_things), 'languages': str(self.languages), 'wants_to_be_involved': str(self.wants_to_be_involved)}
 
     def only_true(self):
         fields = ['campus_ministries','student_missions','aswwu','circle_church','university_church','assist','lead','audio_slash_visual','health_promotion','construction_experience','outdoor_slash_camping','concert_assistance','event_set_up','children_ministries','children_story','art_poetry_slash_painting_slash_sculpting','organizing_events','organizing_worship_opportunities','organizing_community_outreach','bible_study','wycliffe_bible_translator_representative','food_preparation','graphic_design','poems_slash_spoken_word','prayer_team_slash_prayer_house','dorm_encouragement_and_assisting_chaplains','scripture_reading','speaking','videography','drama','public_school_outreach','retirement_slash_nursing_home_outreach','helping_the_homeless_slash_disadvantaged','working_with_youth','working_with_children','greeting','shofar_for_vespers','music','join_small_groups','lead_small_groups','can_transport_things','languages','wants_to_be_involved']
@@ -174,38 +159,6 @@ class Volunteer(Base):
         return data
 
 
-# class Form(Base):
-#     __tablename__ = "forms"
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     title = Column(String(250))
-#     limits = Column(String(250))
-#     details = Column(String(1000))
-#     administrators = Column(String(2500))
-#     def to_json(self):
-#         return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'details': str(self.details), 'administrators': str(self.administrators)}
-#
-# class Question(Base):
-#     __tablename__ = "questions"
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     form_id = Column(String(50), ForeignKey("forms.id"), nullable=False)
-#     label = Column(String(250), nullable=False)
-#     placeholder = Column(String(250))
-#     type = Column(String(250), default="text")
-#     possible_values = Column(String(2500))
-#     limits = Column(String(250))
-#     def to_json(self):
-#         return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values), 'limits': str(self.limits)}
-#
-# class Answer(Base):
-#     __tablename__ = "answers"
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     question_id = Column(String(50), ForeignKey("questions.id"), nullable=False)
-#     wwuid = Column(String(7), ForeignKey("users.wwuid"))
-#     value = Column(String(1000), nullable=False)
-#     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-#     def to_json(self):
-#         return {'id': str(self.id), 'question_id': str(self.question_id), 'wwuid': str(self.wwuid), 'value': str(self.value), 'updated_at': str(self.updated_at)}
-
 # class CollegianArticle(Base):
 #     __tablename__ = "collegian_articles"
 #     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -219,6 +172,7 @@ class Volunteer(Base):
 #     def to_json(self):
 #         return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': self.content.encode('utf-8', 'ignore'), 'updated_at': str(self.updated_at)}
 
+
 # class ElectionVote(Base):
 #     __tablename__ = "election_votes"
 #     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -231,9 +185,10 @@ class Volunteer(Base):
 #     def to_json(self):
 #         return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
 
+
 class TownathlonEntry(Base):
-    __tablename__ = "townathlon_entries"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
+    # __tablename__ = "townathlon_entries"
+    # id = Column(String(50), primary_key=True, default=uuid_gen)
     name = Column(String(500))
     email = Column(String(500))
     phone = Column(String(500))
@@ -243,5 +198,5 @@ class TownathlonEntry(Base):
     city = Column(String(500))
     state = Column(String(500))
     zipcode = Column(String(500))
-    def to_json(self):
-        return {'id': str(self.id), 'name': str(self.name), 'email': str(self.email), 'phone': str(self.phone), 'age': str(self.age), 'address_1': str(self.address_1), 'address_2': str(self.address_2), 'city': str(self.city), 'state': str(self.state), 'zipcode': str(self.zipcode)}
+    # def to_json(self):
+    #     return {'id': str(self.id), 'name': str(self.name), 'email': str(self.email), 'phone': str(self.phone), 'age': str(self.age), 'address_1': str(self.address_1), 'address_2': str(self.address_2), 'city': str(self.city), 'state': str(self.state), 'zipcode': str(self.zipcode)}
