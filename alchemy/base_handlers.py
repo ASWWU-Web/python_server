@@ -84,7 +84,6 @@ class LoginHandler(BaseHandler):
         withFire = self.get_argument('withFire', False)
 
         if username and password:
-            print username, password
             try:
                 r = requests.post(self.application.options.auth_url, data = {'username': username, 'password': password}, verify=False)
                 o = json.loads(r.text)
@@ -116,7 +115,10 @@ class LoginHandler(BaseHandler):
 
 
 class VerifyLoginHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         user = self.current_user
-        self.write(user.to_json())
+        if user:
+            self.write(user.to_json())
+        else:
+            self.set_status(401)
+            self.write({'error':'not logged in'})
