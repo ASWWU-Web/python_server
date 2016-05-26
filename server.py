@@ -14,7 +14,7 @@ from alchemy.form_handlers import *
 from alchemy.role_handlers import *
 from alchemy.volunteer_handlers import *
 
-from alchemy.old_db_handlers import *
+# from alchemy.old_db_handlers import *
 
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
@@ -30,21 +30,21 @@ class Application(tornado.web.Application):
         }
 
         handlers = [
-            (r"/answer", AnswerHandler),
-            (r"/answer/(.*)", AnswerHandler),
-            (r"/collegian_search/(.*)", CollegianArticleSearch),
-            (r"/election", ElectionFormHandler),
-            (r"/form", FormHandler),
-            (r"/form/(.*)", FormHandler),
-            (r"/form_answers/(.*)", FormAnswerHandler),
+            # (r"/answer", AnswerHandler),
+            # (r"/answer/(.*)", AnswerHandler),
+            # (r"/collegian_search/(.*)", CollegianArticleSearch),
+            # (r"/election", ElectionFormHandler),
+            # (r"/form", FormHandler),
+            # (r"/form/(.*)", FormHandler),
+            # (r"/form_answers/(.*)", FormAnswerHandler),
             (r"/login", LoginHandler),
-            (r"/old_db", LookUpOldHandler),
+            # (r"/old_db", LookUpOldHandler),
             (r"/profile/(.*)/(.*)", ProfileHandler),
             (r"/profile_photo/(.*)/(.*)", ProfilePhotoHandler),
-            (r"/question", QuestionHandler),
-            (r"/question/(.*)", QuestionHandler),
+            # (r"/question", QuestionHandler),
+            # (r"/question/(.*)", QuestionHandler),
             (r"/role/administrator", AdministratorRoleHandler),
-            (r"/role/collegian", CollegianRoleHandler),
+            # (r"/role/collegian", CollegianRoleHandler),
             (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", ListProfilesHandler),
             (r"/search/(.*)/(.*)", SearchHandler),

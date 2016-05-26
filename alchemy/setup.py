@@ -88,21 +88,21 @@ def delete_thing(thing):
 
 
 
-old_engine = create_engine("sqlite:///../databases/people_old.db")
-OldBase.metadata.bind = old_engine
-old_dbs = sessionmaker(bind=old_engine)
-old_s = old_dbs()
-def query_old_all(table):
-    thing = None
-    if table == 'users':
-        model = OldUser
-    elif table == 'profiles':
-        model = OldProfile
-    elif table == 'volunteers':
-        model = OldVolunteer
-    try:
-        thing = old_s.query(model).all()
-    except Exception as e:
-        logger.info(e)
-        old_s.rollback()
-    return thing
+# old_engine = create_engine("sqlite:///../databases/people_old.db")
+# OldBase.metadata.bind = old_engine
+# old_dbs = sessionmaker(bind=old_engine)
+# old_s = old_dbs()
+# def query_old_all(table):
+#     thing = None
+#     if table == 'users':
+#         model = OldUser
+#     elif table == 'profiles':
+#         model = OldProfile
+#     elif table == 'volunteers':
+#         model = OldVolunteer
+#     try:
+#         thing = old_s.query(model).all()
+#     except Exception as e:
+#         logger.info(e)
+#         old_s.rollback()
+#     return thing

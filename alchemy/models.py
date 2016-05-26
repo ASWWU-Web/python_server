@@ -20,24 +20,24 @@ class User(Base):
     def to_json(self):
         return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'status': str(self.status), 'roles': str(self.roles)}
 
-class Token(Base):
-    __tablename__ = 'tokens'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-    auth_salt = Column(String(250), default=uuid_gen)
-    auth_time = Column(DateTime, default=datetime.datetime.now)
-    def __repr__(self):
-        t = hashlib.sha512(str(self.wwuid)+str(self.auth_salt)).hexdigest()
-        return str(self.id)+'|'+str(self.wwuid)+'|'+str(t)
+# class Token(Base):
+#     __tablename__ = 'tokens'
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
+#     auth_salt = Column(String(250), default=uuid_gen)
+#     auth_time = Column(DateTime, default=datetime.datetime.now)
+#     def __repr__(self):
+#         t = hashlib.sha512(str(self.wwuid)+str(self.auth_salt)).hexdigest()
+#         return str(self.id)+'|'+str(self.wwuid)+'|'+str(t)
 
-class Message(Base):
-    __tablename__ = 'messaages'
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    sender = Column(String(7), ForeignKey('users.wwuid'))
-    receiver = Column(String(7), ForeignKey('users.wwuid'))
-    message = Column(String(1000))
-    created_at = Column(DateTime, default=datetime.datetime.now)
-    read_at = Column(DateTime, onupdate=datetime.datetime.now)
+# class Message(Base):
+#     __tablename__ = 'messaages'
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     sender = Column(String(7), ForeignKey('users.wwuid'))
+#     receiver = Column(String(7), ForeignKey('users.wwuid'))
+#     message = Column(String(1000))
+#     created_at = Column(DateTime, default=datetime.datetime.now)
+#     read_at = Column(DateTime, onupdate=datetime.datetime.now)
 
 
 class Profile(Base):
@@ -174,62 +174,62 @@ class Volunteer(Base):
         return data
 
 
-class Form(Base):
-    __tablename__ = "forms"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    title = Column(String(250))
-    limits = Column(String(250))
-    details = Column(String(1000))
-    administrators = Column(String(2500))
-    def to_json(self):
-        return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'details': str(self.details), 'administrators': str(self.administrators)}
+# class Form(Base):
+#     __tablename__ = "forms"
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     title = Column(String(250))
+#     limits = Column(String(250))
+#     details = Column(String(1000))
+#     administrators = Column(String(2500))
+#     def to_json(self):
+#         return {'id': str(self.id), 'title': str(self.title), 'limits': str(self.limits), 'details': str(self.details), 'administrators': str(self.administrators)}
+#
+# class Question(Base):
+#     __tablename__ = "questions"
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     form_id = Column(String(50), ForeignKey("forms.id"), nullable=False)
+#     label = Column(String(250), nullable=False)
+#     placeholder = Column(String(250))
+#     type = Column(String(250), default="text")
+#     possible_values = Column(String(2500))
+#     limits = Column(String(250))
+#     def to_json(self):
+#         return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values), 'limits': str(self.limits)}
+#
+# class Answer(Base):
+#     __tablename__ = "answers"
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     question_id = Column(String(50), ForeignKey("questions.id"), nullable=False)
+#     wwuid = Column(String(7), ForeignKey("users.wwuid"))
+#     value = Column(String(1000), nullable=False)
+#     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+#     def to_json(self):
+#         return {'id': str(self.id), 'question_id': str(self.question_id), 'wwuid': str(self.wwuid), 'value': str(self.value), 'updated_at': str(self.updated_at)}
 
-class Question(Base):
-    __tablename__ = "questions"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    form_id = Column(String(50), ForeignKey("forms.id"), nullable=False)
-    label = Column(String(250), nullable=False)
-    placeholder = Column(String(250))
-    type = Column(String(250), default="text")
-    possible_values = Column(String(2500))
-    limits = Column(String(250))
-    def to_json(self):
-        return {'id': str(self.id), 'form_id': str(self.form_id), 'label': str(self.label), 'placeholder': str(self.placeholder), 'type': str(self.type), 'possible_values': str(self.possible_values), 'limits': str(self.limits)}
+# class CollegianArticle(Base):
+#     __tablename__ = "collegian_articles"
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     volume = Column(Integer, nullable=False)
+#     issue = Column(Integer, nullable=False)
+#     title = Column(String(500), nullable=False)
+#     author = Column(String(500), nullable=False)
+#     section = Column(String(500), nullable=False)
+#     content = Column(Text, nullable=False)
+#     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+#     def to_json(self):
+#         return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': self.content.encode('utf-8', 'ignore'), 'updated_at': str(self.updated_at)}
 
-class Answer(Base):
-    __tablename__ = "answers"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    question_id = Column(String(50), ForeignKey("questions.id"), nullable=False)
-    wwuid = Column(String(7), ForeignKey("users.wwuid"))
-    value = Column(String(1000), nullable=False)
-    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    def to_json(self):
-        return {'id': str(self.id), 'question_id': str(self.question_id), 'wwuid': str(self.wwuid), 'value': str(self.value), 'updated_at': str(self.updated_at)}
-
-class CollegianArticle(Base):
-    __tablename__ = "collegian_articles"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    volume = Column(Integer, nullable=False)
-    issue = Column(Integer, nullable=False)
-    title = Column(String(500), nullable=False)
-    author = Column(String(500), nullable=False)
-    section = Column(String(500), nullable=False)
-    content = Column(Text, nullable=False)
-    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    def to_json(self):
-        return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': self.content.encode('utf-8', 'ignore'), 'updated_at': str(self.updated_at)}
-
-class ElectionVote(Base):
-    __tablename__ = "election_votes"
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    wwuid = Column(String(7), ForeignKey("users.wwuid"))
-    executive_vp = Column(String(200), nullable=False)
-    social_vp = Column(String(200), nullable=False)
-    spiritual_vp = Column(String(200), nullable=False)
-    president = Column(String(200), nullable=False)
-    updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    def to_json(self):
-        return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
+# class ElectionVote(Base):
+#     __tablename__ = "election_votes"
+#     id = Column(String(50), primary_key=True, default=uuid_gen)
+#     wwuid = Column(String(7), ForeignKey("users.wwuid"))
+#     executive_vp = Column(String(200), nullable=False)
+#     social_vp = Column(String(200), nullable=False)
+#     spiritual_vp = Column(String(200), nullable=False)
+#     president = Column(String(200), nullable=False)
+#     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+#     def to_json(self):
+#         return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
 
 class TownathlonEntry(Base):
     __tablename__ = "townathlon_entries"

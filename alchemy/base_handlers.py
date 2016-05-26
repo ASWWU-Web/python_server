@@ -36,7 +36,7 @@ class LoggedInUser:
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    def options(self):
+    def options(self, *path_args, **path_kwargs):
         self.set_header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, token")
         pass
 
