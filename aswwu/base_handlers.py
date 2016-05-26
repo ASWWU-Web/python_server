@@ -1,14 +1,16 @@
+
 import tornado.web
 import logging
 import requests
 import json
 import time
 import datetime
-from alchemy.models import *
-from alchemy.setup import *
 import hmac
 import base64
 import hashlib
+
+from aswwu.models import *
+from aswwu.alchemy import *
 
 logger = logging.getLogger("aswwu")
 
@@ -86,14 +88,14 @@ class BaseHandler(tornado.web.RequestHandler):
                 pass
 
 
-class IndexHandler(BaseHandler):
+class BaseIndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         user = self.current_user
         self.write(user.to_json())
 
 
-class LoginHandler(BaseHandler):
+class BaseLoginHandler(BaseHandler):
     def loginWithWWU(self, username, password):
         mask_url = "https://www.wallawalla.edu/auth/mask.php"
         r = requests.post(mask_url, data = {'username': username, 'password': password}, verify=True)
@@ -134,7 +136,7 @@ class LoginHandler(BaseHandler):
             self.write({'error':'invalid post parameters'})
 
 
-class VerifyLoginHandler(BaseHandler):
+class BaseVerifyLoginHandler(BaseHandler):
     def get(self):
         user = self.current_user
         if user:

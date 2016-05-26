@@ -1,22 +1,17 @@
-from sqlalchemy.ext.declarative import declarative_base
+
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 import logging
 logger = logging.getLogger("aswwu")
 
-ArchiveBase = declarative_base()
-OldBase = declarative_base()
-
-from alchemy.models import *
-from alchemy.archive_models import *
-from alchemy.old_models import *
+from aswwu.models import *
+from aswwu.archive_models import *
 
 engine = create_engine("sqlite:///../databases/people.db")
 archive_engine = create_engine("sqlite:///../databases/archives.db")
 
 Base.metadata.create_all(engine)
-
 
 Base.metadata.bind = engine
 dbs = sessionmaker(bind=engine)
@@ -84,25 +79,3 @@ def delete_thing(thing):
     except Exception as e:
         logger.info(e)
         s.rollback()
-
-
-
-
-# old_engine = create_engine("sqlite:///../databases/people_old.db")
-# OldBase.metadata.bind = old_engine
-# old_dbs = sessionmaker(bind=old_engine)
-# old_s = old_dbs()
-# def query_old_all(table):
-#     thing = None
-#     if table == 'users':
-#         model = OldUser
-#     elif table == 'profiles':
-#         model = OldProfile
-#     elif table == 'volunteers':
-#         model = OldVolunteer
-#     try:
-#         thing = old_s.query(model).all()
-#     except Exception as e:
-#         logger.info(e)
-#         old_s.rollback()
-#     return thing

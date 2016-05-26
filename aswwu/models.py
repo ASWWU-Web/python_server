@@ -127,24 +127,6 @@ class Volunteer(Base):
     wants_to_be_involved = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
-    # def to_json(self):
-    #     return {'campus_ministries': str(self.campus_ministries),
-    #             'student_missions': str(self.student_missions),'aswwu': str(self.aswwu),'circle_church': str(self.circle_church),'university_church': str(self.university_church),'buddy_program': str(self.buddy_program),\
-    #             'assist': str(self.assist),'lead': str(self.lead),'audio_slash_visual': str(self.audio_slash_visual),'health_promotion': str(self.health_promotion),\
-    #             'construction_experience': str(self.construction_experience),'outdoor_slash_camping': str(self.outdoor_slash_camping),'concert_assistance': str(self.concert_assistance),\
-    #             'event_set_up': str(self.event_set_up),'children_ministries': str(self.children_ministries),'children_story': str(self.children_story),\
-    #             'art_poetry_slash_painting_slash_sculpting': str(self.art_poetry_slash_painting_slash_sculpting),'organizing_events': str(self.organizing_events),\
-    #             'organizing_worship_opportunities': str(self.organizing_worship_opportunities),'organizing_community_outreach': str(self.organizing_community_outreach),\
-    #             'bible_study': str(self.bible_study),'wycliffe_bible_translator_representative': str(self.wycliffe_bible_translator_representative),\
-    #             'food_preparation': str(self.food_preparation),'graphic_design': str(self.graphic_design),'poems_slash_spoken_word': str(self.poems_slash_spoken_word),\
-    #             'prayer_team_slash_prayer_house': str(self.prayer_team_slash_prayer_house),'dorm_encouragement_and_assisting_chaplains': str(self.dorm_encouragement_and_assisting_chaplains),\
-    #             'scripture_reading': str(self.scripture_reading),'speaking': str(self.speaking),'videography': str(self.videography),'drama': str(self.drama),\
-    #             'public_school_outreach': str(self.public_school_outreach),'retirement_slash_nursing_home_outreach': str(self.retirement_slash_nursing_home_outreach),\
-    #             'helping_the_homeless_slash_disadvantaged': str(self.helping_the_homeless_slash_disadvantaged),'working_with_youth': str(self.working_with_youth),\
-    #             'working_with_children': str(self.working_with_children),'greeting': str(self.greeting),'shofar_for_vespers': str(self.shofar_for_vespers),\
-    #             'music': str(self.music), 'join_small_groups': str(self.join_small_groups), 'lead_small_groups': str(self.lead_small_groups),\
-    #             'can_transport_things': str(self.can_transport_things), 'languages': str(self.languages), 'wants_to_be_involved': str(self.wants_to_be_involved)}
-
     def only_true(self):
         fields = ['campus_ministries','student_missions','aswwu','circle_church','university_church','assist','lead','audio_slash_visual','health_promotion','construction_experience','outdoor_slash_camping','concert_assistance','event_set_up','children_ministries','children_story','art_poetry_slash_painting_slash_sculpting','organizing_events','organizing_worship_opportunities','organizing_community_outreach','bible_study','wycliffe_bible_translator_representative','food_preparation','graphic_design','poems_slash_spoken_word','prayer_team_slash_prayer_house','dorm_encouragement_and_assisting_chaplains','scripture_reading','speaking','videography','drama','public_school_outreach','retirement_slash_nursing_home_outreach','helping_the_homeless_slash_disadvantaged','working_with_youth','working_with_children','greeting','shofar_for_vespers','music','join_small_groups','lead_small_groups','can_transport_things','languages','wants_to_be_involved']
         data = []
@@ -159,6 +141,18 @@ class Volunteer(Base):
         return data
 
 
+class TownathlonEntry(Base):
+    name = Column(String(500))
+    email = Column(String(500))
+    phone = Column(String(500))
+    age = Column(String(500))
+    address_1 = Column(String(500))
+    address_2 = Column(String(500))
+    city = Column(String(500))
+    state = Column(String(500))
+    zipcode = Column(String(500))
+
+
 # class CollegianArticle(Base):
 #     __tablename__ = "collegian_articles"
 #     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -171,32 +165,3 @@ class Volunteer(Base):
 #     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
 #     def to_json(self):
 #         return {'id': str(self.id), 'volume': str(self.volume), 'issue': str(self.issue), 'title': str(self.title), 'author': str(self.author), 'section': str(self.section), 'content': self.content.encode('utf-8', 'ignore'), 'updated_at': str(self.updated_at)}
-
-
-# class ElectionVote(Base):
-#     __tablename__ = "election_votes"
-#     id = Column(String(50), primary_key=True, default=uuid_gen)
-#     wwuid = Column(String(7), ForeignKey("users.wwuid"))
-#     executive_vp = Column(String(200), nullable=False)
-#     social_vp = Column(String(200), nullable=False)
-#     spiritual_vp = Column(String(200), nullable=False)
-#     president = Column(String(200), nullable=False)
-#     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-#     def to_json(self):
-#         return {'id': str(self.id), 'executive_vp': str(self.executive_vp), 'social_vp': str(self.social_vp), 'spiritual_vp': str(self.spiritual_vp), 'president': str(self.president)}
-
-
-class TownathlonEntry(Base):
-    # __tablename__ = "townathlon_entries"
-    # id = Column(String(50), primary_key=True, default=uuid_gen)
-    name = Column(String(500))
-    email = Column(String(500))
-    phone = Column(String(500))
-    age = Column(String(500))
-    address_1 = Column(String(500))
-    address_2 = Column(String(500))
-    city = Column(String(500))
-    state = Column(String(500))
-    zipcode = Column(String(500))
-    # def to_json(self):
-    #     return {'id': str(self.id), 'name': str(self.name), 'email': str(self.email), 'phone': str(self.phone), 'age': str(self.age), 'address_1': str(self.address_1), 'address_2': str(self.address_2), 'city': str(self.city), 'state': str(self.state), 'zipcode': str(self.zipcode)}

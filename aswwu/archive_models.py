@@ -4,7 +4,9 @@
 # each year just add another model class and add the year's shorthand (i.e. 1415) to the array at the bottom
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
-from alchemy.setup import ArchiveBase
+from sqlalchemy.ext.declarative import declarative_base
+
+ArchiveBase = declarative_base()
 
 def setArchiveColumns(self):
     self.wwuid = Column(Integer, nullable=False)
