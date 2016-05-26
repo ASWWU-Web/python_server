@@ -1,3 +1,4 @@
+# route_handlers.py
 
 import tornado.web
 import logging
@@ -6,6 +7,7 @@ import json
 import datetime
 from sqlalchemy import or_
 
+# we'll need almost everything for this file
 from aswwu.models import *
 from aswwu.archive_models import *
 from aswwu.alchemy import *
@@ -13,14 +15,20 @@ from aswwu.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")
 
+# administrative role handler
 class AdministratorRoleHandler(BaseHandler):
+    # decorator to foce them to be logged in to access this information
+    # also only accepts post requests right now
     @tornado.web.authenticated
     def post(self):
         user = self.current_user
+        # check if they have valid permissions
         if 'administrator' not in user.roles:
             self.write({'error': 'insufficient permissions'})
         else:
             cmd = self.get_argument('cmd', None)
+            # grant permissions to other users
+            # sharing is caring
             if cmd == 'set_role':
                 username = self.get_argument('username', '').replace(' ','.').lower()
                 fuser = s.query(User).filter_by(username=username).all()
@@ -30,6 +38,8 @@ class AdministratorRoleHandler(BaseHandler):
                     fuser = fuser[0]
                     if fuser.roles is None:
                         fuser.roles = ''
+                    # roles are a comma separated list
+                    # so we have to do some funkiness to append and then rejoin that list in the database
                     roles = fuser.roles.split(',')
                     roles.append(self.get_argument('newRole', None))
                     roles = set(roles)
@@ -38,6 +48,7 @@ class AdministratorRoleHandler(BaseHandler):
                     self.write({'response': 'success'})
 
 
+# NOTE: this handler is no longer in use, but it is here for posterity
 # class CollegianRoleHandler(BaseHandler):
 #     @tornado.web.authenticated
 #     def post(self):
@@ -77,6 +88,7 @@ class AdministratorRoleHandler(BaseHandler):
 #         self.write({'response': 'success'})
 
 
+# NOTE: this handler is no longer in use, but it is here for posterity
 # class CollegianSearchHandler(BaseHandler):
 #     def get(self, query):
 #         collegian_articles = query_all(CollegianArticle)
@@ -104,21 +116,30 @@ class AdministratorRoleHandler(BaseHandler):
 #         return self.write({'articles': [ca.to_json() for ca in collegian_articles]})
 
 
+# this is the root of all searches
 class SearchHandler(BaseHandler):
+    # accepts a year and a query as parameters
     def get(self, year, query):
+        # if searching in the current year, access the Profile model
         if year == self.application.options.current_year:
             model = Profile
             results = s.query(model)
+        # otherwise we're going old school with the Archives
         else:
             model = globals()['Archive'+str(year)]
             results = archive_s.query(model)
 
+        # break up the query <-- expected to be a standard URIEncodedComponent
         fields = [q.split("=") for q in query.split(";")]
         for f in fields:
             if len(f) == 1:
+                # throw %'s around everything to make the search relative
+                # e.g. searching for "b" will return anything that has b *somewhere* in it
                 v = '%'+f[0].replace(' ','%').replace('.','%')+'%'
                 results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
             else:
+                # we want these queries to matche exactly
+                # e.g. "%male%" would also return "female"
                 if f[0] in ['gender']:
                     results = results.filter(getattr(model,f[0]).ilike(f[1]))
                 else:
@@ -126,22 +147,28 @@ class SearchHandler(BaseHandler):
         self.write({'results': [r.base_info() for r in results]})
 
 
+# get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
         profiles = query_all(Profile)
         code = self.get_argument('code','')
+        # pass in this super secret code to get ALL info for ALL profiles
         if code == 'secret':
             self.write({'results': [p.to_json() for p in profiles]})
+        # otherwise just send the much smaller base information
         else:
             self.write({'results': [p.base_info() for p in profiles]})
 
 
+# get user's profile information
 class ProfileHandler(BaseHandler):
     def get(self, year, username):
+        # check if we're looking at the current year or going old school
         if year == self.application.options.current_year:
             profile = s.query(Profile).filter_by(username=str(username)).all()
         else:
             profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
+        # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
         elif len(profile) > 1:
@@ -149,6 +176,8 @@ class ProfileHandler(BaseHandler):
         else:
             profile = profile[0]
             user = self.current_user
+            # if the user is logged in and isn't vainly looking at themselves
+            # then we assume the searched for user is popular and give them a +1
             if user and str(user.wwuid) != str(profile.wwuid) and year == self.application.options.current_year:
                 if profile.views:
                     profile.views = profile.views+1
@@ -158,6 +187,7 @@ class ProfileHandler(BaseHandler):
             self.write(profile.to_json())
 
 
+# queries the server for a user's photos
 class ProfilePhotoHandler(BaseHandler):
     def get(self, year, wwuidOrUsername):
         wwuid = None
@@ -166,6 +196,7 @@ class ProfilePhotoHandler(BaseHandler):
             wwuid = wwuidOrUsername
         else:
             username = wwuidOrUsername
+        # check if we're looking at current photos or not
         if year == self.application.options.current_year:
             if wwuid:
                 profile = query_by_wwuid(Profile, wwuid)
@@ -181,10 +212,13 @@ class ProfilePhotoHandler(BaseHandler):
         elif len(profile) > 1:
             self.write({'error': 'too many profiles found'})
         else:
+            # now we've got just one profile, return the photo field attached to a known photo URI
             profile = profile[0]
             self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
 
 
+# receives information, saves information
+# the GET function will return all of the information in JSON (we'll probably need this later)
 class FormTownathlonHandler(BaseHandler):
     def get(self):
         entries = [e.to_json() for e in query_all(TownathlonEntry)]
@@ -209,6 +243,7 @@ class FormTownathlonHandler(BaseHandler):
         self.write({'entry': tnt_entry.to_json()})
 
 
+# this updates profile information - not much to it
 class ProfileUpdateHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, username):
@@ -251,6 +286,7 @@ class ProfileUpdateHandler(BaseHandler):
             self.write({'error': 'invalid permissions'})
 
 
+# fairly straightforward handler to save a TON of volunteer information
 class VolunteerHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, wwuid):
@@ -321,16 +357,19 @@ class VolunteerHandler(BaseHandler):
         self.write(json.dumps('success'))
 
 
+# handler to search through volunteer information
 class VolunteerRoleHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         user = self.current_user
+        # check permissions
         if 'volunteer' not in user.roles:
             self.write({'error': 'insufficient permissions'})
         else:
             cmd = self.get_argument('cmd', None)
             logger.debug(cmd)
             if cmd == 'set_role':
+                # let volunteer admins grant permissions for other volutneer admins
                 username = self.get_argument('username', '').replace(' ','.').lower()
                 fuser = s.query(User).filter_by(username=username).all()
                 if not fuser:
@@ -346,6 +385,7 @@ class VolunteerRoleHandler(BaseHandler):
                     addOrUpdate(fuser)
                     self.write({'response': 'success'})
             elif cmd == 'search' or cmd == 'viewPrintOut':
+                # searcheth away!
                 volunteers = s.query(Volunteer)
                 if self.get_argument('campus_ministries', '') == 'on':
                     volunteers = volunteers.filter_by(campus_ministries=True)
@@ -437,8 +477,10 @@ class VolunteerRoleHandler(BaseHandler):
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
                 vusers = [{'profile': query_by_wwuid(Profile, v.wwuid)[0], 'volunteer_data': v} for v in volunteers]
+                # should we return the results as JSON
                 if cmd == 'search':
                     self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email} for v in vusers]})
+                # or as a full fledged webpage
                 else:
                     logger.debug(user)
                     self.write('<table border="1"><tr><th>Photo</th><th>Name</th><th>Class Standing</th><th>Major(s)</th><th>Email</th><th>Phone</th><th>Volunteer Data</th></tr>')

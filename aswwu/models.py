@@ -1,3 +1,5 @@
+# models.py
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Text
 import uuid
 import datetime
@@ -5,34 +7,49 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 import hashlib
 from pattern.en import pluralize
 
+# create a UUID generator function
 def uuid_gen():
     return str(uuid.uuid4())
 
+# define a base model for all other models
 class Base(object):
     @declared_attr
     def __tablename__(cls):
+        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
         return pluralize(cls.__name__.lower())
 
+    # every model should also have an ID as a primary key
+    # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     def to_json(self, **kwargs):
         obj = {}
+        # get the column names of the table
         columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
         skipList = ['id'] + kwargs.get('skipList', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
         limitList = kwargs.get('limitList', columns)
         for key in limitList:
             if key not in skipList:
+                # fancy way of saying "self.key"
                 value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
                 try:
                     obj[key] = str(value)
                 except Exception as e:
                     pass
         return obj
 
+# assign our Base class to SQLAlchemy
 Base = declarative_base(cls=Base)
 
-
+# you guessed it, our generic User model
 class User(Base):
     wwuid = Column(String(7), unique=True)
     username = Column(String(250), nullable=False)
@@ -40,7 +57,7 @@ class User(Base):
     status = Column(String(250))
     roles = Column(String(500))
 
-
+# table for profile data
 class Profile(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250))
@@ -76,9 +93,13 @@ class Profile(Base):
     office = Column(String(250))
     office_hours = Column(String(250))
 
+    # sometimes useful to only get a small amount of information about a user
+    # e.g. listing ALL of the profiles in a cache for faster search later
     def base_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
 
+# an unfortunately large table to hold the volunteer information
+# NOTE: this should and could probably be stored as a JSON blob
 class Volunteer(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     campus_ministries = Column(Boolean, default=False)
@@ -127,6 +148,7 @@ class Volunteer(Base):
     wants_to_be_involved = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
+    # for easier admin searching, show only the fields that aren't false or blank
     def only_true(self):
         fields = ['campus_ministries','student_missions','aswwu','circle_church','university_church','assist','lead','audio_slash_visual','health_promotion','construction_experience','outdoor_slash_camping','concert_assistance','event_set_up','children_ministries','children_story','art_poetry_slash_painting_slash_sculpting','organizing_events','organizing_worship_opportunities','organizing_community_outreach','bible_study','wycliffe_bible_translator_representative','food_preparation','graphic_design','poems_slash_spoken_word','prayer_team_slash_prayer_house','dorm_encouragement_and_assisting_chaplains','scripture_reading','speaking','videography','drama','public_school_outreach','retirement_slash_nursing_home_outreach','helping_the_homeless_slash_disadvantaged','working_with_youth','working_with_children','greeting','shofar_for_vespers','music','join_small_groups','lead_small_groups','can_transport_things','languages','wants_to_be_involved']
         data = []
@@ -140,7 +162,8 @@ class Volunteer(Base):
                     data.append({'languages': self.languages})
         return data
 
-
+# a simple model for Townathlon Entries
+# NOTE: should be deleted around October after the run
 class TownathlonEntry(Base):
     name = Column(String(500))
     email = Column(String(500))
@@ -153,6 +176,7 @@ class TownathlonEntry(Base):
     zipcode = Column(String(500))
 
 
+# NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
 #     __tablename__ = "collegian_articles"
 #     id = Column(String(50), primary_key=True, default=uuid_gen)
