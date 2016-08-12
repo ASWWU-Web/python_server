@@ -5,6 +5,7 @@ import logging
 import requests
 import json
 import datetime
+from tornado.httpclient import HTTPClient
 from sqlalchemy import or_
 
 # we'll need almost everything for this file
@@ -489,3 +490,19 @@ class VolunteerRoleHandler(BaseHandler):
                                     '<td>'+str(v['profile'].full_name)+'</td>''<td>'+str(v['profile'].class_standing)+'</td><td>'+str(v['profile'].majors)+'</td>'\
                                     '<td>'+str(v['profile'].email)+'</td>''<td>'+str(v['profile'].phone)+'</td><td>'+str(v['volunteer_data'].only_true())+'</td></tr>')
                     self.write('</table>')
+
+# This is the instagram handler for the atlas (I did this to hide the access token).
+class AtlasInstagramHandler(BaseHandler):
+    def get(self):
+        with open("/var/www/atlas/access.token", 'r') as f:
+            token = f.read()
+            f.close()
+            token = token.rstrip('\n')
+            # TODO: Make this asynchronous
+            http_client = HTTPClient()
+            try:
+                response = http_client.fetch("https://api.instagram.com/v1/users/self/media/recent/?access_token=" + token)
+                self.write(response.body)
+            except Exception as e:
+                self.write("Error: " + str(e))
+            http_client.close()
