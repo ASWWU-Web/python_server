@@ -76,9 +76,9 @@ class BaseHandler(tornado.web.RequestHandler):
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
         authorization = self.request.headers.get('Authorization', None)
-        token = authorization.split(" ")
 
         try:
+            token = authorization.split(" ")
             wwuid = token[1].split("|")[0]
             dateCreated = int(token[1].split("|")[1])
             now = int(time.mktime(datetime.datetime.now().timetuple()))
