@@ -97,7 +97,8 @@ class BaseHandler(tornado.web.RequestHandler):
         # this isn't a bad thing at all, just requires us to "prepare" the data before it's used internally
         if "Content-Type" in self.request.headers and self.request.headers["Content-Type"].startswith("application/json") and len(self.request.arguments) == 0:
             try:
-                json_data = json.loads(self.request.body)
+                json_data = json.loads(str(self.request.body))
+                for key in json_data: json_data[key] = [json_data[key]]
                 self.request.arguments = json_data
             except Exception as e:
                 pass
