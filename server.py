@@ -16,7 +16,7 @@ from aswwu.route_handlers import *
 # e.g. `python server.py --port=8881` would run the server on port 8881
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
-define("current_year", default="1516")
+define("current_year", default="1617")
 
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
@@ -38,7 +38,7 @@ class Application(tornado.web.Application):
             (r"/role/volunteer", VolunteerRoleHandler),
             (r"/search/all", SearchAllHandler),
             (r"/search/(.*)/(.*)", SearchHandler),
-            (r"/townathlon_form", FormTownathlonHandler),
+            # (r"/townathlon_form", FormTownathlonHandler),
             (r"/update/(.*)", ProfileUpdateHandler),
             (r"/volunteer", VolunteerHandler),
             (r"/volunteer/(.*)", VolunteerHandler),

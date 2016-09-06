@@ -504,5 +504,5 @@ class AtlasInstagramHandler(BaseHandler):
                 response = http_client.fetch("https://api.instagram.com/v1/users/self/media/recent/?access_token=" + token)
                 self.write(response.body)
             except Exception as e:
-                self.write("Error: " + str(e))
+                self.write("{error: '" + str(e) + "'}")
             http_client.close()

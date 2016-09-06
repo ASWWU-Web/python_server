@@ -24,7 +24,12 @@ class LoggedInUser:
         profile = query_by_wwuid(Profile, wwuid)
         user = query_user(wwuid)
         if len(profile) == 0:
-            new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
+            # TODO: This needs to be done better. (Should move entire profile except class_standing)
+            old_profile = archive_s.query(globals()['Archive1516']).filter_by(wwuid=str(wwuid)).all()
+            if (len(old_profile) == 1 and hasattr(old_profile[0], "photo")):
+                new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name, photo=old_profile[0].photo)
+            else:
+                new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             profile = addOrUpdate(new_profile)
         else:
             profile = profile[0]

@@ -164,16 +164,16 @@ class Volunteer(Base):
 
 # a simple model for Townathlon Entries
 # NOTE: should be deleted around October after the run
-class TownathlonEntry(Base):
-    name = Column(String(500))
-    email = Column(String(500))
-    phone = Column(String(500))
-    age = Column(String(500))
-    address_1 = Column(String(500))
-    address_2 = Column(String(500))
-    city = Column(String(500))
-    state = Column(String(500))
-    zipcode = Column(String(500))
+# class TownathlonEntry(Base):
+#     name = Column(String(500))
+#     email = Column(String(500))
+#     phone = Column(String(500))
+#     age = Column(String(500))
+#     address_1 = Column(String(500))
+#     address_2 = Column(String(500))
+#     city = Column(String(500))
+#     state = Column(String(500))
+#     zipcode = Column(String(500))
 
 
 # NOTE: this class is no longer in use, but it's left here for posterity

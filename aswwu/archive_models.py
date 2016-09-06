@@ -63,7 +63,7 @@ class Archive1516(ArchiveBase):
 class Archive1415(ArchiveBase):
     __tablename__ = 'profiles1415'
     id = Column(String(50), primary_key=True)
-
+# FIXME: Projects here and after cannot have a blank query (return internal server error instead of a list of all profiles);
 class Archive1314(ArchiveBase):
     __tablename__ = 'profiles1314'
     id = Column(String(50), primary_key=True)
