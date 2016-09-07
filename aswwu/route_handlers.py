@@ -252,6 +252,7 @@ class ProfileUpdateHandler(BaseHandler):
             profile.pet_peeves = self.get_argument('pet_peeves','')
             profile.personality = self.get_argument('personality','')
             profile.privacy = self.get_argument('privacy','')
+            profile.website = self.get_argument('website','')
             if user.status != "Student":
                 profile.department = self.get_argument('department','')
                 profile.office = self.get_argument('office','')
