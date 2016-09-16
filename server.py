@@ -41,7 +41,7 @@ class Application(tornado.web.Application):
             (r"/update/(.*)", ProfileUpdateHandler),
             (r"/volunteer", VolunteerHandler),
             (r"/volunteer/(.*)", VolunteerHandler),
-            (r"/atlas", AtlasInstagramHandler),
+            (r"/feed", FeedHandler),
             (r"/verify", BaseVerifyLoginHandler),
             (r"/", BaseIndexHandler),
         ]
