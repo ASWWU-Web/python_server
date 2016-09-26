@@ -153,7 +153,7 @@ class BaseLoginHandler(BaseHandler):
                     user = query_user(user_dict['wwuid'])
                     if not user:
                         # if a matching user doesn't exist, create it
-                        user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['full_name'], status=user_dict['status'])
+                        user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['fullname'], status=user_dict['status'])
                         addOrUpdate(user)
                     # generate a new token for this login
                     token = self.generateToken(user_dict['wwuid'])
