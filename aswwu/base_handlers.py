@@ -129,8 +129,11 @@ class BaseLoginHandler(BaseHandler):
         # parse out the ugly response
         parsedUser = r.text.encode('utf-8')[6:-7]
         parsedUser = json.loads(parsedUser)['user']
-        parsedUser['wwuid'] = parsedUser['wwcid']
-        return parsedUser
+        if parsedUser:
+            parsedUser['wwuid'] = parsedUser['wwcid']
+            return parsedUser
+        else:
+            return None
 
     # if someone gets here they have bigger problems than not being logged in
     def get(self):
@@ -163,12 +166,12 @@ class BaseLoginHandler(BaseHandler):
                     self.write({'user': user.to_json(), 'token': str(token)})
                 else:
                     # self.loginWithWWU didn't return what we expected
-                    logger.info("LoginHandler: error "+r.text)
-                    self.write({'error':'invalid login credentials'})
+                    logger.info("LoginHandler: Invalid Credentials")
+                    self.write({'error':'YOU SHALL NOT PASS (Invalid login credentials)'})
             except Exception as e:
                 # you've got some debugging to get through if you're here
                 logger.error("LoginHandler exception: "+ str(e.message))
-                self.write({'error': str(e.message)})
+                self.write({'error': "Server Error: " + str(e.message)})
         else:
             # tell the user to send some better information
             logger.error("LoginHandler: invalid post parameters")
