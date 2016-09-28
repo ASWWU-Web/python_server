@@ -454,7 +454,12 @@ class VolunteerRoleHandler(BaseHandler):
                 if self.get_argument('wants_to_be_involved', '') == 'on':
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
-                vusers = [{'profile': query_by_wwuid(Profile, v.wwuid)[0], 'volunteer_data': v} for v in volunteers]
+                #vusers = [{'profile': query_by_wwuid(Profile, v.wwuid)[0], 'volunteer_data': v} for v in volunteers]
+                vusers = []
+                for v in volunteers:
+                    volResult = query_by_wwuid(Profile, v.wwuid)
+                    if len(volResult) > 0:
+                        vusers.append({'profile': volResult[0], 'volunteer_data': v})
                 # should we return the results as JSON
                 if cmd == 'search':
                     self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email} for v in vusers]})
