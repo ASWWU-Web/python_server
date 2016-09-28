@@ -462,7 +462,7 @@ class VolunteerRoleHandler(BaseHandler):
                         vusers.append({'profile': volResult[0], 'volunteer_data': v})
                 # should we return the results as JSON
                 if cmd == 'search':
-                    self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email} for v in vusers]})
+                    self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email, 'photo': v['profile'].photo, 'username': v['profile'].username} for v in vusers]})
                 # or as a full fledged webpage
                 else:
                     logger.debug(user)
