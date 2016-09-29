@@ -350,7 +350,8 @@ class VolunteerRoleHandler(BaseHandler):
             if cmd == 'set_role':
                 # let volunteer admins grant permissions for other volutneer admins
                 username = self.get_argument('username', '').replace(' ','.').lower()
-                fuser = s.query(User).filter_by(username=username).all()
+                # .ilike is for case insesitive.
+                fuser = s.query(User).filter(User.username.ilike(username)).all()
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
