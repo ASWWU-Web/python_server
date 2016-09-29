@@ -227,6 +227,7 @@ class ProfileUpdateHandler(BaseHandler):
         user = self.current_user
         if user.username == username or 'administrator' in user.roles:
             profile = s.query(Profile).filter_by(username=str(username)).one()
+            profile.full_name = self.get_argument('full_name','Name')
             profile.photo = self.get_argument('photo','')
             profile.gender = self.get_argument('gender','')
             profile.birthday = self.get_argument('birthday','')
