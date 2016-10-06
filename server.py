@@ -44,6 +44,9 @@ class Application(tornado.web.Application):
             (r"/feed", FeedHandler),
             (r"/verify", BaseVerifyLoginHandler),
             (r"/", BaseIndexHandler),
+            (r"/senateelections/showall", AllElectionVoteHandler),
+            (r"/senateelections/vote/(.*)", ElectionVoteHandler),
+            (r"/senateelections/livefeed", ElectionLiveFeedHandler),
         ]
 
         # a bunch of setup stuff

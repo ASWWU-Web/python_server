@@ -18,7 +18,7 @@ logger = logging.getLogger("aswwu")
 
 # administrative role handler
 class AdministratorRoleHandler(BaseHandler):
-    # decorator to foce them to be logged in to access this information
+    # decorator to force them to be logged in to access this information
     # also only accepts post requests right now
     @tornado.web.authenticated
     def post(self):
@@ -467,6 +467,67 @@ class VolunteerRoleHandler(BaseHandler):
                                     '<td>'+str(v['profile'].full_name)+'</td>''<td>'+str(v['profile'].class_standing)+'</td><td>'+str(v['profile'].majors)+'</td>'\
                                     '<td>'+str(v['profile'].email)+'</td>''<td>'+str(v['profile'].phone)+'</td><td>'+str(v['volunteer_data'].only_true())+'</td></tr>')
                     self.write('</table>')
+
+# get all of the profiles in our database
+class AllElectionVoteHandler(BaseHandler):
+    def get(self):
+        votes = query_all(Election)
+        self.write({'results': [v.info() for v in votes]})
+
+# update user's vote
+class ElectionVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, username):
+        user = self.current_user
+        if user.username == username or 'administrator' in user.roles:
+            usrvote = query_by_wwuid(Election, str(user.wwuid))
+            # Fix this to be more efficient
+            if len(usrvote) == 0:
+                new_vote = Election(wwuid=str(user.wwuid))
+                vote = addOrUpdate(new_vote)
+
+            vote = s.query(Election).filter_by(wwuid=str(user.wwuid)).one()
+            vote.candidate_one = self.get_argument('candidate_one','')
+            vote.candidate_two = self.get_argument('candidate_two','')
+            vote.sm_one = self.get_argument('sm_one','')
+            vote.sm_two = self.get_argument('sm_two','')
+
+            addOrUpdate(vote)
+
+            self.write(json.dumps('successfully voted'))
+        else:
+            self.write({'error': 'invalid voting permissions'})
+
+class ElectionLiveFeedHandler(BaseHandler):
+    def get(self):
+        votes=query_all(Election)
+        TotalVoters = 0
+        for v in votes:
+            TotalVoters = TotalVoters + 1
+        self.write({'size': TotalVoters})
+
+# TESTING, DO NOT USE --- Update user's vote
+# class TestVoteHandler(BaseHandler):
+#     def get(self):
+#         user = self.current_user
+#         self.write('Check 1')
+
+#         usrvote = query_by_wwuid(Election, '1498063')
+#         #user = query_user(wwuid)
+#         if len(usrvote) == 0:
+#             new_vote = Election(wwuid='1498063')
+#             vote = addOrUpdate(new_vote)
+
+#         vote = s.query(Election).filter_by(wwuid='1498063').one()
+#         vote.candidate_one = 'Clinton'
+#         vote.candidate_two = 'Ethan'
+#         vote.sm_one = 'Nolan'
+#         vote.sm_two = 'Ryan'
+#         addOrUpdate(vote)
+#         self.write('Finished casting vote...')
+
+
+
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
 class FeedHandler(BaseHandler):

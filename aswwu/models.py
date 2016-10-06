@@ -164,6 +164,24 @@ class Volunteer(Base):
 
 
 
+class Election(Base):
+    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
+    candidate_one = Column(String(50))
+    candidate_two = Column(String(50))
+    sm_one = Column(String(50))
+    sm_two = Column(String(50))
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    #return those who have voted
+    def voters(self):
+        return self.to_json(limitList=['wwuid'])
+
+    def base_info(self):
+        return self.to_json(limitList=['wwuid', 'updated_at'])
+
+    def info(self):
+        return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','updated_at'])
+
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
