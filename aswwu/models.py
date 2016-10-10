@@ -162,9 +162,50 @@ class Volunteer(Base):
                     data.append({'languages': self.languages})
         return data
 
+class ElectionBase(object):
+    @declared_attr
+    def __tablename__(cls):
+        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
+        return pluralize(cls.__name__.lower())
 
+    # every model should also have an ID as a primary key
+    # as well as a column indicated when the data was last updated
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
-class Election(Base):
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    def to_json(self, **kwargs):
+        obj = {}
+        # get the column names of the table
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
+        skipList = ['id'] + kwargs.get('skipList', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
+        limitList = kwargs.get('limitList', columns)
+        for key in limitList:
+            if key not in skipList:
+                # fancy way of saying "self.key"
+                value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+ElectionBase = declarative_base(cls=ElectionBase)
+
+class User(ElectionBase):
+    wwuid = Column(String(7), unique=True)
+    username = Column(String(250), nullable=False)
+    full_name = Column(String(250))
+    status = Column(String(250))
+    roles = Column(String(500))
+
+class Election(ElectionBase):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     candidate_one = Column(String(50))
     candidate_two = Column(String(50))
@@ -181,7 +222,6 @@ class Election(Base):
 
     def info(self):
         return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','updated_at'])
-
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
