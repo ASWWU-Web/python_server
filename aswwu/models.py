@@ -211,6 +211,7 @@ class Election(ElectionBase):
     candidate_two = Column(String(50))
     sm_one = Column(String(50))
     sm_two = Column(String(50))
+    new_department = Column(String(150))
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     #return those who have voted
@@ -221,7 +222,7 @@ class Election(ElectionBase):
         return self.to_json(limitList=['wwuid', 'updated_at'])
 
     def info(self):
-        return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','updated_at'])
+        return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','new_department','updated_at'])
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
