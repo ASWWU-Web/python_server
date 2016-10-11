@@ -492,6 +492,7 @@ class ElectionVoteHandler(BaseHandler):
             vote.sm_one = self.get_argument('sm_one','')
             vote.sm_two = self.get_argument('sm_two','')
             vote.new_department = self.get_argument('new_department','')
+            vote.district = self.get_argument('district', '')
 
             addOrUpdateElection(vote)
 

@@ -212,6 +212,7 @@ class Election(ElectionBase):
     sm_one = Column(String(50))
     sm_two = Column(String(50))
     new_department = Column(String(150))
+    district = Column(String(50))
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     #return those who have voted
