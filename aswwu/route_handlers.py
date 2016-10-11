@@ -503,10 +503,7 @@ class ElectionVoteHandler(BaseHandler):
 class ElectionLiveFeedHandler(BaseHandler):
     def get(self):
         votes=query_all_Election(Election)
-        TotalVoters = 0
-        for v in votes:
-            TotalVoters = TotalVoters + 1
-        self.write({'size': TotalVoters})
+        self.write({'size': len(votes)})
 
 # TESTING, DO NOT USE --- Update user's vote
 # class TestVoteHandler(BaseHandler):
