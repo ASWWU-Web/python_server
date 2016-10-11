@@ -502,7 +502,7 @@ class ElectionVoteHandler(BaseHandler):
 
 class ElectionLiveFeedHandler(BaseHandler):
     def get(self):
-        votes=query_all(Election)
+        votes=query_all_Election(Election)
         TotalVoters = 0
         for v in votes:
             TotalVoters = TotalVoters + 1
