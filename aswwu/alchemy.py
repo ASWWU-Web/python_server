@@ -109,7 +109,6 @@ def query_all_Election(model):
     return thing
 
 def addOrUpdateElection(thing):
-    print("addOrUpdateElection was called")
     try:
         election_s.add(thing)
         election_s.commit()
