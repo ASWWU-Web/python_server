@@ -10,7 +10,7 @@ import hmac
 import base64
 import hashlib
 
-# import models and alchemy functions as needed
+# import modles and alchemy functions as needed
 from aswwu.models import *
 from aswwu.alchemy import *
 

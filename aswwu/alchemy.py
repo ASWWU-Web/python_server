@@ -14,9 +14,11 @@ from aswwu.archive_models import *
 # defines the databases URLs relative to "server.py"
 engine = create_engine("sqlite:///../databases/people.db")
 archive_engine = create_engine("sqlite:///../databases/archives.db")
+election_engine = create_engine("sqlite:///../databases/senate_elections.db")
 
 # create the model tables if they don't already exist
 Base.metadata.create_all(engine)
+ElectionBase.metadata.create_all(election_engine)
 
 # bind instances of the databases to corresponding variables
 Base.metadata.bind = engine
@@ -26,6 +28,10 @@ s = dbs()
 ArchiveBase.metadata.bind = archive_engine
 archive_dbs = sessionmaker(bind=archive_engine)
 archive_s = archive_dbs()
+#same for elections
+ElectionBase.metadata.bind = election_engine
+election_dbs = sessionmaker(bind=election_engine)
+election_s = election_dbs()
 
 # updates a model, or creates it if it doesn't exist
 def addOrUpdate(thing):
@@ -92,3 +98,31 @@ def delete_thing(thing):
     except Exception as e:
         logger.info(e)
         s.rollback()
+
+def query_all_Election(model):
+    thing = None
+    try:
+        thing = election_s.query(model).all()
+    except Exception as e:
+        logger.info(e)
+        election_s.rollback()
+    return thing
+
+def addOrUpdateElection(thing):
+    try:
+        election_s.add(thing)
+        election_s.commit()
+        return thing
+    except Exception as e:
+        logger.info(e)
+        election_s.rollback()
+
+# finds all rows for a given model matching the given WWUID
+def query_by_wwuid_Election(model, wwuid):
+    thing = None
+    try:
+        thing = election_s.query(model).filter_by(wwuid=str(wwuid)).all()
+    except Exception as e:
+        logger.info(e)
+        election_s.rollback()
+    return thing
