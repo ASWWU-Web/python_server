@@ -329,6 +329,7 @@ class VolunteerHandler(BaseHandler):
         volunteer.lead_small_groups = (True if self.get_argument('lead_small_groups', 0) == '1' else False)
         volunteer.can_transport_things = (True if self.get_argument('can_transport_things', 0) == '1' else False)
         volunteer.languages = self.get_argument('languages', '')
+        volunteer.berean_fellowship = self.get_argument('berean_fellowship', '')
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
         logger.debug(volunteer.only_true())
@@ -453,6 +454,8 @@ class VolunteerRoleHandler(BaseHandler):
                     volunteers = volunteers.filter_by(can_transport_things=True)
                 if self.get_argument('languages', '') != '':
                     volunteers = volunteers.filter(Volunteer.languages.ilike('%'+str(self.get_argument('languages',''))+'%'))
+                if self.get_argument('berean_fellowship', '') != '':
+                    volunteers = volunteers.filter_by(berean_fellowship=True)
                 if self.get_argument('wants_to_be_involved', '') == 'on':
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
