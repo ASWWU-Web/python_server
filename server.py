@@ -8,9 +8,13 @@ import tornado.web
 import tornado.autoreload
 from tornado.options import define, options
 
+
 # import handlers as needed - here we import all of them
 from aswwu.base_handlers import *
 from aswwu.route_handlers import *
+
+# import our super secret keys
+from settings import keys
 
 # define some initial options that can be passed in at run time
 # e.g. `python server.py --port=8881` would run the server on port 8881
@@ -24,7 +28,7 @@ class Application(tornado.web.Application):
         # define some global settings
         settings = {
             "login_url": "/login",
-            "secret_key": "qtB91kGZF0ysv39GLaA5a6fVK7TnE6d5"
+            "secret_key": keys["hmac"]
         }
 
         # list out the routes (as regex) and their corresponding handlers
@@ -48,7 +52,7 @@ class Application(tornado.web.Application):
             (r"/senate_election/vote/(.*)", ElectionVoteHandler),
             (r"/senate_election/livefeed", ElectionLiveFeedHandler),
             #(r"/pages", PagesHandler),
-            (r"/profile/saml/account/", SamlHandler)
+            (r"/saml/account/",SamlHandler)
         ]
 
         # a bunch of setup stuff
