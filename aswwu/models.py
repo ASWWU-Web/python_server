@@ -226,6 +226,21 @@ class Election(ElectionBase):
     def info(self):
         return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','new_department','updated_at'])
 
+# class Pages(Base):
+#     pageID = Column(String(50), unique=True, nullable=False)
+#     title = Column(String(50))
+#     content = Column(String(500))
+#     author = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
+#     editors = Column(String(50), value=session.query(func.concat('*').filter(pagesEditors.pageID = self.pageID).group_by(pagesEditors.pageID).subquery())
+#     isVisible = Column(Boolean, default=False)
+#     pageName = Column(String(50), unique=True, nullable=False)
+#     lastUpdate = Column(DateTime, onupdate=datetime.datetime.now)
+#     tags = Column(String(50), value=session.query(func.concat('*').filter(pagesTags.pageID = self.pageID).group_by(pagesTags.pageID).subquery())
+#     category = Column(String(50),default='Other')
+#     themeBlob = Column(String(150))
+
+
+
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
 #     __tablename__ = "collegian_articles"

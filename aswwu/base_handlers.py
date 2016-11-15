@@ -189,3 +189,46 @@ class BaseVerifyLoginHandler(BaseHandler):
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
+#
+# # login and/or register users as needed
+# class SAMLLoginHandler(BaseHandler):
+#     # if someone gets here they have bigger problems than not being logged in
+#     def get(self):
+#         logger.debug("not logged in")
+#         self.write({'error': 'not logged in'})
+#
+#     # the main login/registration handler
+#     def post(self):
+#         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
+#         username = self.get_argument('username', None)
+#
+#         # make sure we actually received something from the user
+#         if username and password:
+#             try:
+#                 # expects a dictionary to be returned here (JSON)
+#                 user_dict = self.loginWithWWU(username, password)
+#                 if user_dict:
+#                     # lookup the user
+#                     user = query_user(user_dict['wwuid'])
+#                     if not user:
+#                         # if a matching user doesn't exist, create it
+#                         user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['fullname'], status=user_dict['status'])
+#                         addOrUpdate(user)
+#                     # generate a new token for this login
+#                     token = self.generateToken(user_dict['wwuid'])
+#                     # create a new LoggedInUser model
+#                     user = LoggedInUser(user_dict['wwuid'])
+#                     # this worked out, send it all back to the user
+#                     self.write({'user': user.to_json(), 'token': str(token)})
+#                 else:
+#                     # self.loginWithWWU didn't return what we expected
+#                     logger.info("LoginHandler: error "+r.text)
+#                     self.write({'error':'invalid login credentials'})
+#             except Exception as e:
+#                 # you've got some debugging to get through if you're here
+#                 logger.error("LoginHandler exception: "+ str(e.message))
+#                 self.write({'error': str(e.message)})
+#         else:
+#             # tell the user to send some better information
+#             logger.error("LoginHandler: invalid post parameters")
+#             self.write({'error':'invalid post parameters'})
