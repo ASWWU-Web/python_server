@@ -48,7 +48,7 @@ class Application(tornado.web.Application):
             (r"/senate_election/vote/(.*)", ElectionVoteHandler),
             (r"/senate_election/livefeed", ElectionLiveFeedHandler),
             #(r"/pages", PagesHandler),
-            (r"/profile/saml/account/",SamlHandler)
+            (r"/profile/saml/account/", SamlHandler)
         ]
 
         # a bunch of setup stuff
