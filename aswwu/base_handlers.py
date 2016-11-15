@@ -143,39 +143,7 @@ class BaseLoginHandler(BaseHandler):
     # the main login/registration handler
     def post(self):
         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
-        username = self.get_argument('username', None)
-        password = self.get_argument('password', None)
-
-        # make sure we actually received something from the user
-        if username and password:
-            try:
-                # expects a dictionary to be returned here (JSON)
-                user_dict = self.loginWithWWU(username, password)
-                if user_dict:
-                    # lookup the user
-                    user = query_user(user_dict['wwuid'])
-                    if not user:
-                        # if a matching user doesn't exist, create it
-                        user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['fullname'], status=user_dict['status'])
-                        addOrUpdate(user)
-                    # generate a new token for this login
-                    token = self.generateToken(user_dict['wwuid'])
-                    # create a new LoggedInUser model
-                    user = LoggedInUser(user_dict['wwuid'])
-                    # this worked out, send it all back to the user
-                    self.write({'user': user.to_json(), 'token': str(token)})
-                else:
-                    # self.loginWithWWU didn't return what we expected
-                    logger.info("LoginHandler: Invalid Credentials")
-                    self.write({'error':'YOU SHALL NOT PASS (Invalid login credentials)'})
-            except Exception as e:
-                # you've got some debugging to get through if you're here
-                logger.error("LoginHandler exception: "+ str(e.message))
-                self.write({'error': "Server Error: " + str(e.message)})
-        else:
-            # tell the user to send some better information
-            logger.error("LoginHandler: invalid post parameters")
-            self.write({'error':'invalid post parameters'})
+        self.write({'error':'We\'ve switched over to the unviversity login. Try refreshing the page and clearing your cache to login with the new method. If you\'re having more issues email aswwu.webmaster@wallawalla.edu'})
 
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
