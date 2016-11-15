@@ -155,11 +155,7 @@ class SearchAllHandler(BaseHandler):
         profiles = query_all(Profile)
         code = self.get_argument('code','')
         # pass in this super secret code to get ALL info for ALL profiles
-        if code == 'secret':
-            self.write({'results': [p.to_json() for p in profiles]})
-        # otherwise just send the much smaller base information
-        else:
-            self.write({'results': [p.base_info() for p in profiles]})
+        self.write({'results': [p.base_info() for p in profiles]})
 
 
 # get user's profile information
@@ -526,7 +522,7 @@ class SamlHandler(BaseHandler):
                     self.write({'error':'invalid parameters'})
             else:
                 logger.info("Unauthorized Access Attempted")
-                self.write({'error':'unauthorized access attempted'})
+                self.write({'error':'Unauthorized Access Attempted'})
         except Exception as e:
             logger.error("LoginHandler: error"+str(e.message))
             self.write({'error': str(e.message)})
