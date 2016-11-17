@@ -226,7 +226,7 @@ class ProfileUpdateHandler(BaseHandler):
         if user.username == username or 'administrator' in user.roles:
             profile = s.query(Profile).filter_by(username=str(username)).one()
             profile.full_name = bleach.clean(self.get_argument('full_name'))
-            profile.photo = self.get_argument('photo','')
+            profile.photo = bleach.clean(self.get_argument('photo',''))
             profile.gender = bleach.clean(self.get_argument('gender',''))
             profile.birthday = bleach.clean(self.get_argument('birthday',''))
             profile.email = bleach.clean(self.get_argument('email',''))
@@ -253,9 +253,9 @@ class ProfileUpdateHandler(BaseHandler):
             profile.privacy = bleach.clean(self.get_argument('privacy',''))
             profile.website = bleach.clean(self.get_argument('website',''))
             if user.status != "Student":
-                profile.department = self.get_argument('department','')
-                profile.office = self.get_argument('office','')
-                profile.office_hours = self.get_argument('office_hours','')
+                profile.department = bleach.clean(self.get_argument('department',''))
+                profile.office = bleach.clean(self.get_argument('office',''))
+                profile.office_hours = bleach.clean(self.get_argument('office_hours',''))
 
             addOrUpdate(profile)
             self.write(json.dumps('success'))
