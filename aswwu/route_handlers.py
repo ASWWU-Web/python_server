@@ -190,7 +190,7 @@ class ProfileHandler(BaseHandler):
                 else:
                     self.write(profile.no_info())
             else:
-                if user.username == username:
+                if user.username == profile.username:
                     self.write(profile.to_json())
                 else:
                     self.write(profile.view_other())

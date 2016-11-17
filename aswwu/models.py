@@ -103,7 +103,7 @@ class Profile(Base):
         return self.to_json(limitList=['username','full_name','photo','views','privacy'])
 
     def impers_info(self):
-        return self.to_json(imitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
 
     def view_other(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
