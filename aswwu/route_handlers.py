@@ -183,7 +183,17 @@ class ProfileHandler(BaseHandler):
                 else:
                     profile.views = 1
                 addOrUpdate(profile)
-            self.write(profile.to_json())
+            # self.write(profile.to_json())
+            if not user:
+                if profile.privacy == 1:
+                    self.write(profile.impers_info())
+                else:
+                    self.write(profile.no_info())
+            else:
+                if user.username == username:
+                    self.write(profile.to_json())
+                else:
+                    self.write(profile.view_other())
 
 
 # queries the server for a user's photos

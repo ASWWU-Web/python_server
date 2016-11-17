@@ -97,6 +97,16 @@ class Profile(Base):
     # e.g. listing ALL of the profiles in a cache for faster search later
     def base_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
+    # TODO: remove email from base_info
+
+    def no_info(self):
+        return self.to_json(limitList=['username','full_name','photo','views','privacy'])
+
+    def impers_info(self):
+        return self.to_json(imitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+
+    def view_other(self):
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
 
 # an unfortunately large table to hold the volunteer information
 # NOTE: this should and could probably be stored as a JSON blob
