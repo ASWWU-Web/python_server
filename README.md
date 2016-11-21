@@ -6,6 +6,7 @@ pip install pattern
 pip install requests
 pip install SQLAlchemy
 pip install tornado
+pip install bleach
 ```
 
 Then you need to get a copy of the database file. In your git projects folder run the following command
