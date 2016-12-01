@@ -4,6 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, T
 import uuid
 import datetime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship
 import hashlib
 from pattern.en import pluralize
 
@@ -236,20 +237,65 @@ class Election(ElectionBase):
     def info(self):
         return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','new_department','updated_at'])
 
-# class Pages(Base):
-#     pageID = Column(String(50), unique=True, nullable=False)
-#     title = Column(String(50))
-#     content = Column(String(500))
-#     author = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-#     editors = Column(String(50), value=session.query(func.concat('*').filter(pagesEditors.pageID = self.pageID).group_by(pagesEditors.pageID).subquery())
-#     isVisible = Column(Boolean, default=False)
-#     pageName = Column(String(50), unique=True, nullable=False)
-#     lastUpdate = Column(DateTime, onupdate=datetime.datetime.now)
-#     tags = Column(String(50), value=session.query(func.concat('*').filter(pagesTags.pageID = self.pageID).group_by(pagesTags.pageID).subquery())
-#     category = Column(String(50),default='Other')
-#     themeBlob = Column(String(150))
+class PagesBase(object):
+    @declared_attr
+    def __tablename__(cls):
+        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
+        return pluralize(cls.__name__.lower())
+
+    # every model should also have an ID as a primary key
+    # as well as a column indicated when the data was last updated
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    def to_json(self, **kwargs):
+        obj = {}
+        # get the column names of the table
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
+        skipList = ['id'] + kwargs.get('skipList', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
+        limitList = kwargs.get('limitList', columns)
+        for key in limitList:
+            if key not in skipList:
+                # fancy way of saying "self.key"
+                value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+PagesBase = declarative_base(cls=PagesBase)
+
+class Page(PagesBase):
+    url = Column(String(50), unique=True, nullable=False)
+    title = Column(String(50))
+    content = Column(String(500))
+    author = Column(String(7), nullable=False)
+    editors = relationship("Page_Editor", backref="Page_Editor")
+    is_visible = Column(Boolean, default=False)
+    page_name = Column(String(50), unique=True, nullable=False)
+    last_update = Column(DateTime, onupdate=datetime.datetime.now)
+    tags = relationship("Page_Tag",backref="Pages")
+    category = Column(String(50),default='Other')
+    theme_blob = Column(String(150))
 
 
+class Page_Tag(PagesBase):
+    tag = Column(String(50))
+    pageID = Column(String(50), ForeignKey('pages.id'))
+
+class Page_Editor(PagesBase):
+    editor_name = Column(String(50))
+    editor_username = Column(String(50))
+    editor_wwuid = Column(String(50))
+    pageID = Column(String(50), ForeignKey('pages.id'))
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):

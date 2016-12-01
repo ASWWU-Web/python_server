@@ -550,6 +550,21 @@ class SamlHandler(BaseHandler):
     def get(self):
         self.write({'error':'You really should not be here'})
 
+class PagesHandler(BaseHandler):
+    def get(self, page_id):
+        page_id = '';
+        try:
+            page = query_by_page_id(BaseHandler, page_id)
+            if len(page) == 0:
+                self.write({'error': 'no page found'})
+            elif len(page) > 1:
+                self.write({'error': 'too many pages found'})
+            else:
+                self.write(page.to_json())
+        except Exception as e:
+            logger.error("PagesHandler: error" + str(e.message))
+            self.write({'error': str(e.message)})
+
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
 class FeedHandler(BaseHandler):

@@ -15,10 +15,12 @@ from aswwu.archive_models import *
 engine = create_engine("sqlite:///../databases/people.db")
 archive_engine = create_engine("sqlite:///../databases/archives.db")
 election_engine = create_engine("sqlite:///../databases/senate_elections.db")
+pages_engine = create_engine("sqlite:///../databases/pages.db")
 
 # create the model tables if they don't already exist
 Base.metadata.create_all(engine)
 ElectionBase.metadata.create_all(election_engine)
+PagesBase.metadata.create_all(pages_engine)
 
 # bind instances of the databases to corresponding variables
 Base.metadata.bind = engine
@@ -32,6 +34,10 @@ archive_s = archive_dbs()
 ElectionBase.metadata.bind = election_engine
 election_dbs = sessionmaker(bind=election_engine)
 election_s = election_dbs()
+#same for pages
+PagesBase.metadata.bind = election_engine
+pages_dbs = sessionmaker(bind=pages_engine)
+page_s = pages_dbs()
 
 # updates a model, or creates it if it doesn't exist
 def addOrUpdate(thing):
@@ -126,3 +132,42 @@ def query_by_wwuid_Election(model, wwuid):
         logger.info(e)
         election_s.rollback()
     return thing
+
+# updates a model, or creates it if it doesn't exist
+def addOrUpdatePage(thing):
+    try:
+        page_s.add(thing)
+        page_s.commit()
+        return thing
+    except Exception as e:
+        logger.info(e)
+        page_s.rollback()
+
+def query_by_page_url(model, url):
+    thing = None
+    try:
+        thing = page_s.query(model).filter_by(url=str(url)).all()
+    except Exception as e:
+        logger.info(e)
+        page_s.rollback()
+    return thing
+
+def query_by_page_id(model, page_id):
+    thing = None
+    try:
+        thing = page_s.query(model).filter_by(id=str(page_id)).all()
+    except Exception as e:
+        logger.info(e)
+        page_s.rollback()
+    return thing
+
+# def query_page(page_id):
+#     thing = None
+#     try:
+#         thing = query_by_page_id(User, str(page_id))
+#         if thing:
+#             thing = thing[0]
+#     except Exception as e:
+#         logger.info(e)
+#         page_s.rollback()
+#     return thing
