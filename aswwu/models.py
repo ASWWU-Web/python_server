@@ -278,20 +278,25 @@ class Page(PagesBase):
     title = Column(String(50))
     content = Column(String(500))
     author = Column(String(7), nullable=False)
-    editors = relationship("Page_Editor", backref="Page_Editor")
+    editors = relationship("PageEditor", backref="Page_Editor")
     is_visible = Column(Boolean, default=False)
     page_name = Column(String(50), unique=True, nullable=False)
     last_update = Column(DateTime, onupdate=datetime.datetime.now)
-    tags = relationship("Page_Tag",backref="Pages")
+    tags = relationship("PageTag",backref="Pages")
     category = Column(String(50),default='Other')
     theme_blob = Column(String(150))
 
+    def base_info(self):
+        return self.to_json(limitList=['url', 'title', 'author', 'content'])
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class Page_Tag(PagesBase):
+
+class PageTag(PagesBase):
     tag = Column(String(50))
     pageID = Column(String(50), ForeignKey('pages.id'))
 
-class Page_Editor(PagesBase):
+class PageEditor(PagesBase):
     editor_name = Column(String(50))
     editor_username = Column(String(50))
     editor_wwuid = Column(String(50))
