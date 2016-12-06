@@ -551,9 +551,9 @@ class SamlHandler(BaseHandler):
         self.write({'error':'You really should not be here'})
 
 class PagesHandler(BaseHandler):
-    def get(self):
-        page_id = '12345';
-        page = None;
+    def get(self, page_id):
+        #page_id = '12345'
+        page = None
         try:
             page = query_by_page_id(Page, page_id)
             if len(page) == 0:
@@ -561,11 +561,8 @@ class PagesHandler(BaseHandler):
             elif len(page) > 1:
                 self.write({'error': 'too many pages found'})
             else:
-                 logger.info(json.JSONEncoder().as_dict)
-                 self.write(json.JSONEncoder().as_dict)
-                # for chunk in json.JSONEncoder().iterencode(page[0]):
-                #     logger.info(chunk)
-                #     #self.write(chunk)
+                 logger.info(page[0].serialize())
+                 self.write(page[0].serialize())
         except Exception as e:
             logger.error("PagesHandler: error" + str(e.message))
             self.write({'error': str(e.message)})

@@ -146,7 +146,7 @@ def addOrUpdatePage(thing):
 def query_by_page_url(model, url):
     thing = None
     try:
-        thing = page_s.query(model).filter_by(url=str(url)).all()
+        thing = page_s.query(model).options(joinedload('tags')).filter_by(url=str(url)).all()
     except Exception as e:
         logger.info(e)
         page_s.rollback()

@@ -8,16 +8,18 @@ from sqlalchemy.orm import relationship
 import hashlib
 from pattern.en import pluralize
 
+
 # create a UUID generator function
 def uuid_gen():
     return str(uuid.uuid4())
 
+
 # define a base model for all other models
 class Base(object):
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(cls.__name__.lower())
+        return pluralize(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -31,12 +33,12 @@ class Base(object):
         columns = [str(key).split(".")[1] for key in self.__table__.columns]
         # if called with `model.to_json(skipList=["something"])`
         # then "something" will be added to the list of columns to skip
-        skipList = ['id'] + kwargs.get('skipList', [])
+        skip_list = ['id'] + kwargs.get('skip_list', [])
         # if called similarly to skipList, then only those columns will even be checked
         # by default we check all of the table's columns
-        limitList = kwargs.get('limitList', columns)
-        for key in limitList:
-            if key not in skipList:
+        limit_list = kwargs.get('limitList', columns)
+        for key in limit_list:
+            if key not in skip_list:
                 # fancy way of saying "self.key"
                 value = getattr(self, key)
                 # try to set the value as a string, but that doesn't always work
@@ -50,6 +52,7 @@ class Base(object):
 # assign our Base class to SQLAlchemy
 Base = declarative_base(cls=Base)
 
+
 # you guessed it, our generic User model
 class User(Base):
     wwuid = Column(String(7), unique=True)
@@ -57,6 +60,7 @@ class User(Base):
     full_name = Column(String(250))
     status = Column(String(250))
     roles = Column(String(500))
+
 
 # table for profile data
 class Profile(Base):
@@ -101,13 +105,14 @@ class Profile(Base):
     # TODO: remove email from base_info
 
     def no_info(self):
-        return self.to_json(limitList=['username','full_name','photo','views','privacy'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'views', 'privacy'])
 
     def impers_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
 
     def view_other(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+
 
 # an unfortunately large table to hold the volunteer information
 # NOTE: this should and could probably be stored as a JSON blob
@@ -157,15 +162,15 @@ class Volunteer(Base):
     can_transport_things = Column(Boolean, default=False)
     languages = Column(String(250), default=False)
     wants_to_be_involved = Column(Boolean, default=False)
-    berean_fellowship = Column(Boolean,default=False)
+    berean_fellowship = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     # for easier admin searching, show only the fields that aren't false or blank
     def only_true(self):
-        fields = ['campus_ministries','student_missions','aswwu','circle_church','university_church','assist','lead','audio_slash_visual','health_promotion','construction_experience','outdoor_slash_camping','concert_assistance','event_set_up','children_ministries','children_story','art_poetry_slash_painting_slash_sculpting','organizing_events','organizing_worship_opportunities','organizing_community_outreach','bible_study','wycliffe_bible_translator_representative','food_preparation','graphic_design','poems_slash_spoken_word','prayer_team_slash_prayer_house','dorm_encouragement_and_assisting_chaplains','scripture_reading','speaking','videography','drama','public_school_outreach','retirement_slash_nursing_home_outreach','helping_the_homeless_slash_disadvantaged','working_with_youth','working_with_children','greeting','shofar_for_vespers','music','join_small_groups','lead_small_groups','can_transport_things','languages','berean_fellowship','wants_to_be_involved']
+        fields = ['campus_ministries', 'student_missions', 'aswwu', 'circle_church', 'university_church', 'assist', 'lead', 'audio_slash_visual', 'health_promotion', 'construction_experience', 'outdoor_slash_camping', 'concert_assistance', 'event_set_up', 'children_ministries', 'children_story', 'art_poetry_slash_painting_slash_sculpting', 'organizing_events', 'organizing_worship_opportunities', 'organizing_community_outreach', 'bible_study', 'wycliffe_bible_translator_representative', 'food_preparation', 'graphic_design', 'poems_slash_spoken_word', 'prayer_team_slash_prayer_house', 'dorm_encouragement_and_assisting_chaplains', 'scripture_reading', 'speaking', 'videography', 'drama', 'public_school_outreach', 'retirement_slash_nursing_home_outreach', 'helping_the_homeless_slash_disadvantaged', 'working_with_youth', 'working_with_children', 'greeting', 'shofar_for_vespers', 'music', 'join_small_groups', 'lead_small_groups', 'can_transport_things', 'languages', 'berean_fellowship', 'wants_to_be_involved']
         data = []
         for f in fields:
-            if getattr(self, f) == True:
+            if getattr(self, f):
                 data.append(str(f))
             elif getattr(self, f) != '':
                 if f == 'music':
@@ -174,11 +179,12 @@ class Volunteer(Base):
                     data.append({'languages': self.languages})
         return data
 
+
 class ElectionBase(object):
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(cls.__name__.lower())
+        return pluralize(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -192,12 +198,12 @@ class ElectionBase(object):
         columns = [str(key).split(".")[1] for key in self.__table__.columns]
         # if called with `model.to_json(skipList=["something"])`
         # then "something" will be added to the list of columns to skip
-        skipList = ['id'] + kwargs.get('skipList', [])
+        skip_list = ['id'] + kwargs.get('skip_list', [])
         # if called similarly to skipList, then only those columns will even be checked
         # by default we check all of the table's columns
-        limitList = kwargs.get('limitList', columns)
-        for key in limitList:
-            if key not in skipList:
+        limit_list = kwargs.get('limit_list', columns)
+        for key in limit_list:
+            if key not in skip_list:
                 # fancy way of saying "self.key"
                 value = getattr(self, key)
                 # try to set the value as a string, but that doesn't always work
@@ -210,12 +216,14 @@ class ElectionBase(object):
 
 ElectionBase = declarative_base(cls=ElectionBase)
 
+
 class User(ElectionBase):
     wwuid = Column(String(7), unique=True)
     username = Column(String(250), nullable=False)
     full_name = Column(String(250))
     status = Column(String(250))
     roles = Column(String(500))
+
 
 class Election(ElectionBase):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
@@ -227,7 +235,7 @@ class Election(ElectionBase):
     district = Column(String(50))
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
-    #return those who have voted
+    # return those who have voted
     def voters(self):
         return self.to_json(limitList=['wwuid'])
 
@@ -235,13 +243,14 @@ class Election(ElectionBase):
         return self.to_json(limitList=['wwuid', 'updated_at'])
 
     def info(self):
-        return self.to_json(limitList=['wwuid','candidate_one','candidate_two','sm_one','sm_two','new_department','updated_at'])
+        return self.to_json(limitList=['wwuid', 'candidate_one', 'candidate_two', 'sm_one', 'sm_two', 'new_department', 'updated_at'])
+
 
 class PagesBase(object):
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(cls.__name__.lower())
+        return pluralize(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -255,12 +264,12 @@ class PagesBase(object):
         columns = [str(key).split(".")[1] for key in self.__table__.columns]
         # if called with `model.to_json(skipList=["something"])`
         # then "something" will be added to the list of columns to skip
-        skipList = ['id'] + kwargs.get('skipList', [])
+        skip_list = ['id'] + kwargs.get('skip_list', [])
         # if called similarly to skipList, then only those columns will even be checked
         # by default we check all of the table's columns
-        limitList = kwargs.get('limitList', columns)
-        for key in limitList:
-            if key not in skipList:
+        limit_list = kwargs.get('limit_list', columns)
+        for key in limit_list:
+            if key not in skip_list:
                 # fancy way of saying "self.key"
                 value = getattr(self, key)
                 # try to set the value as a string, but that doesn't always work
@@ -273,34 +282,45 @@ class PagesBase(object):
 
 PagesBase = declarative_base(cls=PagesBase)
 
+
 class Page(PagesBase):
     url = Column(String(50), unique=True, nullable=False)
-    title = Column(String(50))
+    title = Column(String(50), unique=True, nullable=False)
     content = Column(String(500))
     author = Column(String(7), nullable=False)
-    editors = relationship("PageEditor", backref="Page_Editor")
+    editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
     is_visible = Column(Boolean, default=False)
-    page_name = Column(String(50), unique=True, nullable=False)
     last_update = Column(DateTime, onupdate=datetime.datetime.now)
-    tags = relationship("PageTag",backref="Pages")
-    category = Column(String(50),default='Other')
+    tags = relationship("PageTag", backref="Pages", lazy="joined")
+    category = Column(String(50), default='Other')
     theme_blob = Column(String(150))
 
-    def base_info(self):
-        return self.to_json(limitList=['url', 'title', 'author', 'content'])
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    def serialize(self):
+        taggies = []
+        for tag in self.tags:
+            taggies.append(tag.tag)
+        eddies = []
+        for editor in self.editors:
+            eddies.append(editor.serialize())
+        return {'url': self.url, 'title': self.title, 'content': self.content, 'author': self.author, 'is_visible': self.is_visible,'last_update': self.last_update, 'category': self.category, 'theme_blob': self.theme_blob, 'editors': eddies, 'tags': taggies}
 
 
 class PageTag(PagesBase):
     tag = Column(String(50))
     pageID = Column(String(50), ForeignKey('pages.id'))
 
+    def serialize(self):
+        return {'tag': self.tag}
+
+
 class PageEditor(PagesBase):
     editor_name = Column(String(50))
     editor_username = Column(String(50))
     editor_wwuid = Column(String(50))
     pageID = Column(String(50), ForeignKey('pages.id'))
+
+    def serialize(self):
+        return {'name': self.editor_name, 'username': self.editor_username}
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
