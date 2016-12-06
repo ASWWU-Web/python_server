@@ -249,6 +249,7 @@ class PagesBase(object):
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    # TODO: Make this properly print multilevel lists. (ex. tags, editors)
     def to_json(self, **kwargs):
         obj = {}
         # get the column names of the table

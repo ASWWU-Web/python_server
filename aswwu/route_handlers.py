@@ -561,8 +561,8 @@ class PagesHandler(BaseHandler):
             elif len(page) > 1:
                 self.write({'error': 'too many pages found'})
             else:
-                 logger.info(json.JSONEncoder().as_dict)
-                 self.write(json.JSONEncoder().as_dict)
+                 logger.info(page[0].to_json())
+                 self.write(page[0].to_json())
                 # for chunk in json.JSONEncoder().iterencode(page[0]):
                 #     logger.info(chunk)
                 #     #self.write(chunk)
