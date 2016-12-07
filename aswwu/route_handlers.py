@@ -551,8 +551,8 @@ class SamlHandler(BaseHandler):
         self.write({'error':'You really should not be here'})
 
 class PagesHandler(BaseHandler):
-    def get(self, page_id):
-        #page_id = '12345'
+    def get(self):
+        page_id = '12345'
         page = None
         try:
             page = query_by_page_id(Page, page_id)
@@ -564,8 +564,41 @@ class PagesHandler(BaseHandler):
                  logger.info(page[0].serialize())
                  self.write(page[0].serialize())
         except Exception as e:
-            logger.error("PagesHandler: error" + str(e.message))
+            logger.error("PagesHandler: error.\n" + str(e.message))
             self.write({'error': str(e.message)})
+
+
+class PagesUpdateHandler(BaseHandler):
+    def post(self, page_id):
+        try:
+            user = self.current_user
+            page = query_by_page_id(Page, page_id)
+            editors = []
+            for dict in page[0].serialize()['editors']:
+                temp = dict['name']
+                editors.append(temp)
+            print(editors)
+            if(user.username in editors or user.username == page.author):
+                if not len(page):
+                    page = [Page()]
+                elif len(page) > 1:
+                    raise ValueError('Too many pages found')
+                else:
+                    page[0].url = bleach.clean(self.get_argument('url'))
+                    page[0].title = bleach.clean(self.get_argument('title'))
+                    page[0].content = bleach.clean(self.get_argument('content'))
+                    page[0].author = bleach.clean(self.get_argument('author'))
+                    page[0].editors = bleach.clean(self.get_argument('editors'))
+                    page[0].is_visible = bleach.clean(self.get_argument('is_visible'))
+                    page[0].tags = bleach.clean(self.get_argument('tags'))
+                    page[0].category = bleach.clean(self.get_argument('category'))
+                    page[0].theme_blob = bleach.clean(self.get_argument('theme_blob'))
+                    addOrUpdatePage(page[0])
+
+        except Exception as e:
+            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
+
+
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).

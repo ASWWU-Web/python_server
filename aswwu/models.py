@@ -287,7 +287,7 @@ PagesBase = declarative_base(cls=PagesBase)
 class Page(PagesBase):
     url = Column(String(50), unique=True, nullable=False)
     title = Column(String(50), unique=True, nullable=False)
-    content = Column(String(500))
+    content = Column(String(5000))
     author = Column(String(7), nullable=False)
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
     is_visible = Column(Boolean, default=False)
