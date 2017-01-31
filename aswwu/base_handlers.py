@@ -154,10 +154,10 @@ class BaseLoginHandler(BaseHandler):
 
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         # globally available parameter
         # is the returned result of get_current_user() above
-        @tornado.web.authenticated
         user = self.current_user
         if user:
             # if a user exists, refresh their token for them
