@@ -73,25 +73,32 @@ class BaseHandler(tornado.web.RequestHandler):
     def validateToken(self, token):
         token = token.split("|")
         if len(token) != 3:
-            return false
+            return False
         compareTo = self.generateHMACDigest(token[0]+"|"+token[1])
         return compareTo == token[2]
 
     # global hook that allows the @tornado.web.authenticated decorator to function
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
-        authorization = self.request.headers.get('Authorization', None)
+        # authorization = self.request.headers.get('Authorization', None)
 
         try:
-            token = authorization.split(" ")
-            wwuid = token[1].split("|")[0]
-            dateCreated = int(token[1].split("|")[1])
-            now = int(time.mktime(datetime.datetime.now().timetuple()))
-            # check if token is exactly 2 parts, starts with HMAC, was created with the last 2 weeks (14 days), and is a valid token
-            if len(token) != 2 or token[0] != "HMAC" or (now - dateCreated) > (60*60*24*14) or not self.validateToken(token[1]):
+            # token = authorization.split(" ")
+            self.write({"cookie":self.get_cookie("token")})
+            if not self.get_cookie("token"):
                 user = None
+                self.set_cookie("test", "Test value")
+                self.write("There was no cookie! You're not logged in!")
             else:
-                user = LoggedInUser(wwuid)
+                token = self.get_cookie("token")
+                wwuid = token.split("|")[0]
+                dateCreated = int(token.split("|")[1])
+                now = int(time.mktime(datetime.datetime.now().timetuple()))
+                # check if token was created with the last 2 weeks (14 days) and is a valid token
+                if (now - dateCreated) > (60 * 60 * 24 * 14) or not self.validateToken(token):
+                    user = None
+                else:
+                    user = LoggedInUser(wwuid)
         except Exception as e:
             user = None
 
@@ -150,10 +157,12 @@ class BaseVerifyLoginHandler(BaseHandler):
     def get(self):
         # globally available parameter
         # is the returned result of get_current_user() above
+        @tornado.web.authenticated
         user = self.current_user
         if user:
             # if a user exists, refresh their token for them
             self.write({'user': user.to_json(), 'token': self.generateToken(user.wwuid)})
+            self.set_cookie("token", self.generateToken(user.wwuid))
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
