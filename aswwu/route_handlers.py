@@ -146,7 +146,11 @@ class SearchHandler(BaseHandler):
                 if f[0] in ['gender']:
                     results = results.filter(getattr(model,f[0]).ilike(f[1]))
                 else:
-                    results = results.filter(getattr(model,f[0]).ilike('%'+f[1]+'%'))
+                    attributeArr = f[1].encode('ascii','ignore').split(",")
+                    if len(attributeArr) > 1:
+                        results = results.filter(or_(getattr(model,f[0]).ilike("%" + v + "%") for v in attributeArr))
+                    else:
+                        results = results.filter(getattr(model,f[0]).ilike('%'+f[1]+'%'))
         self.write({'results': [r.base_info() for r in results]})
 
 
@@ -578,3 +582,12 @@ class FeedHandler(BaseHandler):
             http_client.close()
         else:
             self.write("Something went wrong.")
+class MatcherHandler(BaseHandler):
+    def get(self):
+        user = self.current_user
+
+        if hasattr(user, "username"):
+            profiles = query_all(Profile)
+            self.write(str([p.view_other() for p in profiles]))
+        else:
+            self.write("{'error': 'insufficient Permissions'}")
