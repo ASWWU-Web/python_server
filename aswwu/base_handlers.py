@@ -83,7 +83,6 @@ class BaseHandler(tornado.web.RequestHandler):
         # authorization = self.request.headers.get('Authorization', None)
         try:
             # token = authorization.split(" ")
-            self.write({"cookie":self.get_cookie("token")})
             if not self.get_cookie("token"):
                 user = None
                 self.set_cookie('token', '', domain='.aswwu.com')
