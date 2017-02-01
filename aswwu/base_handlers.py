@@ -81,13 +81,15 @@ class BaseHandler(tornado.web.RequestHandler):
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
         # authorization = self.request.headers.get('Authorization', None)
-
         try:
             # token = authorization.split(" ")
             self.write({"cookie":self.get_cookie("token")})
             if not self.get_cookie("token"):
                 user = None
-                self.set_cookie("test", "Test value")
+                print("I'm here...")
+                print(str(self.getcookie('token')))
+                self.set_cookie('test', "TestValue")
+                print(str(self.getcookie('test')))
                 self.write("There was no cookie! You're not logged in!")
             else:
                 token = self.get_cookie("token")
@@ -150,19 +152,19 @@ class BaseLoginHandler(BaseHandler):
     # the main login/registration handler
     def post(self):
         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
-        self.write({'error':'We\'ve switched over to the unviversity login. Try refreshing the page and clearing your cache to login with the new method. If you\'re having more issues email aswwu.webmaster@wallawalla.edu'})
+        self.write({'error':'We\'ve switched over to the university login. Try refreshing the page and clearing your cache to login with the new method. If you\'re having more issues email aswwu.webmaster@wallawalla.edu'})
 
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         # globally available parameter
         # is the returned result of get_current_user() above
         user = self.current_user
         if user:
             # if a user exists, refresh their token for them
-            self.write({'user': user.to_json(), 'token': self.generateToken(user.wwuid)})
-            self.set_cookie("token", self.generateToken(user.wwuid))
+            token = self.generateToken(user.wwuid)
+            self.write({'user': user.to_json(), 'token': token})
+            self.set_cookie("token", token)
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
