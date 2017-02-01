@@ -86,10 +86,7 @@ class BaseHandler(tornado.web.RequestHandler):
             self.write({"cookie":self.get_cookie("token")})
             if not self.get_cookie("token"):
                 user = None
-                print("I'm here...")
-                print(str(self.getcookie('token')))
-                self.set_cookie('test', "TestValue")
-                print(str(self.getcookie('test')))
+                self.set_cookie('token', '', domain='.aswwu.com')
                 self.write("There was no cookie! You're not logged in!")
             else:
                 token = self.get_cookie("token")
@@ -164,7 +161,7 @@ class BaseVerifyLoginHandler(BaseHandler):
             # if a user exists, refresh their token for them
             token = self.generateToken(user.wwuid)
             self.write({'user': user.to_json(), 'token': token})
-            self.set_cookie("token", token)
+            self.set_cookie("token", token, domain='.aswwu.com')
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
