@@ -1,6 +1,6 @@
 # alchemy.py
 
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,joinedload
 from sqlalchemy import create_engine
 
 # import and set up the logging
@@ -146,7 +146,7 @@ def addOrUpdatePage(thing):
 def query_by_page_url(model, url):
     thing = None
     try:
-        thing = page_s.query(model).filter_by(url=str(url)).all()
+        thing = page_s.query(model).options(joinedload('*')).filter_by(url=str(url)).all()
     except Exception as e:
         logger.info(e)
         page_s.rollback()
@@ -155,7 +155,7 @@ def query_by_page_url(model, url):
 def query_by_page_id(model, page_id):
     thing = None
     try:
-        thing = page_s.query(model).filter_by(id=str(page_id)).all()
+        thing = page_s.query(model).options(joinedload('*')).filter_by(id=str(page_id)).all()
     except Exception as e:
         logger.info(e)
         page_s.rollback()
