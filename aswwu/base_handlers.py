@@ -9,6 +9,7 @@ import datetime
 import hmac
 import base64
 import hashlib
+from settings import testing
 
 # import modles and alchemy functions as needed
 from aswwu.models import *
@@ -80,27 +81,28 @@ class BaseHandler(tornado.web.RequestHandler):
     # global hook that allows the @tornado.web.authenticated decorator to function
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
-        # authorization = self.request.headers.get('Authorization', None)
-        try:
-            # token = authorization.split(" ")
-            if not self.get_cookie("token"):
-                user = None
-                self.set_cookie('token', '', domain='.aswwu.com', expires_days=14)
-                self.write("There was no cookie! You're not logged in!")
-            else:
-                token = self.get_cookie("token")
-                wwuid = token.split("|")[0]
-                dateCreated = int(token.split("|")[1])
-                now = int(time.mktime(datetime.datetime.now().timetuple()))
-                # check if token was created with the last 2 weeks (14 days) and is a valid token
-                if (now - dateCreated) > (60 * 60 * 24 * 14) or not self.validateToken(token):
+        if not testing['dev']:
+            try:
+                if not self.get_cookie("token"):
                     user = None
+                    self.set_cookie('token', '', domain='.aswwu.com', expires_days=14)
+                    self.write("There was no cookie! You're not logged in!")
                 else:
-                    user = LoggedInUser(wwuid)
-        except Exception as e:
-            user = None
+                    token = self.get_cookie("token")
+                    wwuid = token.split("|")[0]
+                    dateCreated = int(token.split("|")[1])
+                    now = int(time.mktime(datetime.datetime.now().timetuple()))
+                    # check if token was created with the last 2 weeks (14 days) and is a valid token
+                    if (now - dateCreated) > (60 * 60 * 24 * 14) or not self.validateToken(token):
+                        user = None
+                    else:
+                        user = LoggedInUser(wwuid)
+            except Exception as e:
+                user = None
 
-        return user
+            return user
+        else:
+            return LoggedInUser(testing['developer'])
 
     def prepare(self):
         # some modern JS frameworks force data to be sent as JSON
