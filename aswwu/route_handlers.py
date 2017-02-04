@@ -638,6 +638,6 @@ class MatcherHandler(BaseHandler):
 
         if hasattr(user, "username"):
             profiles = query_all(Profile)
-            self.write(str([p.view_other() for p in profiles]))
+            self.write({'database':[p.view_other() for p in profiles]})
         else:
-            self.write("{'error': 'insufficient Permissions'}")
+            self.write("{'error': 'Insufficient Permissions :('}")
