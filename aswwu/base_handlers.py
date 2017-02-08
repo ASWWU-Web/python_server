@@ -86,7 +86,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 if not self.get_cookie("token"):
                     user = None
                     self.set_cookie('token', '', domain='.aswwu.com', expires_days=14)
-                    self.write("There was no cookie! You're not logged in!")
+                    logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
                     wwuid = token.split("|")[0]
