@@ -602,6 +602,44 @@ class PagesUpdateHandler(BaseHandler):
         except Exception as e:
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))
 
+class NewFormHandler(BaseHandler):
+    def post(self, form_json):
+        self.write({"status": "submitted"})
+
+
+class ViewFormHandler(BaseHandler):
+    def get(self, question_id):
+        self.write({"job_name": "TestJob", })
+
+
+class SearchFormHandler(BaseHandler):
+    def get(self, job_name):
+        self.write({"job_name": "TestJob"})
+
+
+class SubmitFormHandler(BaseHandler):
+    def post(self, form_json):
+        self.write({"status": "submitted"})
+
+
+class UpdateQuestionHandler(BaseHandler):
+    def post(self, question_id, question_text):
+        self.write({"status": "Question Updated"})
+
+
+class UpdateFormHandler(BaseHandler):
+    def post(self, form_id):
+        self.write({"status": "Form Updated"})
+
+
+class DeleteQuestionHandler(BaseHandler):
+    def post(self, question_id):
+        self.write({"status": "Question Deleted"})
+
+
+class DeleteFormHandler(BaseHandler):
+    def post(self, question_id):
+        self.write({"status": "Form Deleted"})
 
 
 

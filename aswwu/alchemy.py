@@ -16,11 +16,13 @@ engine = create_engine("sqlite:///../databases/people.db")
 archive_engine = create_engine("sqlite:///../databases/archives.db")
 election_engine = create_engine("sqlite:///../databases/senate_elections.db")
 pages_engine = create_engine("sqlite:///../databases/pages.db")
+jobs_engine = create_engine("sqlite:///../databases/jobs.db")
 
 # create the model tables if they don't already exist
 Base.metadata.create_all(engine)
 ElectionBase.metadata.create_all(election_engine)
 PagesBase.metadata.create_all(pages_engine)
+JobsBase.metadata.create_all(jobs_engine)
 
 # bind instances of the databases to corresponding variables
 Base.metadata.bind = engine
@@ -39,6 +41,11 @@ PagesBase.metadata.bind = election_engine
 pages_dbs = sessionmaker(bind=pages_engine)
 page_s = pages_dbs()
 
+JobsBase.metadata.bind = election_engine
+jobs_dbs = sessionmaker(bind=jobs_engine)
+jobs_s = jobs_dbs()
+
+
 # updates a model, or creates it if it doesn't exist
 def addOrUpdate(thing):
     try:
@@ -48,6 +55,7 @@ def addOrUpdate(thing):
     except Exception as e:
         logger.info(e)
         s.rollback()
+
 
 # finds all rows for a given model
 def query_all(model):
@@ -59,6 +67,7 @@ def query_all(model):
         s.rollback()
     return thing
 
+
 # finds all rows for a given model matching the given WWUID
 def query_by_wwuid(model, wwuid):
     thing = None
@@ -68,6 +77,7 @@ def query_by_wwuid(model, wwuid):
         logger.info(e)
         s.rollback()
     return thing
+
 
 # finds all rows for a given model matching the given ID
 def query_by_id(model, id):
@@ -79,6 +89,7 @@ def query_by_id(model, id):
         s.rollback()
     return thing
 
+
 # finds all rows for a given model matching the given field=value
 def query_by_field(model, field, value):
     thing = None
@@ -89,12 +100,14 @@ def query_by_field(model, field, value):
         s.rollback()
     return thing
 
+
 # finds a user with the given WWUID
 def query_user(wwuid):
     thing = query_by_wwuid(User, str(wwuid))
     if thing:
         thing = thing[0]
     return thing
+
 
 # permanently deletes a given model
 def delete_thing(thing):
@@ -105,6 +118,7 @@ def delete_thing(thing):
         logger.info(e)
         s.rollback()
 
+
 def query_all_Election(model):
     thing = None
     try:
@@ -114,6 +128,7 @@ def query_all_Election(model):
         election_s.rollback()
     return thing
 
+
 def addOrUpdateElection(thing):
     try:
         election_s.add(thing)
@@ -122,6 +137,7 @@ def addOrUpdateElection(thing):
     except Exception as e:
         logger.info(e)
         election_s.rollback()
+
 
 # finds all rows for a given model matching the given WWUID
 def query_by_wwuid_Election(model, wwuid):
@@ -133,6 +149,7 @@ def query_by_wwuid_Election(model, wwuid):
         election_s.rollback()
     return thing
 
+
 # updates a model, or creates it if it doesn't exist
 def addOrUpdatePage(thing):
     try:
@@ -143,6 +160,7 @@ def addOrUpdatePage(thing):
         logger.info(e)
         page_s.rollback()
 
+
 def query_by_page_url(model, url):
     thing = None
     try:
@@ -152,10 +170,21 @@ def query_by_page_url(model, url):
         page_s.rollback()
     return thing
 
+
 def query_by_page_id(model, page_id):
     thing = None
     try:
         thing = page_s.query(model).options(joinedload('*')).filter_by(id=str(page_id)).all()
+    except Exception as e:
+        logger.info(e)
+        page_s.rollback()
+    return thing
+
+
+def query_by_page_url(model, url):
+    thing = None
+    try:
+        thing = page_s.query(model).options(joinedload('*')).filter_by(url=str(url)).all()
     except Exception as e:
         logger.info(e)
         page_s.rollback()
@@ -171,3 +200,23 @@ def query_by_page_id(model, page_id):
 #         logger.info(e)
 #         page_s.rollback()
 #     return thing
+
+
+# updates a model, or creates it if it doesn't exist
+def addOrUpdateForm(thing):
+    try:
+        jobs_s.add(thing)
+        jobs_s.commit()
+        return thing
+    except Exception as e:
+        logger.info(e)
+        jobs_s.rollback()
+
+def query_by_job_name(model, name):
+    thing = None
+    try:
+        thing = jobs_s.query(model).options(joinedload('*')).filter_by(job_name=str(name)).all()
+    except Exception as e:
+        logger.info(e)
+        jobs_s.rollback()
+    return thing

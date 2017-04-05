@@ -52,8 +52,16 @@ class Application(tornado.web.Application):
             (r"/senate_election/vote/(.*)", ElectionVoteHandler),
             (r"/senate_election/livefeed", ElectionLiveFeedHandler),
             #(r"/pages", PagesHandler),
-            (r"/saml/account/",SamlHandler),
-            (r"/matcher",MatcherHandler)
+            (r"/saml/account/", SamlHandler),
+            (r"/matcher", MatcherHandler),
+            (r"/forms/new/form", NewFormHandler),
+            (r"/forms/submit/question", SubmitFormHandler),
+            (r"/forms/view/form", ViewFormHandler),
+            (r"/forms/search/form", SearchFormHandler),
+            (r"/forms/update/question", UpdateQuestionHandler),
+            (r"/forms/update/form", UpdateFormHandler),
+            (r"/forms/delete/question", DeleteQuestionHandler),
+            (r"/forms/delete/form", DeleteFormHandler)
         ]
 
         # a bunch of setup stuff

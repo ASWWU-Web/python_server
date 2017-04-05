@@ -323,6 +323,73 @@ class PageEditor(PagesBase):
     def serialize(self):
         return {'name': self.editor_name, 'username': self.editor_username}
 
+
+class JobsBase(object):
+    @declared_attr
+    def __tablename__(self):
+        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
+        return pluralize(self.__name__.lower())
+
+    # every model should also have an ID as a primary key
+    # as well as a column indicated when the data was last updated
+    id = Column(String(50), primary_key=True, default=uuid_gen)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    # TODO: Make this properly print multilevel lists. (ex. tags, editors)
+    def to_json(self, **kwargs):
+        obj = {}
+        # get the column names of the table
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
+        skip_list = ['id'] + kwargs.get('skip_list', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
+        limit_list = kwargs.get('limit_list', columns)
+        for key in limit_list:
+            if key not in skip_list:
+                # fancy way of saying "self.key"
+                value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+
+JobsBase = declarative_base(cls=JobsBase)
+
+
+class JobForm(JobsBase):
+    job_name = Column(String(50), nullable=False)
+    job_description = Column(String(10000))
+    visibility = Column(Boolean, default=False)
+    owner = Column(String(50), nullable=False)
+    questions = relationship("JobQuestion", backref="JobForms", lazy="joined")
+    last_update = Column(DateTime, onupdate=datetime.datetime.now)
+
+    def serialize(self):
+        questions = []
+        for question in self.questions:
+            questions.append(question.questions)
+        return {'job_name': self.job_name, 'visibility': self.visibility, 'owner': self.owner,
+                'questions': questions, 'last_update': self.last_update}
+
+class JobQuestion(JobsBase):
+    question = Column(String(5000))
+    jobID = Column(String(50), ForeignKey('jobforms.id'))
+
+    def serialize(self):
+        return {'tag': self.question}
+
+class JobAnswers(JobsBase):
+    questionID = Column(String(50))
+    answer = Column(String(10000))
+    username = Column(String(50))
+
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
 #     __tablename__ = "collegian_articles"
