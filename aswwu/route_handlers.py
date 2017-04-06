@@ -607,12 +607,12 @@ class NewFormHandler(BaseHandler):
         self.write({"status": "submitted"})
 
 
+class ViewAllFormHandler(BaseHandler):
+    def get(self):
+        self.write({{"job_name": "TestJob1",}, {"job_name": "TestJob2"}})
+
+
 class ViewFormHandler(BaseHandler):
-    def get(self, question_id):
-        self.write({"job_name": "TestJob", })
-
-
-class SearchFormHandler(BaseHandler):
     def get(self, job_name):
         self.write({"job_name": "TestJob"})
 

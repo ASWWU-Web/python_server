@@ -54,14 +54,12 @@ class Application(tornado.web.Application):
             #(r"/pages", PagesHandler),
             (r"/saml/account/", SamlHandler),
             (r"/matcher", MatcherHandler),
-            (r"/forms/new/form", NewFormHandler),
-            (r"/forms/submit/question", SubmitFormHandler),
-            (r"/forms/view/form", ViewFormHandler),
-            (r"/forms/search/form", SearchFormHandler),
-            (r"/forms/update/question", UpdateQuestionHandler),
-            (r"/forms/update/form", UpdateFormHandler),
-            (r"/forms/delete/question", DeleteQuestionHandler),
-            (r"/forms/delete/form", DeleteFormHandler)
+            (r"/forms/new", NewFormHandler),
+            (r"/forms/submit", SubmitFormHandler),
+            (r"/forms/view/all", ViewAllFormHandler),
+            (r"/forms/view", ViewFormHandler),
+            (r"/forms/update", UpdateFormHandler),
+            (r"/forms/delete", DeleteFormHandler)
         ]
 
         # a bunch of setup stuff

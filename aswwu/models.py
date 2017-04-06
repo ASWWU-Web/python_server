@@ -375,20 +375,34 @@ class JobForm(JobsBase):
         questions = []
         for question in self.questions:
             questions.append(question.questions)
-        return {'job_name': self.job_name, 'visibility': self.visibility, 'owner': self.owner,
-                'questions': questions, 'last_update': self.last_update}
+        return {'job_name': self.job_name, 'job_description': self.job_description , 'visibility': self.visibility, 'owner': self.owner,
+                'questions': questions, 'last_update': self.last_update, 'id': self.id}
 
 class JobQuestion(JobsBase):
     question = Column(String(5000))
     jobID = Column(String(50), ForeignKey('jobforms.id'))
 
     def serialize(self):
-        return {'tag': self.question}
+        return {'question': self.question, 'id': self.id}
+
+
+class JobApplication(JobsBase):
+    jobID = Column(String(50), ForeignKey('jobforms.id'))
+    answers = relationship("JobAnswers", backref="JobApplications", lazy="joined")
+    username = Column(String(50))
+
+    def serialize(self):
+        return {'jobID': self.jobID, 'answers': self.answer,
+                'username': self.username, 'id': self.id}
+
 
 class JobAnswers(JobsBase):
-    questionID = Column(String(50))
+    questionID = Column(String(50), ForeignKey('jobquestions.id'))
     answer = Column(String(10000))
-    username = Column(String(50))
+    applicationID = Column(String(50), ForeignKey('jobapplications.id'))
+
+    def serialize(self):
+        return {'questionID': self.questionID, 'answer': self.answer, 'id': self.id }
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):
