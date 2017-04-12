@@ -364,19 +364,24 @@ JobsBase = declarative_base(cls=JobsBase)
 
 
 class JobForm(JobsBase):
-    job_name = Column(String(50), nullable=False)
+    job_name = Column(String(100), nullable=False)
     job_description = Column(String(10000))
     visibility = Column(Boolean, default=False)
-    owner = Column(String(50), nullable=False)
+    owner = Column(String(100), nullable=False)
     questions = relationship("JobQuestion", backref="JobForms", lazy="joined")
-    last_update = Column(DateTime, onupdate=datetime.datetime.now)
+    image = Column(String(100), nullable=False)
 
     def serialize(self):
         questions = []
         for question in self.questions:
             questions.append(question.questions)
-        return {'job_name': self.job_name, 'job_description': self.job_description , 'visibility': self.visibility, 'owner': self.owner,
-                'questions': questions, 'last_update': self.last_update, 'id': self.id}
+        return {'job_name': self.job_name, 'job_description': self.job_description ,
+                'visibility': self.visibility, 'owner': self.owner,
+                'image': self.image, 'questions': questions, 'jobID': self.id}
+
+    def min(self):
+        return {'job_name': self.job_name, 'job_description': self.job_description,
+                'image': self.image, 'jobID': self.id}
 
 class JobQuestion(JobsBase):
     question = Column(String(5000))
@@ -389,20 +394,27 @@ class JobQuestion(JobsBase):
 class JobApplication(JobsBase):
     jobID = Column(String(50), ForeignKey('jobforms.id'))
     answers = relationship("JobAnswers", backref="JobApplications", lazy="joined")
-    username = Column(String(50))
+    username = Column(String(100))
+    status = Column(String(50))
+    last_update = Column(DateTime, onupdate=datetime.datetime.now)
 
     def serialize(self):
-        return {'jobID': self.jobID, 'answers': self.answer,
-                'username': self.username, 'id': self.id}
+        return {'jobID': self.jobID, 'answers': self.answers,
+                'username': self.username, 'status': self.id,
+                'last_update': self.last_update}
+
+    def min(self):
+        return {'jobID': self.jobID, 'username': self.username,
+                'status': self.status}
 
 
-class JobAnswers(JobsBase):
+class JobAnswer(JobsBase):
     questionID = Column(String(50), ForeignKey('jobquestions.id'))
     answer = Column(String(10000))
     applicationID = Column(String(50), ForeignKey('jobapplications.id'))
 
     def serialize(self):
-        return {'questionID': self.questionID, 'answer': self.answer, 'id': self.id }
+        return {'questionID': self.questionID, 'answer': self.answer}
 
 # NOTE: this class is no longer in use, but it's left here for posterity
 # class CollegianArticle(Base):

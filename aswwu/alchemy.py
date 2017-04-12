@@ -220,3 +220,21 @@ def query_by_job_name(model, name):
         logger.info(e)
         jobs_s.rollback()
     return thing
+
+def query_all_Forms(model):
+    thing = None
+    try:
+        thing = jobs_s.query(model).all()
+    except Exception as e:
+        logger.info(e)
+        jobs_s.rollback()
+    return thing
+
+# permanently deletes a given model
+def delete_thing_Forms(thing):
+    try:
+        jobs_s.delete(thing)
+        jobs_s.commit()
+    except Exception as e:
+        logger.info(e)
+        jobs_s.rollback()

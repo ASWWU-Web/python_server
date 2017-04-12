@@ -573,6 +573,7 @@ class PagesHandler(BaseHandler):
 
 
 class PagesUpdateHandler(BaseHandler):
+    @tornado.web.authenticated
     def post(self, page_id):
         try:
             user = self.current_user
@@ -603,44 +604,65 @@ class PagesUpdateHandler(BaseHandler):
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))
 
 class NewFormHandler(BaseHandler):
-    def post(self, form_json):
-        self.write({"status": "submitted"})
-
-
-class ViewAllFormHandler(BaseHandler):
-    def get(self):
-        self.write({{"job_name": "TestJob1",}, {"job_name": "TestJob2"}})
+    @tornado.web.authenticated
+    def post(self):
+        try:
+            user = self.current_user
+            if('forms' in user.roles):
+                form = JobForm()
+                form.job_name = bleach.clean(self.get_argument('job_name'))
+                form.job_description = bleach.clean(self.get_argument('job_description'))
+                form.visibility = bleach.clean(self.get_argument('visibility'))
+                form.owner = bleach.clean(self.get_argument('owner'))
+                form.image = bleach.clean(self.get_argument('image'))
+                addOrUpdateForm(form)
+                form = jobs_s.query(JobForm).filter_by(job_name=str(form.job_name)).one()
+                questions = self.get_argument('questions')
+                for q in questions:
+                    question = JobQuestion()
+                    question.question = q.question
+                    question.jobID = form.id
+                    addOrUpdate(question)
+                self.set_status(401)
+                self.write({"status": "submitted"})
+        except Exception as e:
+            logger.error("NewFormHandler: error.\n" + str(e.message))
 
 
 class ViewFormHandler(BaseHandler):
-    def get(self, job_name):
-        self.write({"job_name": "TestJob"})
+    def get(self, jobID):
+        try:
+            if(jobID.jobID == "all"):
+                forms = query_all_Forms(JobForm)
+                self.write({'forms': [f.min() for f in forms]})
+            else:
+                form = jobs_s.query(JobForm).filter_by(id=str(jobID.jobID)).one()
+                self.write({'form': form.serialize()})
+        except Exception as e:
+            logger.error("ViewFormHandler: error.\n" + str(e.message))
 
 
-class SubmitFormHandler(BaseHandler):
+class SubmitApplicationHandler(BaseHandler):
+    @tornado.web.authenticated
     def post(self, form_json):
         self.write({"status": "submitted"})
 
 
-class UpdateQuestionHandler(BaseHandler):
-    def post(self, question_id, question_text):
-        self.write({"status": "Question Updated"})
+class UpdateApplicationHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, form_json):
+        self.write("")
 
 
-class UpdateFormHandler(BaseHandler):
-    def post(self, form_id):
-        self.write({"status": "Form Updated"})
+class ViewApplicationHandler(BaseHandler):
+    def get(self, jobID, username):
+        self.write("")
 
 
-class DeleteQuestionHandler(BaseHandler):
-    def post(self, question_id):
-        self.write({"status": "Question Deleted"})
-
-
-class DeleteFormHandler(BaseHandler):
-    def post(self, question_id):
-        self.write({"status": "Form Deleted"})
-
+class ApplicationStatusHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, status_json):
+        self.write("")
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
@@ -670,12 +692,14 @@ class FeedHandler(BaseHandler):
             http_client.close()
         else:
             self.write("Something went wrong.")
+
+
 class MatcherHandler(BaseHandler):
     def get(self):
         user = self.current_user
 
         if hasattr(user, "username"):
             profiles = query_all(Profile)
-            self.write({'database':[p.view_other() for p in profiles]})
+            self.write({'database': [p.view_other() for p in profiles]})
         else:
             self.write("{'error': 'Insufficient Permissions :('}")
