@@ -400,7 +400,7 @@ class JobApplication(JobsBase):
 
     def serialize(self):
         return {'jobID': self.jobID, 'answers': self.answers,
-                'username': self.username, 'status': self.id,
+                'username': self.username, 'status': self.status,
                 'last_update': self.last_update}
 
     def min(self):

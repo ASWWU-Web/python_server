@@ -638,6 +638,7 @@ class ViewFormHandler(BaseHandler):
             else:
                 form = jobs_s.query(JobForm).filter_by(id=str(jobID.jobID)).one()
                 self.write({'form': form.serialize()})
+        #         TODO: exception handle
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
 
@@ -647,17 +648,22 @@ class SubmitApplicationHandler(BaseHandler):
     def post(self):
         try:
             user = self.current_user
-            if (user.username == self.get_argument("username")):
-                app = JobApplication()
+            if user.username == self.get_argument("username"):
+                try:
+                    app = jobs_s.query(JobApplication).filter_by(id=self.get_argument("jobID"), username=user.username).one()
+                except Exception as e:
+                    app = JobApplication()
+                self.write({'application': app.serialize()})
                 app.jobID = bleach.clean(self.get_argument('jobID'))
-                app.username = bleach.clean(self.get_argument('job_description'))
-                app.status = bleach.clean(self.get_argument('visibility'))
-                app.wwuID = user.wwuid
+                app.username = user.username
+                app.status = bleach.clean(self.get_argument('status'))
                 addOrUpdateForm(app)
-                app = jobs_s.query(JobForm).filter_by(job_name=str(app.job_name)).one()
                 answers = self.get_argument('answers')
                 for a in answers:
-                    answer = JobQuestion()
+                    try:
+                        answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a.questionID).one()
+                    except Exception as e:
+                        answer = JobQuestion()
                     answer.questionID = a.questionID
                     answer.answer = a.answer
                     answer.applicationID = app.id
@@ -666,12 +672,6 @@ class SubmitApplicationHandler(BaseHandler):
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
-
-
-class UpdateApplicationHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self):
-        self.write("")
 
 
 class ViewApplicationHandler(BaseHandler):
@@ -695,6 +695,7 @@ class ViewApplicationHandler(BaseHandler):
                 if 'forms-admin' in user.roles or username == user.username:
                     app = jobs_s.query(JobApplication).filter_by(id=str(jobID), username=username).one()
                     self.write({'application': app.serialize()})
+        #             TODO: Exception Handle
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
 
