@@ -622,8 +622,8 @@ class NewFormHandler(BaseHandler):
                     question = JobQuestion()
                     question.question = q.question
                     question.jobID = form.id
-                    addOrUpdate(question)
-                self.set_status(401)
+                    addOrUpdateForm(question)
+                self.set_status(201)
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("NewFormHandler: error.\n" + str(e.message))
@@ -644,25 +644,72 @@ class ViewFormHandler(BaseHandler):
 
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, form_json):
-        self.write({"status": "submitted"})
+    def post(self):
+        try:
+            user = self.current_user
+            if (user.username == self.get_argument("username")):
+                app = JobApplication()
+                app.jobID = bleach.clean(self.get_argument('jobID'))
+                app.username = bleach.clean(self.get_argument('job_description'))
+                app.status = bleach.clean(self.get_argument('visibility'))
+                app.wwuID = user.wwuid
+                addOrUpdateForm(app)
+                app = jobs_s.query(JobForm).filter_by(job_name=str(app.job_name)).one()
+                answers = self.get_argument('answers')
+                for a in answers:
+                    answer = JobQuestion()
+                    answer.questionID = a.questionID
+                    answer.answer = a.answer
+                    answer.applicationID = app.id
+                    addOrUpdateForm(answer)
+                self.set_status(201)
+                self.write({"status": "submitted"})
+        except Exception as e:
+            logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
 
 
 class UpdateApplicationHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, form_json):
+    def post(self):
         self.write("")
 
 
 class ViewApplicationHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, jobID, username):
-        self.write("")
+        try:
+            user = self.current_user
+            if jobID=="all" and username=="all":
+                if 'forms-admin' in user.roles:
+                    apps = query_all_Forms(JobApplication)
+                    self.write({'applications': [a.min() for a in apps]})
+            elif jobID=="all":
+                if 'forms-admin' in user.roles or username == user.username:
+                    apps = jobs_s.query(JobApplication).filter_by(username=username)
+                    self.write({'applications': [a.min() for a in apps]})
+            elif username=="all":
+                if('forms-admin' in user.roles):
+                    apps = jobs_s.query(JobApplication).filter_by(id=str(jobID))
+                    self.write({'applications': [a.min() for a in apps]})
+            else:
+                if 'forms-admin' in user.roles or username == user.username:
+                    app = jobs_s.query(JobApplication).filter_by(id=str(jobID), username=username).one()
+                    self.write({'application': app.serialize()})
+        except Exception as e:
+            logger.error("ViewFormHandler: error.\n" + str(e.message))
 
 
 class ApplicationStatusHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, status_json):
-        self.write("")
+    def post(self):
+        try:
+            user = self.current_user
+            if 'forms' in user.roles:
+                app = jobs_s.query(JobApplication).filter_by(id=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
+                app.status = bleach.clean(self.get_argument("status"))
+                addOrUpdateForm(app)
+        except Exception as e:
+            logger.error("ViewFormHandler: error.\n" + str(e.message))
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).

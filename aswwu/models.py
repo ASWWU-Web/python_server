@@ -394,7 +394,7 @@ class JobQuestion(JobsBase):
 class JobApplication(JobsBase):
     jobID = Column(String(50), ForeignKey('jobforms.id'))
     answers = relationship("JobAnswers", backref="JobApplications", lazy="joined")
-    username = Column(String(100))
+    username = Column(String(100), nullable=False)
     status = Column(String(50))
     last_update = Column(DateTime, onupdate=datetime.datetime.now)
 
