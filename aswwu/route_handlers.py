@@ -632,11 +632,11 @@ class NewFormHandler(BaseHandler):
 class ViewFormHandler(BaseHandler):
     def get(self, jobID):
         try:
-            if(jobID.jobID == "all"):
+            if(jobID == "all"):
                 forms = query_all_Forms(JobForm)
                 self.write({'forms': [f.min() for f in forms]})
             else:
-                form = jobs_s.query(JobForm).filter_by(id=str(jobID.jobID)).one()
+                form = jobs_s.query(JobForm).filter_by(id=str(jobID)).one()
                 self.write({'form': form.serialize()})
         #         TODO: exception handle
         except Exception as e:
@@ -653,10 +653,10 @@ class SubmitApplicationHandler(BaseHandler):
                     app = jobs_s.query(JobApplication).filter_by(id=self.get_argument("jobID"), username=user.username).one()
                 except Exception as e:
                     app = JobApplication()
+                    app.status = "new"
                 self.write({'application': app.serialize()})
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
-                app.status = bleach.clean(self.get_argument('status'))
                 addOrUpdateForm(app)
                 answers = self.get_argument('answers')
                 for a in answers:

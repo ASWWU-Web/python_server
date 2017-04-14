@@ -55,9 +55,9 @@ class Application(tornado.web.Application):
             (r"/saml/account/", SamlHandler),
             (r"/matcher", MatcherHandler),
             (r"/forms/job/new", NewFormHandler),
-            (r"/forms/job/view", ViewFormHandler),
+            (r"/forms/job/view/(.*)", ViewFormHandler),
             (r"/forms/application/submit", SubmitApplicationHandler),
-            (r"/forms/application/view", ViewApplicationHandler),
+            (r"/forms/application/view/(.*)/(.*)", ViewApplicationHandler),
             (r"/forms/application/status", ApplicationStatusHandler)
         ]
 

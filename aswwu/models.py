@@ -368,7 +368,7 @@ class JobForm(JobsBase):
     job_description = Column(String(10000))
     visibility = Column(Boolean, default=False)
     owner = Column(String(100), nullable=False)
-    questions = relationship("JobQuestion", backref="JobForms", lazy="joined")
+    questions = relationship("JobQuestion", backref="jobforms", lazy="joined")
     image = Column(String(100), nullable=False)
 
     def serialize(self):
@@ -393,7 +393,7 @@ class JobQuestion(JobsBase):
 
 class JobApplication(JobsBase):
     jobID = Column(String(50), ForeignKey('jobforms.id'))
-    answers = relationship("JobAnswers", backref="JobApplications", lazy="joined")
+    answers = relationship("JobAnswer", backref="jobapplications", lazy="joined")
     username = Column(String(100), nullable=False)
     status = Column(String(50))
     last_update = Column(DateTime, onupdate=datetime.datetime.now)
