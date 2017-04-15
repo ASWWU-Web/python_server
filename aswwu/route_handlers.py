@@ -619,10 +619,11 @@ class NewFormHandler(BaseHandler):
                 form = jobs_s.query(JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = self.get_argument('questions')
                 for q in questions:
-                    question = JobQuestion()
-                    question.question = q.question
-                    question.jobID = form.id
-                    addOrUpdateForm(question)
+                    if q.question:
+                        question = JobQuestion()
+                        question.question = q.question
+                        question.jobID = form.id
+                        addOrUpdateForm(question)
                 self.set_status(201)
                 self.write({"status": "submitted"})
         except Exception as e:
@@ -658,16 +659,19 @@ class SubmitApplicationHandler(BaseHandler):
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
                 addOrUpdateForm(app)
-                answers = self.get_argument('answers')
+                answers = json.loads(self.get_argument('answers'))
                 for a in answers:
                     try:
                         answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a.questionID).one()
                     except Exception as e:
-                        answer = JobQuestion()
-                    answer.questionID = a.questionID
-                    answer.answer = a.answer
-                    answer.applicationID = app.id
-                    addOrUpdateForm(answer)
+                        answer = JobAnswer()
+                    if 'questionID' in a:
+                        answer.questionID = a['questionID']
+                        answer.answer = a['answer']
+                        answer.applicationID = app.id
+                        addOrUpdateForm(answer)
+                    else:
+                        print "Dang\n"
                 self.set_status(201)
                 self.write({"status": "submitted"})
         except Exception as e:
