@@ -651,8 +651,9 @@ class SubmitApplicationHandler(BaseHandler):
             user = self.current_user
             if user.username == self.get_argument("username"):
                 try:
-                    app = jobs_s.query(JobApplication).filter_by(id=self.get_argument("jobID"), username=user.username).one()
+                    app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"), username=user.username).one()
                 except Exception as e:
+                    print "Adding new application\n"
                     app = JobApplication()
                     app.status = "new"
                 self.write({'application': app.serialize()})
@@ -662,8 +663,9 @@ class SubmitApplicationHandler(BaseHandler):
                 answers = json.loads(self.get_argument('answers'))
                 for a in answers:
                     try:
-                        answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a.questionID).one()
+                        answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a['questionID']).one()
                     except Exception as e:
+                        print "Adding new answer"
                         answer = JobAnswer()
                     if 'questionID' in a:
                         answer.questionID = a['questionID']

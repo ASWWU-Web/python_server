@@ -396,12 +396,14 @@ class JobApplication(JobsBase):
     answers = relationship("JobAnswer", backref="jobapplications", lazy="joined")
     username = Column(String(100), nullable=False)
     status = Column(String(50))
-    last_update = Column(DateTime, onupdate=datetime.datetime.now)
 
     def serialize(self):
-        return {'jobID': self.jobID, 'answers': self.answers,
+        answers = []
+        for answer in self.answers:
+            answers.append(answer.serialize())
+        return {'jobID': self.jobID, 'answers': answers,
                 'username': self.username, 'status': self.status,
-                'last_update': self.last_update}
+                'last_update': self.updated_at}
 
     def min(self):
         return {'jobID': self.jobID, 'username': self.username,
