@@ -617,11 +617,11 @@ class NewFormHandler(BaseHandler):
                 form.image = bleach.clean(self.get_argument('image'))
                 addOrUpdateForm(form)
                 form = jobs_s.query(JobForm).filter_by(job_name=str(form.job_name)).one()
-                questions = self.get_argument('questions')
+                questions = json.loads(self.get_argument('questions'))
                 for q in questions:
-                    if q.question:
+                    if 'question' in q:
                         question = JobQuestion()
-                        question.question = q.question
+                        question.question = q['question']
                         question.jobID = form.id
                         addOrUpdateForm(question)
                 self.set_status(201)
@@ -656,7 +656,6 @@ class SubmitApplicationHandler(BaseHandler):
                     print "Adding new application\n"
                     app = JobApplication()
                     app.status = "new"
-                self.write({'application': app.serialize()})
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
                 addOrUpdateForm(app)
@@ -672,8 +671,6 @@ class SubmitApplicationHandler(BaseHandler):
                         answer.answer = a['answer']
                         answer.applicationID = app.id
                         addOrUpdateForm(answer)
-                    else:
-                        print "Dang\n"
                 self.set_status(201)
                 self.write({"status": "submitted"})
         except Exception as e:
@@ -685,21 +682,21 @@ class ViewApplicationHandler(BaseHandler):
     def get(self, jobID, username):
         try:
             user = self.current_user
-            if jobID=="all" and username=="all":
+            if jobID == "all" and username == "all":
                 if 'forms-admin' in user.roles:
                     apps = query_all_Forms(JobApplication)
                     self.write({'applications': [a.min() for a in apps]})
-            elif jobID=="all":
+            elif jobID=="all" and username != "all":
                 if 'forms-admin' in user.roles or username == user.username:
                     apps = jobs_s.query(JobApplication).filter_by(username=username)
                     self.write({'applications': [a.min() for a in apps]})
-            elif username=="all":
+            elif username=="all" and jobID != "all":
                 if('forms-admin' in user.roles):
-                    apps = jobs_s.query(JobApplication).filter_by(id=str(jobID))
+                    apps = jobs_s.query(JobApplication).filter_by(jobID=jobID)
                     self.write({'applications': [a.min() for a in apps]})
             else:
                 if 'forms-admin' in user.roles or username == user.username:
-                    app = jobs_s.query(JobApplication).filter_by(id=str(jobID), username=username).one()
+                    app = jobs_s.query(JobApplication).filter_by(jobID=str(jobID), username=username).one()
                     self.write({'application': app.serialize()})
         #             TODO: Exception Handle
         except Exception as e:
