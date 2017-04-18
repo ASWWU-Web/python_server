@@ -613,6 +613,7 @@ class NewFormHandler(BaseHandler):
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
                 form.visibility = bleach.clean(self.get_argument('visibility'))
+                form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
                 addOrUpdateForm(form)
@@ -642,7 +643,8 @@ class ViewFormHandler(BaseHandler):
         #         TODO: exception handle
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
-
+            self.set_status(404)
+            self.write("Form not found")
 
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated

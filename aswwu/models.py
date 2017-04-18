@@ -49,6 +49,7 @@ class Base(object):
                     pass
         return obj
 
+
 # assign our Base class to SQLAlchemy
 Base = declarative_base(cls=Base)
 
@@ -366,6 +367,7 @@ JobsBase = declarative_base(cls=JobsBase)
 class JobForm(JobsBase):
     job_name = Column(String(100), nullable=False)
     job_description = Column(String(10000))
+    department = Column(String(150))
     visibility = Column(Boolean, default=False)
     owner = Column(String(100), nullable=False)
     questions = relationship("JobQuestion", backref="jobforms", lazy="joined")
@@ -374,14 +376,14 @@ class JobForm(JobsBase):
     def serialize(self):
         questions = []
         for question in self.questions:
-            questions.append(question.questions)
+            questions.append(question.question)
         return {'job_name': self.job_name, 'job_description': self.job_description ,
-                'visibility': self.visibility, 'owner': self.owner,
+                'visibility': self.visibility, 'owner': self.owner, 'department': self.department,
                 'image': self.image, 'questions': questions, 'jobID': self.id}
 
     def min(self):
         return {'job_name': self.job_name, 'job_description': self.job_description,
-                'image': self.image, 'jobID': self.id}
+                'department': self.department, 'image': self.image, 'jobID': self.id}
 
 class JobQuestion(JobsBase):
     question = Column(String(5000))
