@@ -661,6 +661,8 @@ class SubmitApplicationHandler(BaseHandler):
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
                 addOrUpdateForm(app)
+                app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"),
+                                                             username=user.username).one()
                 answers = json.loads(self.get_argument('answers'))
                 for a in answers:
                     try:
