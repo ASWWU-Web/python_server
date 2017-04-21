@@ -632,7 +632,8 @@ class NewFormHandler(BaseHandler):
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("NewFormHandler: error.\n" + str(e.message))
-
+            self.set_status(400)
+            self.write({"status": "Error"})
 
 class ViewFormHandler(BaseHandler):
     def get(self, jobID):
