@@ -67,7 +67,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # create a authorization token for the given WWUID based on the current time
     def generateToken(self, wwuid):
         now = int(time.mktime(datetime.datetime.now().timetuple()))
-        message = wwuid+"|"+str(now)
+        message = str(wwuid)+"|"+str(now)
         return message+"|"+self.generateHMACDigest(message)
 
     # see if the authorization token received from the user has been tampered with (i.e. copied or stolen)

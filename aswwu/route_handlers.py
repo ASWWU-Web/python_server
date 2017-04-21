@@ -612,7 +612,10 @@ class NewFormHandler(BaseHandler):
                 form = JobForm()
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
-                form.visibility = bleach.clean(self.get_argument('visibility'))
+                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
+                    form.visibility = 1
+                else:
+                    form.visibility = 0
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
@@ -644,7 +647,7 @@ class ViewFormHandler(BaseHandler):
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
             self.set_status(404)
-            self.write("Form not found")
+            self.write({"status": "Form not found"})
 
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
@@ -679,6 +682,8 @@ class SubmitApplicationHandler(BaseHandler):
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
+            self.set_status(400)
+            self.write({"status": "Error"})
 
 
 class ViewApplicationHandler(BaseHandler):
@@ -705,6 +710,8 @@ class ViewApplicationHandler(BaseHandler):
         #             TODO: Exception Handle
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
+            self.set_status(404)
+            self.write({"status": "Application not found"})
 
 
 class ApplicationStatusHandler(BaseHandler):
@@ -718,6 +725,8 @@ class ApplicationStatusHandler(BaseHandler):
                 addOrUpdateForm(app)
         except Exception as e:
             logger.error("ViewFormHandler: error.\n" + str(e.message))
+            self.set_status(400)
+            self.write({"status": "Error"})
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
