@@ -650,6 +650,22 @@ class ViewFormHandler(BaseHandler):
             self.set_status(404)
             self.write({"status": "Form not found"})
 
+class DeleteFormHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        try:
+            user = self.current_user
+            if 'forms-admin' in user.roles:
+                form = jobs_s.query(JobForm).filter_by(id=self.get_argument("jobID")).one()
+                for q in form.questions:
+                    delete_thing_Forms(jobs_s.query(JobQuestion).filter_by(id=q.id)).one()
+                delete_thing_Forms(form)
+        except Exception as e:
+            logger.error("ViewFormHandler: error.\n" + str(e.message))
+            self.set_status(400)
+            self.write({"status": "Error"})
+
+
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
@@ -721,7 +737,7 @@ class ApplicationStatusHandler(BaseHandler):
         try:
             user = self.current_user
             if 'forms' in user.roles:
-                app = jobs_s.query(JobApplication).filter_by(id=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
+                app = jobs_s.query(JobApplication).filter_by(jobID=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
                 app.status = bleach.clean(self.get_argument("status"))
                 addOrUpdateForm(app)
         except Exception as e:
