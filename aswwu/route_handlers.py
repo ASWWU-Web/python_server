@@ -630,6 +630,9 @@ class NewFormHandler(BaseHandler):
                         addOrUpdateForm(question)
                 self.set_status(201)
                 self.write({"status": "submitted"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("NewFormHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -662,6 +665,9 @@ class DeleteFormHandler(BaseHandler):
                 delete_thing_Forms(form)
                 self.set_status(200)
                 self.write({"status": "Form Deleted"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("DeleteFormHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -745,6 +751,9 @@ class ApplicationStatusHandler(BaseHandler):
                 app = jobs_s.query(JobApplication).filter_by(jobID=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
                 app.status = bleach.clean(self.get_argument("status"))
                 addOrUpdateForm(app)
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("ApplicationStatusHandler: error.\n" + str(e.message))
             self.set_status(500)
