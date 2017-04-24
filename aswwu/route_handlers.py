@@ -699,6 +699,9 @@ class SubmitApplicationHandler(BaseHandler):
                         addOrUpdateForm(answer)
                 self.set_status(201)
                 self.write({"status": "submitted"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
             self.set_status(500)
