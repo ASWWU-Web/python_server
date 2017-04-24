@@ -778,10 +778,11 @@ class FeedHandler(BaseHandler):
 
 
 class MatcherHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         user = self.current_user
 
-        if hasattr(user, "username"):
+        if 'matcher' in user.roles:
             profiles = query_all(Profile)
             self.write({'database': [p.view_other() for p in profiles]})
         else:
