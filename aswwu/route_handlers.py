@@ -632,7 +632,7 @@ class NewFormHandler(BaseHandler):
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("NewFormHandler: error.\n" + str(e.message))
-            self.set_status(400)
+            self.set_status(500)
             self.write({"status": "Error"})
 
 class ViewFormHandler(BaseHandler):
@@ -658,11 +658,13 @@ class DeleteFormHandler(BaseHandler):
             if 'forms-admin' in user.roles:
                 form = jobs_s.query(JobForm).filter_by(id=self.get_argument("jobID")).one()
                 for q in form.questions:
-                    delete_thing_Forms(jobs_s.query(JobQuestion).filter_by(id=q.id)).one()
+                    delete_thing_Forms(jobs_s.query(JobQuestion).filter_by(id=int(q.id)).one())
                 delete_thing_Forms(form)
+                self.set_status(200)
+                self.write({"status": "Form Deleted"})
         except Exception as e:
-            logger.error("ViewFormHandler: error.\n" + str(e.message))
-            self.set_status(400)
+            logger.error("DeleteFormHandler: error.\n" + str(e.message))
+            self.set_status(500)
             self.write({"status": "Error"})
 
 
@@ -699,7 +701,7 @@ class SubmitApplicationHandler(BaseHandler):
                 self.write({"status": "submitted"})
         except Exception as e:
             logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
-            self.set_status(400)
+            self.set_status(500)
             self.write({"status": "Error"})
 
 
@@ -726,7 +728,7 @@ class ViewApplicationHandler(BaseHandler):
                     self.write({'application': app.serialize()})
         #             TODO: Exception Handle
         except Exception as e:
-            logger.error("ViewFormHandler: error.\n" + str(e.message))
+            logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
             self.write({"status": "Application not found"})
 
@@ -741,8 +743,8 @@ class ApplicationStatusHandler(BaseHandler):
                 app.status = bleach.clean(self.get_argument("status"))
                 addOrUpdateForm(app)
         except Exception as e:
-            logger.error("ViewFormHandler: error.\n" + str(e.message))
-            self.set_status(400)
+            logger.error("ApplicationStatusHandler: error.\n" + str(e.message))
+            self.set_status(500)
             self.write({"status": "Error"})
 
 
