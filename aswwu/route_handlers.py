@@ -183,7 +183,7 @@ class ProfileHandler(BaseHandler):
             # then we assume the searched for user is popular and give them a +1
             if user and str(user.wwuid) != str(profile.wwuid) and year == self.application.options.current_year:
                 if profile.views:
-                    profile.views = profile.views+1
+                    profile.views += 1
                 else:
                     profile.views = 1
                 addOrUpdate(profile)
@@ -238,6 +238,10 @@ class ProfileUpdateHandler(BaseHandler):
     def post(self, username):
         user = self.current_user
         if user.username == username or 'administrator' in user.roles:
+            if user.username != username:
+                f = open('adminLog', 'w')
+                f.write(user.username + " is updating the profile of " + username + "\n")
+                f.close()
             profile = s.query(Profile).filter_by(username=str(username)).one()
             profile.full_name = bleach.clean(self.get_argument('full_name'))
             profile.photo = bleach.clean(self.get_argument('photo',''))
