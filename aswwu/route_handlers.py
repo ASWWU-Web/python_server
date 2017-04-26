@@ -682,20 +682,25 @@ class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
+            tempVar = False
             user = self.current_user
             if user.username == self.get_argument("username"):
+                answers = json.loads(self.get_argument('answers'))
+                if len(answers) > 50:
+                    raise ValueError("Too many answers submitted")
                 try:
                     app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"), username=user.username).one()
                 except Exception as e:
                     print "Adding new application\n"
+                    tempVar = True
                     app = JobApplication()
                     app.status = "new"
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
                 addOrUpdateForm(app)
-                app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"),
+                if tempVar:
+                    app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"),
                                                              username=user.username).one()
-                answers = json.loads(self.get_argument('answers'))
                 for a in answers:
                     try:
                         answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a['questionID']).one()
