@@ -178,7 +178,7 @@ class ProfileHandler(BaseHandler):
             self.write({'error': 'too many profiles found'})
         else:
             profile = profile[0]
-            user = self.current_user
+            user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
             if user and str(user.wwuid) != str(profile.wwuid) and year == self.application.options.current_year:
