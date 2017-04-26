@@ -691,7 +691,6 @@ class SubmitApplicationHandler(BaseHandler):
                 try:
                     app = jobs_s.query(JobApplication).filter_by(jobID=self.get_argument("jobID"), username=user.username).one()
                 except Exception as e:
-                    print "Adding new application\n"
                     tempVar = True
                     app = JobApplication()
                     app.status = "new"
@@ -705,7 +704,6 @@ class SubmitApplicationHandler(BaseHandler):
                     try:
                         answer = jobs_s.query(JobAnswer).filter_by(applicationID=app.id, questionID=a['questionID']).one()
                     except Exception as e:
-                        print "Adding new answer"
                         answer = JobAnswer()
                     if 'questionID' in a:
                         answer.questionID = a['questionID']
