@@ -145,6 +145,7 @@ class BaseLoginHandler(BaseHandler):
     # if someone gets here they have bigger problems than not being logged in
     def get(self):
         logger.debug("not logged in")
+        self.set_status(401)
         self.write({'error': 'not logged in'})
 
     # the main login/registration handler
@@ -154,6 +155,7 @@ class BaseLoginHandler(BaseHandler):
 
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         # globally available parameter
         # is the returned result of get_current_user() above
