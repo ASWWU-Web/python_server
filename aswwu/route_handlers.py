@@ -808,7 +808,7 @@ class ViewResumeHandler(BaseHandler):
                 uname = user.username
             try:
                 File = open(glob.glob("../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
-                self.set_status(201)
+                self.set_status(200)
                 self.write(File.read())
                 File.close()
             except:
