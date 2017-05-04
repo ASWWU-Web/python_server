@@ -6,6 +6,8 @@ import requests
 import json
 import datetime
 import bleach
+import os
+import glob
 from tornado.httpclient import HTTPClient
 from sqlalchemy import or_
 
@@ -763,6 +765,54 @@ class ApplicationStatusHandler(BaseHandler):
                 self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("ApplicationStatusHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "Error"})
+
+
+class ResumeUploadHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        user = self.current_user
+        try:
+            jobID = self.get_argument("jobID")
+            try:
+                jobs_s.query(JobForm).filter_by(id=str(jobID)).one()
+                fileinfo = self.request.files['resume'][0]
+                if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
+                    for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/","") + "*"):
+                        os.remove(f)
+                    fh = open("../databases/resume/"+ user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1], 'w+')
+                    fh.write(fileinfo['body'])
+                    self.set_status(201)
+                    self.write({"status": "Submitted"})
+                else:
+                    self.set_status(500)
+                    self.write({"status": "Error", "message": "Bad file type"})
+            except Exception:
+                self.set_status(500)
+                self.write({"status": "Error", "message": "Job doesn't exist"})
+        except Exception as e:
+            logger.error("ResumeUploadHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "Error"})
+
+
+class ViewResumeHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        user = self.current_user
+        jobID = self.get_argument("jobID")
+        try:
+            if 'forms' in user.roles:
+                username = self.get_argument("username").replace("/","")
+            else:
+                username = user.username
+            File = open(glob.glob("../databases/resume/" + username + "_" + jobID + "*")[0], "r")
+            self.set_status(201)
+            self.write(File.read())
+            File.close()
+        except Exception as e:
+            logger.error("ViewResumeHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "Error"})
 

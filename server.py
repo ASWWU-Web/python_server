@@ -59,7 +59,9 @@ class Application(tornado.web.Application):
             (r"/forms/job/delete", DeleteFormHandler),
             (r"/forms/application/submit", SubmitApplicationHandler),
             (r"/forms/application/view/(.*)/(.*)", ViewApplicationHandler),
-            (r"/forms/application/status", ApplicationStatusHandler)
+            (r"/forms/application/status", ApplicationStatusHandler),
+            (r"/forms/resume/upload", ResumeUploadHandler),
+            (r"/forms/resume/download", ViewResumeHandler)
         ]
 
         # a bunch of setup stuff
