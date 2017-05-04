@@ -786,10 +786,10 @@ class ResumeUploadHandler(BaseHandler):
                     self.set_status(201)
                     self.write({"status": "Submitted"})
                 else:
-                    self.set_status(500)
+                    self.set_status(415)
                     self.write({"status": "Error", "message": "Bad file type"})
             except Exception:
-                self.set_status(500)
+                self.set_status(404)
                 self.write({"status": "Error", "message": "Job doesn't exist"})
         except Exception as e:
             logger.error("ResumeUploadHandler: error.\n" + str(e.message))
