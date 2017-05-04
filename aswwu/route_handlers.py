@@ -641,6 +641,7 @@ class NewFormHandler(BaseHandler):
                 self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("NewFormHandler: error.\n" + str(e.message))
+            jobs_s.rollback()
             self.set_status(500)
             self.write({"status": "Error"})
 
@@ -677,6 +678,7 @@ class DeleteFormHandler(BaseHandler):
         except Exception as e:
             logger.error("DeleteFormHandler: error.\n" + str(e.message))
             self.set_status(500)
+            jobs_s.rollback()
             self.write({"status": "Error"})
 
 
@@ -719,6 +721,7 @@ class SubmitApplicationHandler(BaseHandler):
                 self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
+            jobs_s.rollback()
             self.set_status(500)
             self.write({"status": "Error"})
 
@@ -765,6 +768,7 @@ class ApplicationStatusHandler(BaseHandler):
                 self.write({"status": "Unauthorized"})
         except Exception as e:
             logger.error("ApplicationStatusHandler: error.\n" + str(e.message))
+            jobs_s.rollback()
             self.set_status(500)
             self.write({"status": "Error"})
 
