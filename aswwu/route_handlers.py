@@ -779,7 +779,7 @@ class ResumeUploadHandler(BaseHandler):
                 jobs_s.query(JobForm).filter_by(id=str(jobID)).one()
                 fileinfo = self.request.files['resume'][0]
                 if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
-                    for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/","") + "*"):
+                    for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/","").replace("..","") + "*"):
                         os.remove(f)
                     fh = open("../databases/resume/"+ user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1], 'w+')
                     fh.write(fileinfo['body'])
@@ -799,18 +799,21 @@ class ResumeUploadHandler(BaseHandler):
 
 class ViewResumeHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self):
+    def get(self, jobID, username):
         user = self.current_user
-        jobID = self.get_argument("jobID")
         try:
             if 'forms' in user.roles:
-                username = self.get_argument("username").replace("/","")
+                uname = username.replace("/","")
             else:
-                username = user.username
-            File = open(glob.glob("../databases/resume/" + username + "_" + jobID + "*")[0], "r")
-            self.set_status(201)
-            self.write(File.read())
-            File.close()
+                uname = user.username
+            try:
+                File = open(glob.glob("../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
+                self.set_status(201)
+                self.write(File.read())
+                File.close()
+            except:
+                self.set_status(404)
+                self.write({"status": "Error", "message": "File not found"})
         except Exception as e:
             logger.error("ViewResumeHandler: error.\n" + str(e.message))
             self.set_status(500)
