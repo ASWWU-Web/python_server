@@ -710,8 +710,8 @@ class SubmitApplicationHandler(BaseHandler):
                     except Exception as e:
                         answer = JobAnswer()
                     if 'questionID' in a:
-                        answer.questionID = a['questionID']
-                        answer.answer = a['answer']
+                        answer.questionID = bleach.clean(a['questionID'])
+                        answer.answer = bleach.clean(a['answer'])
                         answer.applicationID = app.id
                         addOrUpdateForm(answer)
                 self.set_status(201)
