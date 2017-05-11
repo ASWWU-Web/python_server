@@ -8,6 +8,7 @@ import datetime
 import bleach
 import os
 import glob
+import urllib
 from tornado.httpclient import HTTPClient
 from sqlalchemy import or_
 
@@ -780,21 +781,24 @@ class ResumeUploadHandler(BaseHandler):
         try:
             jobID = self.get_argument("jobID")
             try:
-                jobs_s.query(JobForm).filter_by(id=str(jobID)).one()
-                fileinfo = self.request.files['resume'][0]
-                if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
-                    for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/","").replace("..","") + "*"):
-                        os.remove(f)
-                    fh = open("../databases/resume/"+ user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1], 'w+')
-                    fh.write(fileinfo['body'])
-                    self.set_status(201)
-                    self.write({"status": "Submitted"})
-                else:
-                    self.set_status(415)
-                    self.write({"status": "Error", "message": "Bad file type"})
+                jobs_s.query(JobForm).filter_by(id=jobID).one()
             except Exception:
                 self.set_status(404)
                 self.write({"status": "Error", "message": "Job doesn't exist"})
+            fileinfo = self.request.files['file'][0]
+            if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
+                for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/", "").replace("..",
+                                                                                                                 "") + "*"):
+                    os.remove(f)
+                fh = open(
+                    "../databases/resume/" + user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1],
+                    'w+')
+                fh.write(fileinfo['body'])
+                self.set_status(201)
+                self.write({"status": "Submitted"})
+            else:
+                self.set_status(415)
+                self.write({"status": "Error", "message": "Bad file type"})
         except Exception as e:
             logger.error("ResumeUploadHandler: error.\n" + str(e.message))
             self.set_status(500)
