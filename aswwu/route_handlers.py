@@ -817,6 +817,7 @@ class ViewResumeHandler(BaseHandler):
             try:
                 File = open(glob.glob("../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
                 self.set_status(200)
+                self.set_header('Content-Disposition', 'attachment; filename=' + os.path.basename(File.name) + '')
                 self.write(File.read())
                 File.close()
             except:
