@@ -764,6 +764,8 @@ class ApplicationStatusHandler(BaseHandler):
                 app = jobs_s.query(JobApplication).filter_by(jobID=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
                 app.status = bleach.clean(self.get_argument("status"))
                 addOrUpdateForm(app)
+                self.set_status(200)
+                self.write({"status": "success"})
             else:
                 self.set_status(401)
                 self.write({"status": "Unauthorized"})
@@ -817,7 +819,8 @@ class ViewResumeHandler(BaseHandler):
             try:
                 File = open(glob.glob("../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
                 self.set_status(200)
-                self.set_header('Content-Disposition', 'attachment; filename=' + os.path.basename(File.name) + '')
+                self.set_header("Content-type", "application/" + os.path.splitext(File.name)[1].replace(".",""))
+                self.set_header('Content-Disposition', 'inline; filename=' + os.path.basename(File.name) + '')
                 self.write(File.read())
                 File.close()
             except:
