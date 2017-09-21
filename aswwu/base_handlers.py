@@ -26,7 +26,7 @@ class LoggedInUser:
         user = query_user(wwuid)
         if len(profile) == 0:
             # TODO: This needs to be done better. (Should move entire profile except class_standing)
-            old_profile = archive_s.query(globals()['Archive1516']).filter_by(wwuid=str(wwuid)).all()
+            old_profile = archive_s.query(globals()['Archive' + get_last_year()]).filter_by(wwuid=str(wwuid)).all()
             if (len(old_profile) == 1 and hasattr(old_profile[0], "photo")):
                 new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name, photo=old_profile[0].photo)
             else:
@@ -168,6 +168,12 @@ class BaseVerifyLoginHandler(BaseHandler):
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
+
+
+def get_last_year(self):
+    year = self.application.options.current_year
+    return str(int(year[:2]) - 1) + str(int(year[2:4]) - 1)
+
 #
 # # login and/or register users as needed
 # class SAMLLoginHandler(BaseHandler):
