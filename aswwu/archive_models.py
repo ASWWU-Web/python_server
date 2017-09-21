@@ -56,6 +56,11 @@ def setArchiveColumns(self):
         return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}
     self.to_json = to_json
     self.base_info = base_info
+
+class Archive1617(ArchiveBase):
+    __tablename__ = 'profiles1617'
+    id = Column(String(50),primary_key=True)
+
 class Archive1516(ArchiveBase):
     __tablename__ = 'profiles1516'
     id = Column(String(50),primary_key=True)
@@ -96,5 +101,5 @@ class Archive0607(ArchiveBase):
     __tablename__ = 'profiles0607'
     id = Column(String(50), primary_key=True)
 
-for y in ["1516","1415","1314","1213","1112","1011","0910","0809","0708","0607"]:
+for y in ["1617", "1516","1415","1314","1213","1112","1011","0910","0809","0708","0607"]:
     setArchiveColumns(globals()["Archive"+y])

@@ -1,12 +1,8 @@
 # Le python backend
 ## Installation
-The following python packages need to be installed and they can be installed with the following commands.
+The following python packages need to be installed and they can be installed with the following command.
 ```
-pip install pattern
-pip install requests
-pip install SQLAlchemy
-pip install tornado
-pip install bleach
+pip install pattern requests SQLAlchemy tornado bleach
 ```
 
 Then you need to get a copy of the database file. In your git projects folder run the following command
