@@ -170,8 +170,8 @@ class BaseVerifyLoginHandler(BaseHandler):
             self.write({'error': 'not logged in'})
 
 
-def get_last_year(self):
-    year = self.application.options.current_year
+def get_last_year():
+    year = tornado.options.options.current_year
     return str(int(year[:2]) - 1) + str(int(year[2:4]) - 1)
 
 #
