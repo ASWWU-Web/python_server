@@ -181,6 +181,21 @@ class Volunteer(Base):
         return data
 
 
+class AskAnything(Base):
+    question = Column(String(500), nullable=False)
+    reviewed = Column(Boolean, default=False)
+    rejected = Column(Boolean, default=False)
+    votes = relationship("AskAnythingVote", backref="askanything", lazy="joined")
+
+    def num_votes(self):
+        return len(self.votes)
+
+
+class AskAnythingVote(Base):
+    questionID = Column(String(50), ForeignKey('askanythings.id'))
+    voter = Column(String(75), nullable=False)
+
+
 class ElectionBase(object):
     @declared_attr
     def __tablename__(self):
