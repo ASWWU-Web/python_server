@@ -184,7 +184,7 @@ class Volunteer(Base):
 class AskAnything(Base):
     question = Column(String(500), nullable=False)
     reviewed = Column(Boolean, default=False)
-    rejected = Column(Boolean, default=False)
+    authorized = Column(Boolean, default=False)
     votes = relationship("AskAnythingVote", backref="askanything", lazy="joined")
 
     def num_votes(self):

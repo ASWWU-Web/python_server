@@ -832,6 +832,37 @@ class ViewResumeHandler(BaseHandler):
             self.write({"status": "Error"})
 
 
+class AskAnythingAddHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        ask_anything = AskAnything()
+        ask_anything.question = self.get_argument("question")
+        addOrUpdate(ask_anything)
+        self.set_status(201)
+        self.write({"status":"Question Submitted"})
+
+
+class AskAnythingViewAllHandler(BaseHandler):
+    def get(self, question_id):
+        self.write({"status": "ok"})
+
+
+class AskAnythingVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, question_id):
+        self.write({"status": "ok"})
+
+
+class AskAnythingAuthHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, question_id):
+        self.write({"status": "ok"})
+
+    @tornado.web.authenticated
+    def post(self, question_id):
+        self.write({"status": "ok"})
+
+
 # This is the instagram handler for the atlas (I did this to hide the access token).
 class FeedHandler(BaseHandler):
     def get(self):
@@ -871,23 +902,3 @@ class MatcherHandler(BaseHandler):
             self.write({'database': [p.view_other() for p in profiles]})
         else:
             self.write("{'error': 'Insufficient Permissions :('}")
-
-class AskAnythingVoteHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self, question_id):
-        self.write({'status':'ok'})
-
-class AskAnythingAuthHandler(BaseHandler):
-    @tornado.web.authenticated
-    def get(self, question_id):
-        self.write({'status':'ok'})
-    
-    @tornado.web.authenticated
-    def post(self, question_id):
-        self.write({'status':'ok'})
-    
-
-class AskAnythingViewAllHandler(BaseHandler):
-    def get(self, question_id):
-        self.write({'status':'ok'})
-        
