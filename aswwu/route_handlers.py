@@ -871,3 +871,23 @@ class MatcherHandler(BaseHandler):
             self.write({'database': [p.view_other() for p in profiles]})
         else:
             self.write("{'error': 'Insufficient Permissions :('}")
+
+class AskAnythingVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, question_id):
+        self.write({'status':'ok'})
+
+class AskAnythingAuthHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, question_id):
+        self.write({'status':'ok'})
+    
+    @tornado.web.authenticated
+    def post(self, question_id):
+        self.write({'status':'ok'})
+    
+
+class AskAnythingViewAllHandler(BaseHandler):
+    def get(self, question_id):
+        self.write({'status':'ok'})
+        
