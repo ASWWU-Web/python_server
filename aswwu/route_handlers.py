@@ -836,7 +836,7 @@ class AskAnythingAddHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         ask_anything = AskAnything()
-        ask_anything.question = self.get_argument("question")
+        ask_anything.question = bleach.clean(self.get_argument("question"))
         addOrUpdate(ask_anything)
         self.set_status(201)
         self.write({"status":"Question Submitted"})
@@ -845,7 +845,7 @@ class AskAnythingAddHandler(BaseHandler):
 class AskAnythingViewAllHandler(BaseHandler):
     def get(self, question_id):
         # Get all entries in database
-        # Put all of the ones that have been authorized in a json array
+        # Put all of the ones that have been reviewed in a json array
         # Return that json!
         self.write({"status": "ok"})
 
@@ -860,13 +860,23 @@ class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, question_id):
         # Get all entries in database
-        # Put all of the ones that have NOT been authorized in a json array
+        # Put all of the ones that have NOT been reviewed in a json array
         # Return that json!
         self.write({"status": "ok"})
 
     @tornado.web.authenticated
     def post(self, question_id):
-        self.write({"status": "ok"})
+        user = self.current_user
+        authorized = self.get_argument("authorize").to_upper() == "Y"
+        if 'askanything' in user.roles:
+            ask_anything = query_by_field(AskAnything, id, question_id)
+            ask_anything.authorized = authorized
+            ask_anything.reviewed = True
+            self.set_status(200)
+            self.write({"status":"Success"})
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
