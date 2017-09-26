@@ -65,7 +65,8 @@ class Application(tornado.web.Application):
             (r"/askanything/add",AskAnythingAddHandler),
             (r"/askanything/view", AskAnythingViewAllHandler),
             (r"/askanything/(.*)/vote", AskAnythingVoteHandler),
-            (r"/askanything/(.*)/authorize", AskAnythingAuthHandler),
+            (r"/askanything/authorize", AskAnythingAuthorizeHandler),
+            (r"/askanything/(.*)/authorize", AskAnythingAuthorizeHandler),
         ]
 
         # a bunch of setup stuff

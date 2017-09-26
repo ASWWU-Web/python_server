@@ -844,6 +844,9 @@ class AskAnythingAddHandler(BaseHandler):
 
 class AskAnythingViewAllHandler(BaseHandler):
     def get(self, question_id):
+        # Get all entries in database
+        # Put all of the ones that have been authorized in a json array
+        # Return that json!
         self.write({"status": "ok"})
 
 
@@ -853,9 +856,12 @@ class AskAnythingVoteHandler(BaseHandler):
         self.write({"status": "ok"})
 
 
-class AskAnythingAuthHandler(BaseHandler):
+class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, question_id):
+        # Get all entries in database
+        # Put all of the ones that have NOT been authorized in a json array
+        # Return that json!
         self.write({"status": "ok"})
 
     @tornado.web.authenticated
