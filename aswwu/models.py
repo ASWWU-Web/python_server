@@ -197,7 +197,7 @@ class AskAnything(Base):
 
 
 class AskAnythingVote(Base):
-    questionID = Column(String(50), ForeignKey('askanythings.id'))
+    question_id = Column(String(50), ForeignKey('askanythings.id'))
     voter = Column(String(75), nullable=False)
 
 

@@ -852,8 +852,18 @@ class AskAnythingViewAllHandler(BaseHandler):
 
 class AskAnythingVoteHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, question_id):
-        self.write({"status": "ok"})
+    def post(self, q_id):
+        user = self.current_user
+        vote = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
+        if len(vote):
+            self.set_status(403)
+            self.write({"status": "Error. Already voted"})
+        else:
+            vote = AskAnythingVote()
+            vote.question_id = q_id
+            vote.voter = user.username
+            addOrUpdate(vote)
+            self.write({"status": "Success"})
 
 
 class AskAnythingAuthorizeHandler(BaseHandler):
@@ -869,7 +879,7 @@ class AskAnythingAuthorizeHandler(BaseHandler):
         user = self.current_user
         authorized = self.get_argument("authorize").to_upper() == "Y"
         if 'askanything' in user.roles:
-            ask_anything = query_by_field(AskAnything, id, question_id)
+            ask_anything = query_by_field(AskAnything, id, question_id).one()
             ask_anything.authorized = authorized
             ask_anything.reviewed = True
             self.set_status(200)
