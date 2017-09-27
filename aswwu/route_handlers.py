@@ -349,6 +349,8 @@ class VolunteerHandler(BaseHandler):
         volunteer.can_transport_things = (True if self.get_argument('can_transport_things', 0) == '1' else False)
         volunteer.languages = self.get_argument('languages', '')
         volunteer.berean_fellowship = self.get_argument('berean_fellowship', '')
+        volunteer.aswwu_video_extra = self.get_argument('aswwu_video_extra', '')
+        volunteer.global_service_food_fair = self.get_argument('global_service_food_fair', '')
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
         logger.debug(volunteer.only_true())
@@ -475,6 +477,10 @@ class VolunteerRoleHandler(BaseHandler):
                     volunteers = volunteers.filter(Volunteer.languages.ilike('%'+str(self.get_argument('languages',''))+'%'))
                 if self.get_argument('berean_fellowship', '') != '':
                     volunteers = volunteers.filter_by(berean_fellowship=True)
+                if self.get_argument('aswwu_video_extra', '') != '':
+                    volunteers = volunteers.filter_by(aswwu_video_extra=True)
+                if self.get_argument('global_service_food_fair', '') != '':
+                    volunteers = volunteers.filter_by(global_service_food_fair=True)
                 if self.get_argument('wants_to_be_involved', '') == 'on':
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
@@ -830,6 +836,82 @@ class ViewResumeHandler(BaseHandler):
             logger.error("ViewResumeHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "Error"})
+
+
+class AskAnythingAddHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        ask_anything = AskAnything()
+        ask_anything.question = bleach.clean(self.get_argument("question"))
+        addOrUpdate(ask_anything)
+        self.set_status(201)
+        self.write({"status":"Question Submitted"})
+
+
+class AskAnythingViewAllHandler(BaseHandler):
+    def get(self):
+        results = s.query(AskAnything).filter_by(authorized = True, reviewed = True)
+        to_return = []
+        for question in results:
+            to_return.append(question.serialize())
+        self.write(json.dumps(to_return))
+
+class AskAnythingRejectedHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        user = self.current_user
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            results = s.query(AskAnything).filter_by(authorized = False, reviewed = True)
+            to_return = []
+            for question in results:
+                to_return.append(question.serialize())
+            self.write(json.dumps(to_return))
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
+
+class AskAnythingVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, q_id):
+        user = self.current_user
+        vote = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
+        # question = s.query(AskAnythingVote).filter_by(id=q_id).one()
+        if len(vote) > 0:
+            self.set_status(403)
+            self.write({"status": "Error. Already voted"})
+        else:
+            vote = AskAnythingVote()
+            vote.question_id = q_id
+            vote.voter = user.username
+            addOrUpdate(vote)
+            self.set_status(200)
+            self.write({"status": "Success"})
+
+
+class AskAnythingAuthorizeHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        results = s.query(AskAnything).filter_by(reviewed = False)
+        to_return = []
+        for question in results:
+            to_return.append(question.serialize())
+        self.write(json.dumps(to_return))
+
+    @tornado.web.authenticated
+    def post(self, question_id):
+        user = self.current_user
+        authorized = self.get_argument("authorize").upper() == "Y"
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            ask_anything = query_by_field(AskAnything, id, question_id)
+            ask_anything = s.query(AskAnything).filter_by(id=question_id).one()
+            ask_anything.authorized = authorized
+            ask_anything.reviewed = True
+            addOrUpdate(ask_anything)
+            self.set_status(200)
+            self.write({"status":"Success"})
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
