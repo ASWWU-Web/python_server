@@ -849,6 +849,20 @@ class AskAnythingViewAllHandler(BaseHandler):
         for question in results:
             to_return.append(question.serialize())
         self.write(json.dumps(to_return))
+
+class AskAnythingRejectedHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        user = self.current_user
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            results = s.query(AskAnything).filter_by(authorized = False, reviewed = True)
+            to_return = []
+            for question in results:
+                to_return.append(question.serialize())
+            self.write(json.dumps(to_return))
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
         
 
 class AskAnythingVoteHandler(BaseHandler):
@@ -856,7 +870,8 @@ class AskAnythingVoteHandler(BaseHandler):
     def post(self, q_id):
         user = self.current_user
         vote = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
-        if len(vote):
+        # question = s.query(AskAnythingVote).filter_by(id=q_id).one()
+        if len(vote) > 0:
             self.set_status(403)
             self.write({"status": "Error. Already voted"})
         else:
@@ -864,6 +879,7 @@ class AskAnythingVoteHandler(BaseHandler):
             vote.question_id = q_id
             vote.voter = user.username
             addOrUpdate(vote)
+            self.set_status(200)
             self.write({"status": "Success"})
 
 
@@ -879,11 +895,13 @@ class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, question_id):
         user = self.current_user
-        authorized = self.get_argument("authorize").to_upper() == "Y"
-        if 'askanything' in user.roles:
-            ask_anything = query_by_field(AskAnything, id, question_id).one()
+        authorized = self.get_argument("authorize").upper() == "Y"
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            ask_anything = query_by_field(AskAnything, id, question_id)
+            ask_anything = s.query(AskAnything).filter_by(id=question_id).one()
             ask_anything.authorized = authorized
             ask_anything.reviewed = True
+            addOrUpdate(ask_anything)
             self.set_status(200)
             self.write({"status":"Success"})
         else:
