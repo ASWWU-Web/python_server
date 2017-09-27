@@ -195,7 +195,7 @@ class AskAnything(Base):
         return {'question_id': self.id, 'question': self.question, 'reviewed': self.reviewed,
                 'authorized': self.authorized, 'votes': votes }
 
-
+    
 class AskAnythingVote(Base):
     questionID = Column(String(50), ForeignKey('askanythings.id'))
     voter = Column(String(75), nullable=False)

@@ -843,12 +843,13 @@ class AskAnythingAddHandler(BaseHandler):
 
 
 class AskAnythingViewAllHandler(BaseHandler):
-    def get(self, question_id):
-        # Get all entries in database
-        # Put all of the ones that have been reviewed in a json array
-        # Return that json!
-        self.write({"status": "ok"})
-
+    def get(self):
+        results = s.query(AskAnything).filter_by(authorized = True, reviewed = True)
+        to_return = []
+        for question in results:
+            to_return.append(question.serialize())
+        self.write(json.dumps(to_return))
+        
 
 class AskAnythingVoteHandler(BaseHandler):
     @tornado.web.authenticated
@@ -858,11 +859,12 @@ class AskAnythingVoteHandler(BaseHandler):
 
 class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self, question_id):
-        # Get all entries in database
-        # Put all of the ones that have NOT been reviewed in a json array
-        # Return that json!
-        self.write({"status": "ok"})
+    def get(self):
+        results = s.query(AskAnything).filter_by(reviewed = False)
+        to_return = []
+        for question in results:
+            to_return.append(question.serialize())
+        self.write(json.dumps(to_return))
 
     @tornado.web.authenticated
     def post(self, question_id):
