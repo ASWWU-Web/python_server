@@ -25,12 +25,9 @@ class LoggedInUser:
         profile = query_by_wwuid(Profile, wwuid)
         user = query_user(wwuid)
         if len(profile) == 0:
-            # TODO: This needs to be done better. (Should move entire profile except class_standing)
             old_profile = archive_s.query(globals()['Archive' + get_last_year()]).filter_by(wwuid=str(wwuid)).all()
-            if (len(old_profile) == 1 and hasattr(old_profile[0], "photo")):
-                new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name, photo=old_profile[0].photo)
-            else:
-                new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
+            new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
+            self.import_profile(new_profile, old_profile.export_info())
             profile = addOrUpdate(new_profile)
         else:
             profile = profile[0]
@@ -45,6 +42,12 @@ class LoggedInUser:
 
     def to_json(self):
         return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': str(self.status)}
+
+    def import_profile(self, profile, exported_json):
+        for field, value in exported_json:
+            if value:
+                setattr(profile, field, value)
+
 
 # this is the root/base handler for all other handlers
 class BaseHandler(tornado.web.RequestHandler):
