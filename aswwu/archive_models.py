@@ -7,7 +7,48 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
-ArchiveBase = declarative_base()
+# define a base model for the Archives
+class ArchiveBase(object):
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    def to_json(self, **kwargs):
+        obj = {}
+        # get the column names of the table
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
+        skip_list = ['id'] + kwargs.get('skip_list', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
+        limit_list = kwargs.get('limitList', columns)
+        for key in limit_list:
+            if key not in skip_list:
+                # fancy way of saying "self.key"
+                value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+    def base_info(self):
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
+    # TODO: remove email from base_info
+
+    def no_info(self):
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'views', 'privacy'])
+
+    def impers_info(self):
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+
+    def view_other(self):
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+
+
+
+
+ArchiveBase = declarative_base(cls=ArchiveBase)
 
 def setArchiveColumns(self):
     self.wwuid = Column(Integer, nullable=False)
@@ -43,19 +84,6 @@ def setArchiveColumns(self):
     self.department = Column(String(250))
     self.office = Column(String(250))
     self.office_hours = Column(String(250))
-    def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo),\
-                'gender': str(self.gender), 'birthday': str(self.birthday), 'email': str(self.email), 'phone': str(self.phone), 'website': str(self.website),\
-                'majors': str(self.majors), 'minors': str(self.minors), 'graduate': str(self.graduate), 'preprofessional': str(self.preprofessional),\
-                'class_standing': str(self.class_standing), 'high_school': str(self.high_school), 'class_of': str(self.class_of),
-                'relationship_status': str(self.relationship_status), 'attached_to': str(self.attached_to), 'quote': str(self.quote), 'quote_author': str(self.quote_author),\
-                'hobbies': str(self.hobbies), 'career_goals': str(self.career_goals), 'favorite_books': str(self.favorite_books), 'favorite_food': str(self.favorite_food),\
-                'favorite_movies': str(self.favorite_movies), 'favorite_music': str(self.favorite_music), 'pet_peeves': str(self.pet_peeves), 'personality': str(self.personality),\
-                'views': str(self.views), 'department': str(self.department), 'office': str(self.office), 'office_hours': str(self.office_hours)}
-    def base_info(self):
-        return {'username': str(self.username), 'full_name': str(self.full_name), 'photo': str(self.photo), 'views': str(self.views)}
-    self.to_json = to_json
-    self.base_info = base_info
 
 class Archive1617(ArchiveBase):
     __tablename__ = 'profiles1617'
