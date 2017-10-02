@@ -891,11 +891,16 @@ class AskAnythingVoteHandler(BaseHandler):
 class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        results = s.query(AskAnything).filter_by(reviewed = False)
-        to_return = []
-        for question in results:
-            to_return.append(question.serialize())
-        self.write(json.dumps(to_return))
+        user = self.current_user
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            results = s.query(AskAnything).filter_by(reviewed = False)
+            to_return = []
+            for question in results:
+                to_return.append(question.serialize())
+            self.write(json.dumps(to_return))
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
 
     @tornado.web.authenticated
     def post(self, question_id):
