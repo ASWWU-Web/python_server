@@ -183,6 +183,26 @@ class Volunteer(Base):
         return data
 
 
+class AskAnything(Base):
+    question = Column(String(500), nullable=False)
+    reviewed = Column(Boolean, default=False)
+    authorized = Column(Boolean, default=False)
+    votes = relationship("AskAnythingVote", backref="askanything", lazy="joined")
+
+    def num_votes(self):
+        return len(self.votes)
+
+    def serialize(self):
+        votes = self.num_votes()
+        return {'question_id': self.id, 'question': self.question, 'reviewed': self.reviewed,
+                'authorized': self.authorized, 'votes': votes }
+
+    
+class AskAnythingVote(Base):
+    question_id = Column(String(50), ForeignKey('askanythings.id'))
+    voter = Column(String(75), nullable=False)
+
+
 class ElectionBase(object):
     @declared_attr
     def __tablename__(self):
