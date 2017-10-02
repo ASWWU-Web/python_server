@@ -349,6 +349,8 @@ class VolunteerHandler(BaseHandler):
         volunteer.can_transport_things = (True if self.get_argument('can_transport_things', 0) == '1' else False)
         volunteer.languages = self.get_argument('languages', '')
         volunteer.berean_fellowship = self.get_argument('berean_fellowship', '')
+        volunteer.aswwu_video_extra = self.get_argument('aswwu_video_extra', '')
+        volunteer.global_service_food_fair = self.get_argument('global_service_food_fair', '')
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
         logger.debug(volunteer.only_true())
@@ -475,6 +477,10 @@ class VolunteerRoleHandler(BaseHandler):
                     volunteers = volunteers.filter(Volunteer.languages.ilike('%'+str(self.get_argument('languages',''))+'%'))
                 if self.get_argument('berean_fellowship', '') != '':
                     volunteers = volunteers.filter_by(berean_fellowship=True)
+                if self.get_argument('aswwu_video_extra', '') != '':
+                    volunteers = volunteers.filter_by(aswwu_video_extra=True)
+                if self.get_argument('global_service_food_fair', '') != '':
+                    volunteers = volunteers.filter_by(global_service_food_fair=True)
                 if self.get_argument('wants_to_be_involved', '') == 'on':
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
@@ -831,7 +837,6 @@ class ViewResumeHandler(BaseHandler):
             self.set_status(500)
             self.write({"status": "Error"})
 
-
 class AskAnythingAddHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
@@ -907,7 +912,6 @@ class AskAnythingAuthorizeHandler(BaseHandler):
         else:
             self.set_status(401)
             self.write({"status": "error", "reason": "Insufficient access"})
-
 
 # This is the instagram handler for the atlas (I did this to hide the access token).
 class FeedHandler(BaseHandler):
