@@ -880,14 +880,14 @@ class AskAnythingVoteHandler(BaseHandler):
             for vote in votes:
                 delete_thing(vote)
             self.set_status(200)
-            self.write({"Status": "Success"})
+            self.write({"Status": "Success. Vote Removed."})
         else:
             vote = AskAnythingVote()
             vote.question_id = q_id
             vote.voter = user.username
             addOrUpdate(vote)
             self.set_status(200)
-            self.write({"status": "Success"})
+            self.write({"status": "Success. Vote Added"})
 
 
 class AskAnythingAuthorizeHandler(BaseHandler):
