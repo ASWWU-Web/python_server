@@ -874,11 +874,13 @@ class AskAnythingVoteHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, q_id):
         user = self.current_user
-        vote = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
+        votes = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
         # question = s.query(AskAnythingVote).filter_by(id=q_id).one()
-        if len(vote) > 0:
-            self.set_status(403)
-            self.write({"status": "Error. Already voted"})
+        if len(votes) > 0:
+            for vote in votes:
+                delete_thing(vote)
+            self.set_status(200)
+            self.write({"Status": "Success"})
         else:
             vote = AskAnythingVote()
             vote.question_id = q_id
