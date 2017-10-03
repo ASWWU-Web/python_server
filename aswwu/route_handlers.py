@@ -851,8 +851,16 @@ class AskAnythingViewAllHandler(BaseHandler):
     def get(self):
         results = s.query(AskAnything).filter_by(authorized = True, reviewed = True)
         to_return = []
+        user = self.get_current_user()
+        if user:
+            votes = s.query(AskAnythingVote).filter_by(voter=user.username).all()
+            questions_voted = {}
+            for vote in votes:
+                questions_voted[vote.question_id] = True
         for question in results:
-            to_return.append(question.serialize())
+            serialized = question.serialize()
+            serialized["has_voted"] = questions_voted.has_key(question.id) if user else False
+            to_return.append(serialized)
         self.write(json.dumps(to_return))
 
 class AskAnythingRejectedHandler(BaseHandler):
