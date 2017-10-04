@@ -912,6 +912,7 @@ class AskAnythingAuthorizeHandler(BaseHandler):
             self.set_status(401)
             self.write({"status": "error", "reason": "Insufficient access"})
 
+
     @tornado.web.authenticated
     def post(self, question_id):
         user = self.current_user
