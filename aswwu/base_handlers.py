@@ -27,7 +27,8 @@ class LoggedInUser:
         if len(profile) == 0:
             old_profile = archive_s.query(globals()['Archive' + get_last_year()]).filter_by(wwuid=str(wwuid)).all()
             new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
-            self.import_profile(new_profile, old_profile.export_info())
+            if len(old_profile) == 1:
+                self.import_profile(new_profile, old_profile[0].export_info())
             profile = addOrUpdate(new_profile)
         else:
             profile = profile[0]
@@ -44,9 +45,9 @@ class LoggedInUser:
         return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name), 'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': str(self.status)}
 
     def import_profile(self, profile, exported_json):
-        for field, value in exported_json:
-            if value:
-                setattr(profile, field, value)
+        for field in exported_json:
+            if exported_json[field]:
+                setattr(profile, field, exported_json[field])
 
 
 # this is the root/base handler for all other handlers
