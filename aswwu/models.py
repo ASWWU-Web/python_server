@@ -193,9 +193,8 @@ class AskAnything(Base):
         return len(self.votes)
 
     def serialize(self):
-        votes = self.num_votes()
         return {'question_id': self.id, 'question': self.question, 'reviewed': self.reviewed,
-                'authorized': self.authorized, 'votes': votes }
+                'authorized': self.authorized, 'votes': self.num_votes() }
 
     
 class AskAnythingVote(Base):

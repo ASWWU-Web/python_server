@@ -851,8 +851,16 @@ class AskAnythingViewAllHandler(BaseHandler):
     def get(self):
         results = s.query(AskAnything).filter_by(authorized = True, reviewed = True)
         to_return = []
+        user = self.get_current_user()
+        if user:
+            votes = s.query(AskAnythingVote).filter_by(voter=user.username).all()
+            questions_voted = {}
+            for vote in votes:
+                questions_voted[vote.question_id] = True
         for question in results:
-            to_return.append(question.serialize())
+            serialized = question.serialize()
+            serialized["has_voted"] = questions_voted.has_key(question.id) if user else False
+            to_return.append(serialized)
         self.write(json.dumps(to_return))
 
 class AskAnythingRejectedHandler(BaseHandler):
@@ -874,28 +882,36 @@ class AskAnythingVoteHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, q_id):
         user = self.current_user
-        vote = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
+        votes = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
         # question = s.query(AskAnythingVote).filter_by(id=q_id).one()
-        if len(vote) > 0:
-            self.set_status(403)
-            self.write({"status": "Error. Already voted"})
+        if len(votes) > 0:
+            for vote in votes:
+                delete_thing(vote)
+            self.set_status(200)
+            self.write({"Status": "Success. Vote Removed."})
         else:
             vote = AskAnythingVote()
             vote.question_id = q_id
             vote.voter = user.username
             addOrUpdate(vote)
             self.set_status(200)
-            self.write({"status": "Success"})
+            self.write({"status": "Success. Vote Added"})
 
 
 class AskAnythingAuthorizeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        results = s.query(AskAnything).filter_by(reviewed = False)
-        to_return = []
-        for question in results:
-            to_return.append(question.serialize())
-        self.write(json.dumps(to_return))
+        user = self.current_user
+        if 'askanything' in user.roles or 'administrator' in user.roles:
+            results = s.query(AskAnything).filter_by(reviewed = False)
+            to_return = []
+            for question in results:
+                to_return.append(question.serialize())
+            self.write(json.dumps(to_return))
+        else:
+            self.set_status(401)
+            self.write({"status": "error", "reason": "Insufficient access"})
+
 
     @tornado.web.authenticated
     def post(self, question_id):
