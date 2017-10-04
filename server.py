@@ -61,7 +61,13 @@ class Application(tornado.web.Application):
             (r"/forms/application/view/(.*)/(.*)", ViewApplicationHandler),
             (r"/forms/application/status", ApplicationStatusHandler),
             (r"/forms/resume/upload", ResumeUploadHandler),
-            (r"/forms/resume/download/(.*)/(.*)", ViewResumeHandler)
+            (r"/forms/resume/download/(.*)/(.*)", ViewResumeHandler),
+            (r"/askanything/add",AskAnythingAddHandler),
+            (r"/askanything/view", AskAnythingViewAllHandler),
+            (r"/askanything/view/rejected", AskAnythingRejectedHandler),
+            (r"/askanything/(.*)/vote", AskAnythingVoteHandler),
+            (r"/askanything/authorize", AskAnythingAuthorizeHandler),
+            (r"/askanything/(.*)/authorize", AskAnythingAuthorizeHandler),
         ]
 
         # a bunch of setup stuff

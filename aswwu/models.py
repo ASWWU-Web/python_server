@@ -164,11 +164,13 @@ class Volunteer(Base):
     languages = Column(String(250), default=False)
     wants_to_be_involved = Column(Boolean, default=False)
     berean_fellowship = Column(Boolean, default=False)
+    aswwu_video_extra = Column(Boolean, default=False)
+    global_service_food_fair = Column(Boolean, default=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now)
 
     # for easier admin searching, show only the fields that aren't false or blank
     def only_true(self):
-        fields = ['campus_ministries', 'student_missions', 'aswwu', 'circle_church', 'university_church', 'assist', 'lead', 'audio_slash_visual', 'health_promotion', 'construction_experience', 'outdoor_slash_camping', 'concert_assistance', 'event_set_up', 'children_ministries', 'children_story', 'art_poetry_slash_painting_slash_sculpting', 'organizing_events', 'organizing_worship_opportunities', 'organizing_community_outreach', 'bible_study', 'wycliffe_bible_translator_representative', 'food_preparation', 'graphic_design', 'poems_slash_spoken_word', 'prayer_team_slash_prayer_house', 'dorm_encouragement_and_assisting_chaplains', 'scripture_reading', 'speaking', 'videography', 'drama', 'public_school_outreach', 'retirement_slash_nursing_home_outreach', 'helping_the_homeless_slash_disadvantaged', 'working_with_youth', 'working_with_children', 'greeting', 'shofar_for_vespers', 'music', 'join_small_groups', 'lead_small_groups', 'can_transport_things', 'languages', 'berean_fellowship', 'wants_to_be_involved']
+        fields = ['campus_ministries', 'student_missions', 'aswwu', 'circle_church', 'university_church', 'assist', 'lead', 'audio_slash_visual', 'health_promotion', 'construction_experience', 'outdoor_slash_camping', 'concert_assistance', 'event_set_up', 'children_ministries', 'children_story', 'art_poetry_slash_painting_slash_sculpting', 'organizing_events', 'organizing_worship_opportunities', 'organizing_community_outreach', 'bible_study', 'wycliffe_bible_translator_representative', 'food_preparation', 'graphic_design', 'poems_slash_spoken_word', 'prayer_team_slash_prayer_house', 'dorm_encouragement_and_assisting_chaplains', 'scripture_reading', 'speaking', 'videography', 'drama', 'public_school_outreach', 'retirement_slash_nursing_home_outreach', 'helping_the_homeless_slash_disadvantaged', 'working_with_youth', 'working_with_children', 'greeting', 'shofar_for_vespers', 'music', 'join_small_groups', 'lead_small_groups', 'can_transport_things', 'languages', 'berean_fellowship', 'aswwu_video_extra', 'global_service_food_fair', 'wants_to_be_involved']
         data = []
         for f in fields:
             if getattr(self, f):
@@ -179,6 +181,25 @@ class Volunteer(Base):
                 elif f == 'languages':
                     data.append({'languages': self.languages})
         return data
+
+
+class AskAnything(Base):
+    question = Column(String(500), nullable=False)
+    reviewed = Column(Boolean, default=False)
+    authorized = Column(Boolean, default=False)
+    votes = relationship("AskAnythingVote", backref="askanything", lazy="joined")
+
+    def num_votes(self):
+        return len(self.votes)
+
+    def serialize(self):
+        return {'question_id': self.id, 'question': self.question, 'reviewed': self.reviewed,
+                'authorized': self.authorized, 'votes': self.num_votes() }
+
+    
+class AskAnythingVote(Base):
+    question_id = Column(String(50), ForeignKey('askanythings.id'))
+    voter = Column(String(75), nullable=False)
 
 
 class ElectionBase(object):
