@@ -24,7 +24,7 @@ class Base(object):
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now())
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     def to_json(self, **kwargs):
@@ -38,7 +38,7 @@ class Base(object):
         # by default we check all of the table's columns
         limit_list = kwargs.get('limitList', columns)
         for key in limit_list:
-            if key not in skip_list:
+            if key not in skip_list and key != "views":
                 # fancy way of saying "self.key"
                 value = getattr(self, key)
                 # try to set the value as a string, but that doesn't always work
@@ -47,6 +47,8 @@ class Base(object):
                     obj[key] = str(value)
                 except Exception as e:
                     pass
+            elif key == "views":
+                obj[key] = self.num_views()
         return obj
 
 
@@ -93,11 +95,17 @@ class Profile(Base):
     favorite_music = Column(String(1000))
     pet_peeves = Column(String(500))
     personality = Column(String(250))
-    views = Column(Integer)
+    views = relationship("ProfileView", backref="profile", lazy="joined")
     privacy = Column(Integer)
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))
+
+    def num_views(self):
+        count = 0
+        for view in self.views:
+            count += view.num_views
+        return count
 
     # sometimes useful to only get a small amount of information about a user
     # e.g. listing ALL of the profiles in a cache for faster search later
@@ -113,6 +121,14 @@ class Profile(Base):
 
     def view_other(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+
+
+class ProfileView(Base):
+    viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
+    viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
+    last_viewed = Column(DateTime)
+    num_views = Column(Integer, default=0)
+
 
 
 # an unfortunately large table to hold the volunteer information

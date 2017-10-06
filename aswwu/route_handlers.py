@@ -170,7 +170,7 @@ class SearchAllHandler(BaseHandler):
 class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
-        if year == self.application.options.current_year:
+        if year == tornado.options.options.current_year:
             profile = s.query(Profile).filter_by(username=str(username)).all()
         else:
             profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
@@ -184,12 +184,7 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            if user and str(user.wwuid) != str(profile.wwuid) and year == self.application.options.current_year:
-                if profile.views:
-                    profile.views += 1
-                else:
-                    profile.views = 1
-                addOrUpdate(profile)
+            update_views(user, profile, year)
             # self.write(profile.to_json())
             if not user:
                 if profile.privacy == 1:
@@ -201,6 +196,25 @@ class ProfileHandler(BaseHandler):
                     self.write(profile.to_json())
                 else:
                     self.write(profile.view_other())
+
+def update_views(user, profile, year):
+    if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
+        views = s.query(ProfileView).filter_by(viewer=user.username, viewed=profile.username).all()
+        if len(views) == 0:
+            view = ProfileView()
+            view.viewer = user.username
+            view.viewed = profile.username
+            view.last_viewed = datetime.datetime.now()
+            view.num_views = 1
+            addOrUpdate(view)
+        else:
+            for view in views:
+                logger.debug((datetime.datetime.now() - view.last_viewed).total_seconds())
+                if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
+                    view.num_views += 1
+                    view.last_viewed = datetime.datetime.now()
+                    addOrUpdate(view)
+
 
 
 # queries the server for a user's photos
