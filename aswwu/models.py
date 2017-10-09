@@ -48,7 +48,7 @@ class Base(object):
                 except Exception as e:
                     pass
             elif key == "views":
-                obj[key] = self.num_views()
+                obj[key] = str(self.num_views())
         return obj
 
 
