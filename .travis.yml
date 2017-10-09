@@ -2,5 +2,6 @@ language: python
 python: "2.7"
 install:
   - pip install pattern requests SQLAlchemy tornado bleach
+  - pip install -U pytest
 script:
-  - py.test
+  - pytest
