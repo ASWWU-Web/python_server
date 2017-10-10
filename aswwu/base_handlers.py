@@ -1,19 +1,20 @@
 # base_handlers.py
 
-import tornado.web
-import logging
-import requests
-import json
-import time
 import datetime
-import hmac
-import base64
 import hashlib
+import hmac
+import json
+import logging
+import time
+
+import requests
+import tornado.web
+
 from settings import testing
 
-# import modles and alchemy functions as needed
-from aswwu.models import *
-from aswwu.alchemy import *
+# import models and alchemy functions as needed
+from models import *
+from alchemy import *
 
 logger = logging.getLogger("aswwu")
 

@@ -1,20 +1,19 @@
 # server.py
 
-import os
 import logging
+
+import tornado.autoreload
 import tornado.escape
 import tornado.ioloop
 import tornado.web
-import tornado.autoreload
 from tornado.options import define, options
-
-
-# import handlers as needed - here we import all of them
-from aswwu.base_handlers import *
-from aswwu.route_handlers import *
 
 # import our super secret keys
 from settings import keys
+import aswwu.route_handlers as routes
+from aswwu.base_handlers import *
+
+# import handlers as needed - here we import all of them
 
 # define some initial options that can be passed in at run time
 # e.g. `python server.py --port=8881` would run the server on port 8881
@@ -33,41 +32,38 @@ class Application(tornado.web.Application):
 
         # list out the routes (as regex) and their corresponding handlers
         handlers = [
-            # (r"/collegian_search/(.*)", CollegianArticleSearch),
             (r"/login", BaseLoginHandler),
-            (r"/profile/(.*)/(.*)", ProfileHandler),
-            (r"/profile_photo/(.*)/(.*)", ProfilePhotoHandler),
-            (r"/role/administrator", AdministratorRoleHandler),
-            # (r"/role/collegian", CollegianRoleHandler),
-            (r"/role/volunteer", VolunteerRoleHandler),
-            (r"/search/all", SearchAllHandler),
-            (r"/search/(.*)/(.*)", SearchHandler),
-            (r"/update/(.*)", ProfileUpdateHandler),
-            (r"/volunteer", VolunteerHandler),
-            (r"/volunteer/(.*)", VolunteerHandler),
-            (r"/feed", FeedHandler),
+            (r"/profile/(.*)/(.*)", routes.mask.ProfileHandler),
+            (r"/profile_photo/(.*)/(.*)", routes.mask.ProfilePhotoHandler),
+            (r"/role/administrator", routes.mask.AdministratorRoleHandler),
+            (r"/role/volunteer", routes.volunteers.VolunteerRoleHandler),
+            (r"/search/all", routes.mask.SearchAllHandler),
+            (r"/search/(.*)/(.*)", routes.mask.SearchHandler),
+            (r"/update/(.*)", routes.mask.ProfileUpdateHandler),
+            (r"/volunteer", routes.volunteers.VolunteerHandler),
+            (r"/volunteer/(.*)", routes.volunteers.VolunteerHandler),
+            (r"/feed", routes.instagram.FeedHandler),
             (r"/verify", BaseVerifyLoginHandler),
             (r"/", BaseIndexHandler),
-            (r"/senate_election/showall", AllElectionVoteHandler),
-            (r"/senate_election/vote/(.*)", ElectionVoteHandler),
-            (r"/senate_election/livefeed", ElectionLiveFeedHandler),
-            # (r"/pages", PagesHandler),
-            (r"/saml/account/", SamlHandler),
-            (r"/matcher", MatcherHandler),
-            (r"/forms/job/new", NewFormHandler),
-            (r"/forms/job/view/(.*)", ViewFormHandler),
-            (r"/forms/job/delete", DeleteFormHandler),
-            (r"/forms/application/submit", SubmitApplicationHandler),
-            (r"/forms/application/view/(.*)/(.*)", ViewApplicationHandler),
-            (r"/forms/application/status", ApplicationStatusHandler),
-            (r"/forms/resume/upload", ResumeUploadHandler),
-            (r"/forms/resume/download/(.*)/(.*)", ViewResumeHandler),
-            (r"/askanything/add",AskAnythingAddHandler),
-            (r"/askanything/view", AskAnythingViewAllHandler),
-            (r"/askanything/view/rejected", AskAnythingRejectedHandler),
-            (r"/askanything/(.*)/vote", AskAnythingVoteHandler),
-            (r"/askanything/authorize", AskAnythingAuthorizeHandler),
-            (r"/askanything/(.*)/authorize", AskAnythingAuthorizeHandler),
+            (r"/senate_election/showall", routes.elections.AllElectionVoteHandler),
+            (r"/senate_election/vote/(.*)", routes.elections.ElectionVoteHandler),
+            (r"/senate_election/livefeed", routes.elections.ElectionLiveFeedHandler),
+            (r"/saml/account/", routes.saml.SamlHandler),
+            (r"/matcher", routes.matcher.MatcherHandler),
+            (r"/forms/job/new", routes.forms.NewFormHandler),
+            (r"/forms/job/view/(.*)", routes.forms.ViewFormHandler),
+            (r"/forms/job/delete", routes.forms.DeleteFormHandler),
+            (r"/forms/application/submit", routes.forms.SubmitApplicationHandler),
+            (r"/forms/application/view/(.*)/(.*)", routes.forms.ViewApplicationHandler),
+            (r"/forms/application/status", routes.forms.ApplicationStatusHandler),
+            (r"/forms/resume/upload", routes.forms.ResumeUploadHandler),
+            (r"/forms/resume/download/(.*)/(.*)", routes.forms.ViewResumeHandler),
+            (r"/askanything/add", routes.ask_anything.AskAnythingAddHandler),
+            (r"/askanything/view", routes.ask_anything.AskAnythingViewAllHandler),
+            (r"/askanything/view/rejected", routes.ask_anything.AskAnythingRejectedHandler),
+            (r"/askanything/(.*)/vote", routes.ask_anything.AskAnythingVoteHandler),
+            (r"/askanything/authorize", routes.ask_anything.AskAnythingAuthorizeHandler),
+            (r"/askanything/(.*)/authorize", routes.ask_anything.AskAnythingAuthorizeHandler),
         ]
 
         # a bunch of setup stuff

@@ -1,15 +1,14 @@
 # alchemy.py
 
-from sqlalchemy.orm import sessionmaker,joinedload
-from sqlalchemy import create_engine
-
 # import and set up the logging
 import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, joinedload
+
 logger = logging.getLogger("aswwu")
 
 # import the necessary models (all of them in this case)
-from aswwu.models import *
-from aswwu.archive_models import *
 
 # defines the databases URLs relative to "server.py"
 engine = create_engine("sqlite:///../databases/people.db")
