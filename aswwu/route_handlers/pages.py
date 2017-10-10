@@ -3,7 +3,9 @@ import logging
 import bleach
 import tornado.web
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
+import aswwu.models.pages as pages_model
+import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 
@@ -11,16 +13,15 @@ logger = logging.getLogger("aswwu")
 class PagesHandler(BaseHandler):
     def get(self):
         page_id = '12345'
-        page = None
         try:
-            page = query_by_page_id(Page, page_id)
+            page = alchemy.query_by_page_id(pages_model.Page, page_id)
             if len(page) == 0:
                 self.write({'error': 'no page found'})
             elif len(page) > 1:
                 self.write({'error': 'too many pages found'})
             else:
-                 logger.info(page[0].serialize())
-                 self.write(page[0].serialize())
+                logger.info(page[0].serialize())
+                self.write(page[0].serialize())
         except Exception as e:
             logger.error("PagesHandler: error.\n" + str(e.message))
             self.write({'error': str(e.message)})
@@ -31,15 +32,15 @@ class PagesUpdateHandler(BaseHandler):
     def post(self, page_id):
         try:
             user = self.current_user
-            page = query_by_page_id(Page, page_id)
+            page = alchemy.query_by_page_id(pages_model.Page, page_id)
             editors = []
-            for dict in page[0].serialize()['editors']:
-                temp = dict['name']
+            for temp_dict in page[0].serialize()['editors']:
+                temp = temp_dict['name']
                 editors.append(temp)
             print(editors)
-            if(user.username in editors or user.username == page.author):
+            if user.username in editors or user.username == page.author:
                 if not len(page):
-                    page = [Page()]
+                    page = [pages_model.Page()]
                 elif len(page) > 1:
                     raise ValueError('Too many pages found')
                 else:
@@ -52,7 +53,7 @@ class PagesUpdateHandler(BaseHandler):
                     page[0].tags = bleach.clean(self.get_argument('tags'))
                     page[0].category = bleach.clean(self.get_argument('category'))
                     page[0].theme_blob = bleach.clean(self.get_argument('theme_blob'))
-                    addOrUpdatePage(page[0])
+                alchemy.addOrUpdatePage(page[0])
 
         except Exception as e:
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))

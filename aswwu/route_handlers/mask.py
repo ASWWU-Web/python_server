@@ -6,7 +6,9 @@ import bleach
 import tornado.web
 from sqlalchemy import or_
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
+import aswwu.models.mask as mask_model
+import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 
@@ -26,8 +28,8 @@ class AdministratorRoleHandler(BaseHandler):
             # grant permissions to other users
             # sharing is caring
             if cmd == 'set_role':
-                username = self.get_argument('username', '').replace(' ','.').lower()
-                fuser = s.query(User).filter_by(username=username).all()
+                username = self.get_argument('username', '').replace(' ', '.').lower()
+                fuser = alchemy.people_db.query(mask_model.User).filter_by(username=username).all()
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
@@ -36,12 +38,13 @@ class AdministratorRoleHandler(BaseHandler):
                         fuser.roles = ''
                     # roles are a comma separated list
                     # so we have to do some funkiness to append and then rejoin that list in the database
-                    roles = fuser.roles.split(',')
+                    roles = fuser.roles.split(', ')
                     roles.append(self.get_argument('newRole', None))
                     roles = set(roles)
-                    fuser.roles = (',').join(roles)
-                    addOrUpdate(fuser)
+                    fuser.roles = ', '.join(roles)
+                    alchemy.addOrUpdate(fuser)
                     self.write({'response': 'success'})
+
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
@@ -49,12 +52,12 @@ class SearchHandler(BaseHandler):
     def get(self, year, query):
         # if searching in the current year, access the Profile model
         if year == self.application.options.current_year:
-            model = Profile
-            results = s.query(model)
+            model = mask_model.Profile
+            results = alchemy.people_db.query(model)
         # otherwise we're going old school with the Archives
         else:
             model = globals()['Archive'+str(year)]
-            results = archive_s.query(model)
+            results = alchemy.archive_db.query(model)
 
         # break up the query <-- expected to be a standard URIEncodedComponent
         fields = [q.split("=") for q in query.split(";")]
@@ -62,27 +65,27 @@ class SearchHandler(BaseHandler):
             if len(f) == 1:
                 # throw %'s around everything to make the search relative
                 # e.g. searching for "b" will return anything that has b *somewhere* in it
-                v = '%'+f[0].replace(' ','%').replace('.','%')+'%'
+                v = '%'+f[0].replace(' ', '%').replace('.', '%')+'%'
                 results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
             else:
                 # we want these queries to matche exactly
                 # e.g. "%male%" would also return "female"
                 if f[0] in ['gender']:
-                    results = results.filter(getattr(model,f[0]).ilike(f[1]))
+                    results = results.filter(getattr(model, f[0]).ilike(f[1]))
                 else:
-                    attributeArr = f[1].encode('ascii','ignore').split(",")
-                    if len(attributeArr) > 1:
-                        results = results.filter(or_(getattr(model,f[0]).ilike("%" + v + "%") for v in attributeArr))
+                    attribute_arr = f[1].encode('ascii', 'ignore').split(",")
+                    if len(attribute_arr) > 1:
+                        results = results.filter(or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
                     else:
-                        results = results.filter(getattr(model,f[0]).ilike('%'+f[1]+'%'))
+                        results = results.filter(getattr(model, f[0]).ilike('%'+f[1]+'%'))
         self.write({'results': [r.base_info() for r in results]})
 
 
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        profiles = query_all(Profile)
-        code = self.get_argument('code','')
+        profiles = alchemy.query_all(mask_model.Profile)
+        code = self.get_argument('code', '')
         # pass in this super secret code to get ALL info for ALL profiles
         self.write({'results': [p.base_info() for p in profiles]})
 
@@ -92,9 +95,9 @@ class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = s.query(Profile).filter_by(username=str(username)).all()
+            profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
-            profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
+            profile = alchemy.archive_db.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
         # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -118,46 +121,48 @@ class ProfileHandler(BaseHandler):
                 else:
                     self.write(profile.view_other())
 
+
 def update_views(user, profile, year):
     if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
-        views = s.query(ProfileView).filter_by(viewer=user.username, viewed=profile.username).all()
+        views = alchemy.people_db.query(mask_model.ProfileView)\
+            .filter_by(viewer=user.username, viewed=profile.username).all()
         if len(views) == 0:
-            view = ProfileView()
+            view = mask_model.ProfileView()
             view.viewer = user.username
             view.viewed = profile.username
             view.last_viewed = datetime.datetime.now()
             view.num_views = 1
-            addOrUpdate(view)
+            alchemy.addOrUpdate(view)
         else:
             for view in views:
                 logger.debug((datetime.datetime.now() - view.last_viewed).total_seconds())
                 if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
                     view.num_views += 1
                     view.last_viewed = datetime.datetime.now()
-                    addOrUpdate(view)
-
+                    alchemy.addOrUpdate(view)
 
 
 # queries the server for a user's photos
 class ProfilePhotoHandler(BaseHandler):
-    def get(self, year, wwuidOrUsername):
+    def get(self, year, wwuid_or_username):
         wwuid = None
         username = None
-        if len(wwuidOrUsername.split(".")) == 1:
-            wwuid = wwuidOrUsername
+        if len(wwuid_or_username.split(".")) == 1:
+            wwuid = wwuid_or_username
         else:
-            username = wwuidOrUsername
+            username = wwuid_or_username
         # check if we're looking at current photos or not
         if year == self.application.options.current_year:
             if wwuid:
-                profile = query_by_wwuid(Profile, wwuid)
+                profile = alchemy.query_by_wwuid(mask_model.Profile, wwuid)
             else:
-                profile = s.query(Profile).filter_by(username=str(username)).all()
+                profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
             if wwuid:
-                profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(wwuid=str(wwuid)).all()
+                profile = alchemy.archive_db.query(globals()['Archive'+str(year)]).filter_by(wwuid=str(wwuid)).all()
             else:
-                profile = archive_s.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
+                profile = alchemy.archive_db.query(globals()['Archive'+str(year)])\
+                    .filter_by(username=str(username)).all()
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
         elif len(profile) > 1:
@@ -166,8 +171,6 @@ class ProfilePhotoHandler(BaseHandler):
             # now we've got just one profile, return the photo field attached to a known photo URI
             profile = profile[0]
             self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
-
-
 
 
 # this updates profile information - not much to it
@@ -180,40 +183,52 @@ class ProfileUpdateHandler(BaseHandler):
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = s.query(Profile).filter_by(username=str(username)).one()
+            profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
             profile.full_name = bleach.clean(self.get_argument('full_name'))
-            profile.photo = bleach.clean(self.get_argument('photo',''))
-            profile.gender = bleach.clean(self.get_argument('gender',''))
-            profile.birthday = bleach.clean(self.get_argument('birthday',''))
-            profile.email = bleach.clean(self.get_argument('email',''))
-            profile.phone = bleach.clean(self.get_argument('phone',''))
-            profile.majors = bleach.clean(self.get_argument('majors',''))
-            profile.minors = bleach.clean(self.get_argument('minors',''))
-            profile.graduate = bleach.clean(self.get_argument('graduate',''))
-            profile.preprofessional = bleach.clean(self.get_argument('preprofessional',''))
-            profile.class_standing = bleach.clean(self.get_argument('class_standing',''))
-            profile.high_school = bleach.clean(self.get_argument('high_school',''))
-            profile.class_of = bleach.clean(self.get_argument('class_of',''))
-            profile.relationship_status = bleach.clean(self.get_argument('relationship_status',''))
-            profile.attached_to = bleach.clean(self.get_argument('attached_to',''))
-            profile.quote = bleach.clean(self.get_argument('quote',''))
-            profile.quote_author = bleach.clean(self.get_argument('quote_author',''))
-            profile.hobbies = bleach.clean(self.get_argument('hobbies',''))
-            profile.career_goals = bleach.clean(self.get_argument('career_goals',''))
-            profile.favorite_books = bleach.clean(self.get_argument('favorite_books',''))
-            profile.favorite_food = bleach.clean(self.get_argument('favorite_food',''))
-            profile.favorite_movies = bleach.clean(self.get_argument('favorite_movies',''))
-            profile.favorite_music = bleach.clean(self.get_argument('favorite_music',''))
-            profile.pet_peeves = bleach.clean(self.get_argument('pet_peeves',''))
-            profile.personality = bleach.clean(self.get_argument('personality',''))
-            profile.privacy = bleach.clean(self.get_argument('privacy',''))
-            profile.website = bleach.clean(self.get_argument('website',''))
+            profile.photo = bleach.clean(self.get_argument('photo', ''))
+            profile.gender = bleach.clean(self.get_argument('gender', ''))
+            profile.birthday = bleach.clean(self.get_argument('birthday', ''))
+            profile.email = bleach.clean(self.get_argument('email', ''))
+            profile.phone = bleach.clean(self.get_argument('phone', ''))
+            profile.majors = bleach.clean(self.get_argument('majors', ''))
+            profile.minors = bleach.clean(self.get_argument('minors', ''))
+            profile.graduate = bleach.clean(self.get_argument('graduate', ''))
+            profile.preprofessional = bleach.clean(self.get_argument('preprofessional', ''))
+            profile.class_standing = bleach.clean(self.get_argument('class_standing', ''))
+            profile.high_school = bleach.clean(self.get_argument('high_school', ''))
+            profile.class_of = bleach.clean(self.get_argument('class_of', ''))
+            profile.relationship_status = bleach.clean(self.get_argument('relationship_status', ''))
+            profile.attached_to = bleach.clean(self.get_argument('attached_to', ''))
+            profile.quote = bleach.clean(self.get_argument('quote', ''))
+            profile.quote_author = bleach.clean(self.get_argument('quote_author', ''))
+            profile.hobbies = bleach.clean(self.get_argument('hobbies', ''))
+            profile.career_goals = bleach.clean(self.get_argument('career_goals', ''))
+            profile.favorite_books = bleach.clean(self.get_argument('favorite_books', ''))
+            profile.favorite_food = bleach.clean(self.get_argument('favorite_food', ''))
+            profile.favorite_movies = bleach.clean(self.get_argument('favorite_movies', ''))
+            profile.favorite_music = bleach.clean(self.get_argument('favorite_music', ''))
+            profile.pet_peeves = bleach.clean(self.get_argument('pet_peeves', ''))
+            profile.personality = bleach.clean(self.get_argument('personality', ''))
+            profile.privacy = bleach.clean(self.get_argument('privacy', ''))
+            profile.website = bleach.clean(self.get_argument('website', ''))
             if user.status != "Student":
-                profile.department = bleach.clean(self.get_argument('department',''))
-                profile.office = bleach.clean(self.get_argument('office',''))
-                profile.office_hours = bleach.clean(self.get_argument('office_hours',''))
+                profile.department = bleach.clean(self.get_argument('department', ''))
+                profile.office = bleach.clean(self.get_argument('office', ''))
+                profile.office_hours = bleach.clean(self.get_argument('office_hours', ''))
 
-            addOrUpdate(profile)
+            alchemy.addOrUpdate(profile)
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
+
+
+class MatcherHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        user = self.current_user
+
+        if 'matcher' in user.roles:
+            profiles = alchemy.query_all(mask_model.Profile)
+            self.write({'database': [p.view_other() for p in profiles]})
+        else:
+            self.write("{'error': 'Insufficient Permissions :('}")

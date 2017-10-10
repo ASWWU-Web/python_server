@@ -2,16 +2,21 @@ import logging
 
 import tornado.web
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
+import aswwu.alchemy as alchemy
+import aswwu.models.elections as election_model
 
 logger = logging.getLogger("aswwu")
+
+election_db = alchemy.election_db
 
 
 # get all of the profiles in our database
 class AllElectionVoteHandler(BaseHandler):
     def get(self):
-        votes = query_all_Election(Election)
+        votes = alchemy.query_all_Election(election_model.Election)
         self.write({'results': [v.info() for v in votes]})
+
 
 # update user's vote
 class ElectionVoteHandler(BaseHandler):
@@ -19,27 +24,28 @@ class ElectionVoteHandler(BaseHandler):
     def post(self, username):
         user = self.current_user
         if user.username == username or 'administrator' in user.roles:
-            usrvote = query_by_wwuid_Election(Election, str(user.wwuid))
+            usrvote = alchemy.query_by_wwuid_Election(election_model.Election, str(user.wwuid))
             # Fix this to be more efficient
             if len(usrvote) == 0:
-                new_vote = Election(wwuid=str(user.wwuid))
-                vote = addOrUpdateElection(new_vote)
+                new_vote = election_model.Election(wwuid=str(user.wwuid))
+                vote = alchemy.addOrUpdateElection(new_vote)
             else:
-                vote = election_s.query(Election).filter_by(wwuid=str(user.wwuid)).one()
-            vote.candidate_one = self.get_argument('candidate_one','')
-            vote.candidate_two = self.get_argument('candidate_two','')
-            vote.sm_one = self.get_argument('sm_one','')
-            vote.sm_two = self.get_argument('sm_two','')
-            vote.new_department = self.get_argument('new_department','')
+                vote = election_db.query(election_model.Election).filter_by(wwuid=str(user.wwuid)).one()
+            vote.candidate_one = self.get_argument('candidate_one', '')
+            vote.candidate_two = self.get_argument('candidate_two', '')
+            vote.sm_one = self.get_argument('sm_one', '')
+            vote.sm_two = self.get_argument('sm_two', '')
+            vote.new_department = self.get_argument('new_department', '')
             vote.district = self.get_argument('district', '')
 
-            addOrUpdateElection(vote)
+            alchemy.addOrUpdateElection(vote)
 
             self.write({'vote': 'successfully voted'})
         else:
             self.write({'error': 'invalid voting permissions'})
 
+
 class ElectionLiveFeedHandler(BaseHandler):
     def get(self):
-        votes=query_all_Election(Election)
+        votes = alchemy.query_all_Election(election_model.Election)
         self.write({'size': len(votes)})

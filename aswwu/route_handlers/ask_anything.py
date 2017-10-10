@@ -4,28 +4,32 @@ import logging
 import bleach
 import tornado.web
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
+import aswwu.models.ask_anything as ask_anything_model
+import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
+
+people_db = alchemy.people_db
 
 
 class AskAnythingAddHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        ask_anything = AskAnything()
+        ask_anything = ask_anything_model.AskAnything()
         ask_anything.question = bleach.clean(self.get_argument("question"))
-        addOrUpdate(ask_anything)
+        alchemy.addOrUpdate(ask_anything)
         self.set_status(201)
         self.write({"status": "Question Submitted"})
 
 
 class AskAnythingViewAllHandler(BaseHandler):
     def get(self):
-        results = s.query(AskAnything).filter_by(authorized=True, reviewed=True)
+        results = people_db.query(ask_anything_model.AskAnything).filter_by(authorized=True, reviewed=True)
         to_return = []
         user = self.get_current_user()
         if user:
-            votes = s.query(AskAnythingVote).filter_by(voter=user.username).all()
+            votes = people_db.query(ask_anything_model.AskAnythingVote).filter_by(voter=user.username).all()
             questions_voted = {}
             for vote in votes:
                 questions_voted[vote.question_id] = True
@@ -41,7 +45,7 @@ class AskAnythingRejectedHandler(BaseHandler):
     def get(self):
         user = self.current_user
         if 'askanything' in user.roles or 'administrator' in user.roles:
-            results = s.query(AskAnything).filter_by(authorized=False, reviewed=True)
+            results = people_db.query(ask_anything_model.AskAnything).filter_by(authorized=False, reviewed=True)
             to_return = []
             for question in results:
                 to_return.append(question.serialize())
@@ -55,18 +59,19 @@ class AskAnythingVoteHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, q_id):
         user = self.current_user
-        votes = s.query(AskAnythingVote).filter_by(question_id=q_id, voter=user.username).all()
+        votes = people_db.query(ask_anything_model.AskAnythingVote)\
+            .filter_by(question_id=q_id, voter=user.username).all()
         # question = s.query(AskAnythingVote).filter_by(id=q_id).one()
         if len(votes) > 0:
             for vote in votes:
-                delete_thing(vote)
+                alchemy.delete_thing(vote)
             self.set_status(200)
             self.write({"Status": "Success. Vote Removed."})
         else:
-            vote = AskAnythingVote()
+            vote = ask_anything_model.AskAnythingVote()
             vote.question_id = q_id
             vote.voter = user.username
-            addOrUpdate(vote)
+            alchemy.addOrUpdate(vote)
             self.set_status(200)
             self.write({"status": "Success. Vote Added"})
 
@@ -76,7 +81,7 @@ class AskAnythingAuthorizeHandler(BaseHandler):
     def get(self):
         user = self.current_user
         if 'askanything' in user.roles or 'administrator' in user.roles:
-            results = s.query(AskAnything).filter_by(reviewed=False)
+            results = people_db.query(ask_anything_model.AskAnything).filter_by(reviewed=False)
             to_return = []
             for question in results:
                 to_return.append(question.serialize())
@@ -90,11 +95,10 @@ class AskAnythingAuthorizeHandler(BaseHandler):
         user = self.current_user
         authorized = self.get_argument("authorize").upper() == "Y"
         if 'askanything' in user.roles or 'administrator' in user.roles:
-            ask_anything = query_by_field(AskAnything, id, question_id)
-            ask_anything = s.query(AskAnything).filter_by(id=question_id).one()
+            ask_anything = people_db.query(ask_anything_model.AskAnything).filter_by(id=question_id).one()
             ask_anything.authorized = authorized
             ask_anything.reviewed = True
-            addOrUpdate(ask_anything)
+            alchemy.addOrUpdate(ask_anything)
             self.set_status(200)
             self.write({"status": "Success"})
         else:

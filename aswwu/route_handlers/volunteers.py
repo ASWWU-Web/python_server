@@ -3,10 +3,12 @@ import logging
 
 import tornado.web
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
+import aswwu.models.mask as mask_model
+import aswwu.models.volunteers as volunteer_model
+import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
-
 
 
 # fairly straightforward handler to save a TON of volunteer information
@@ -15,10 +17,10 @@ class VolunteerHandler(BaseHandler):
     def get(self, wwuid):
         user = self.current_user
         if user.wwuid == wwuid or 'volunteer' in user.roles:
-            volunteer = query_by_wwuid(Volunteer, wwuid)
+            volunteer = alchemy.query_by_wwuid(volunteer_model.Volunteer, wwuid)
             if len(volunteer) == 0:
-                volunteer = Volunteer(wwuid=user.wwuid)
-                volunteer = addOrUpdate(volunteer)
+                volunteer = volunteer_model.Volunteer(wwuid=user.wwuid)
+                volunteer = alchemy.addOrUpdate(volunteer)
             else:
                 volunteer = volunteer[0]
             self.write(volunteer.to_json())
@@ -28,7 +30,7 @@ class VolunteerHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         user = self.current_user
-        volunteer = query_by_wwuid(Volunteer, user.wwuid)[0]
+        volunteer = alchemy.query_by_wwuid(volunteer_model.Volunteer, user.wwuid)[0]
 
         volunteer.campus_ministries = (True if self.get_argument('campus_ministries', 0) == '1' else False)
         volunteer.student_missions = (True if self.get_argument('student_missions', 0) == '1' else False)
@@ -46,24 +48,32 @@ class VolunteerHandler(BaseHandler):
         volunteer.event_set_up = (True if self.get_argument('event_set_up', 0) == '1' else False)
         volunteer.children_ministries = (True if self.get_argument('children_ministries', 0) == '1' else False)
         volunteer.children_story = (True if self.get_argument('children_story', 0) == '1' else False)
-        volunteer.art_poetry_slash_painting_slash_sculpting = (True if self.get_argument('art_poetry_slash_painting_slash_sculpting', 0) == '1' else False)
+        volunteer.art_poetry_slash_painting_slash_sculpting = \
+            (True if self.get_argument('art_poetry_slash_painting_slash_sculpting', 0) == '1' else False)
         volunteer.organizing_events = (True if self.get_argument('organizing_events', 0) == '1' else False)
-        volunteer.organizing_worship_opportunities = (True if self.get_argument('organizing_worship_opportunities', 0) == '1' else False)
-        volunteer.organizing_community_outreach = (True if self.get_argument('organizing_community_outreach', 0) == '1' else False)
+        volunteer.organizing_worship_opportunities = \
+            (True if self.get_argument('organizing_worship_opportunities', 0) == '1' else False)
+        volunteer.organizing_community_outreach = \
+            (True if self.get_argument('organizing_community_outreach', 0) == '1' else False)
         volunteer.bible_study = (True if self.get_argument('bible_study', 0) == '1' else False)
-        volunteer.wycliffe_bible_translator_representative = (True if self.get_argument('wycliffe_bible_translator_representative', 0) == '1' else False)
+        volunteer.wycliffe_bible_translator_representative = \
+            (True if self.get_argument('wycliffe_bible_translator_representative', 0) == '1' else False)
         volunteer.food_preparation = (True if self.get_argument('food_preparation', 0) == '1' else False)
         volunteer.graphic_design = (True if self.get_argument('graphic_design', 0) == '1' else False)
         volunteer.poems_slash_spoken_word = (True if self.get_argument('poems_slash_spoken_word', 0) == '1' else False)
-        volunteer.prayer_team_slash_prayer_house = (True if self.get_argument('prayer_team_slash_prayer_house', 0) == '1' else False)
-        volunteer.dorm_encouragement_and_assisting_chaplains = (True if self.get_argument('dorm_encouragement_and_assisting_chaplains', 0) == '1' else False)
+        volunteer.prayer_team_slash_prayer_house = \
+            (True if self.get_argument('prayer_team_slash_prayer_house', 0) == '1' else False)
+        volunteer.dorm_encouragement_and_assisting_chaplains = \
+            (True if self.get_argument('dorm_encouragement_and_assisting_chaplains', 0) == '1' else False)
         volunteer.scripture_reading = (True if self.get_argument('scripture_reading', 0) == '1' else False)
         volunteer.speaking = (True if self.get_argument('speaking', 0) == '1' else False)
         volunteer.videography = (True if self.get_argument('videography', 0) == '1' else False)
         volunteer.drama = (True if self.get_argument('drama', 0) == '1' else False)
         volunteer.public_school_outreach = (True if self.get_argument('public_school_outreach', 0) == '1' else False)
-        volunteer.retirement_slash_nursing_home_outreach = (True if self.get_argument('retirement_slash_nursing_home_outreach', 0) == '1' else False)
-        volunteer.helping_the_homeless_slash_disadvantaged = (True if self.get_argument('helping_the_homeless_slash_disadvantaged', 0) == '1' else False)
+        volunteer.retirement_slash_nursing_home_outreach = \
+            (True if self.get_argument('retirement_slash_nursing_home_outreach', 0) == '1' else False)
+        volunteer.helping_the_homeless_slash_disadvantaged = \
+            (True if self.get_argument('helping_the_homeless_slash_disadvantaged', 0) == '1' else False)
         volunteer.working_with_youth = (True if self.get_argument('working_with_youth', 0) == '1' else False)
         volunteer.working_with_children = (True if self.get_argument('working_with_children', 0) == '1' else False)
         volunteer.greeting = (True if self.get_argument('greeting', 0) == '1' else False)
@@ -79,7 +89,7 @@ class VolunteerHandler(BaseHandler):
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
         logger.debug(volunteer.only_true())
-        addOrUpdate(volunteer)
+        alchemy.addOrUpdate(volunteer)
         self.write(json.dumps('success'))
 
 
@@ -96,9 +106,9 @@ class VolunteerRoleHandler(BaseHandler):
             logger.debug(cmd)
             if cmd == 'set_role':
                 # let volunteer admins grant permissions for other volutneer admins
-                username = self.get_argument('username', '').replace(' ','.').lower()
+                username = self.get_argument('username', '').replace(' ', '.').lower()
                 # .ilike is for case insesitive.
-                fuser = s.query(User).filter(User.username.ilike(username)).all()
+                fuser = alchemy.people_db.query(mask_model.User).filter(mask_model.User.username.ilike(username)).all()
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
@@ -108,12 +118,12 @@ class VolunteerRoleHandler(BaseHandler):
                     roles = fuser.roles.split(',')
                     roles.append('volunteer')
                     roles = set(roles)
-                    fuser.roles = (',').join(roles)
-                    addOrUpdate(fuser)
+                    fuser.roles = ','.join(roles)
+                    alchemy.addOrUpdate(fuser)
                     self.write({'response': 'success'})
             elif cmd == 'search' or cmd == 'viewPrintOut':
                 # searcheth away!
-                volunteers = s.query(Volunteer)
+                volunteers = alchemy.people_db.query(volunteer_model.Volunteer)
                 if self.get_argument('campus_ministries', '') == 'on':
                     volunteers = volunteers.filter_by(campus_ministries=True)
                 if self.get_argument('student_missions', '') == 'on':
@@ -191,7 +201,9 @@ class VolunteerRoleHandler(BaseHandler):
                 if self.get_argument('shofar_for_vespers', '') == 'on':
                     volunteers = volunteers.filter_by(shofar_for_vespers=True)
                 if self.get_argument('music', '') != '':
-                    volunteers = volunteers.filter(Volunteer.music.ilike('%'+str(self.get_argument('music',''))+'%'))
+                    volunteers = volunteers.filter(
+                        volunteer_model.Volunteer.music.ilike('%'+str(self.get_argument('music', ''))+'%')
+                    )
                 if self.get_argument('join_small_groups', '') == 'on':
                     volunteers = volunteers.filter_by(join_small_groups=True)
                 if self.get_argument('lead_small_groups', '') == 'on':
@@ -199,7 +211,9 @@ class VolunteerRoleHandler(BaseHandler):
                 if self.get_argument('can_transport_things', '') == 'on':
                     volunteers = volunteers.filter_by(can_transport_things=True)
                 if self.get_argument('languages', '') != '':
-                    volunteers = volunteers.filter(Volunteer.languages.ilike('%'+str(self.get_argument('languages',''))+'%'))
+                    volunteers = volunteers.filter(
+                        volunteer_model.Volunteer.languages.ilike('%'+str(self.get_argument('languages', ''))+'%')
+                    )
                 if self.get_argument('berean_fellowship', '') != '':
                     volunteers = volunteers.filter_by(berean_fellowship=True)
                 if self.get_argument('aswwu_video_extra', '') != '':
@@ -209,21 +223,31 @@ class VolunteerRoleHandler(BaseHandler):
                 if self.get_argument('wants_to_be_involved', '') == 'on':
                     volunteers = volunteers.filter_by(wants_to_be_involved=True)
 
-                #vusers = [{'profile': query_by_wwuid(Profile, v.wwuid)[0], 'volunteer_data': v} for v in volunteers]
+                # vusers = [{'profile': query_by_wwuid(Profile, v.wwuid)[0], 'volunteer_data': v} for v in volunteers]
                 vusers = []
                 for v in volunteers:
-                    volResult = query_by_wwuid(Profile, v.wwuid)
-                    if len(volResult) > 0:
-                        vusers.append({'profile': volResult[0], 'volunteer_data': v})
+                    vol_result = alchemy.query_by_wwuid(mask_model.Profile, v.wwuid)
+                    if len(vol_result) > 0:
+                        vusers.append({'profile': vol_result[0], 'volunteer_data': v})
                 # should we return the results as JSON
                 if cmd == 'search':
-                    self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email, 'photo': v['profile'].photo, 'username': v['profile'].username} for v in vusers]})
+                    self.write({'results': [{'full_name': v['profile'].full_name, 'email': v['profile'].email,
+                                             'photo': v['profile'].photo,
+                                             'username': v['profile'].username} for v in vusers]})
                 # or as a full fledged webpage
                 else:
                     logger.debug(user)
-                    self.write('<table border="1"><tr><th>Photo</th><th>Name</th><th>Class Standing</th><th>Major(s)</th><th>Email</th><th>Phone</th><th>Volunteer Data</th></tr>')
+                    self.write('<table border="1"><tr>'
+                               '<th>Photo</th><th>Name</th>'
+                               '<th>Class Standing</th><th>Major(s)</th>'
+                               '<th>Email</th><th>Phone</th>'
+                               '<th>Volunteer Data</th></tr>')
                     for v in vusers:
-                        self.write('<tr><td>'+('<img src="https://aswwu.com/media/img-xs/'+str(v['profile'].photo)+'">' if str(v['profile'].photo).find(str(v['profile'].wwuid)) > -1 else '')+'</td>'\
-                                    '<td>'+str(v['profile'].full_name)+'</td>''<td>'+str(v['profile'].class_standing)+'</td><td>'+str(v['profile'].majors)+'</td>'\
-                                    '<td>'+str(v['profile'].email)+'</td>''<td>'+str(v['profile'].phone)+'</td><td>'+str(v['volunteer_data'].only_true())+'</td></tr>')
+                        self.write('<tr><td>' + ('<img src="https://aswwu.com/media/img-xs/'
+                                                 + str(v['profile'].photo)+'">'
+                                                 if str(v['profile'].photo).find(str(v['profile'].wwuid)) > -1 else '')
+                                   + '</td><td>' + str(v['profile'].full_name) + '</td>''<td>'
+                                   + str(v['profile'].class_standing) + '</td><td>' + str(v['profile'].majors)
+                                   + '</td><td>' + str(v['profile'].email) + '</td>''<td>' + str(v['profile'].phone)
+                                   + '</td><td>' + str(v['volunteer_data'].only_true()) + '</td></tr>')
                     self.write('</table>')

@@ -13,8 +13,8 @@ import tornado.web
 from settings import testing
 
 # import models and alchemy functions as needed
-from models import *
-from alchemy import *
+import aswwu.models.mask as mask_model
+import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 
@@ -23,14 +23,14 @@ logger = logging.getLogger("aswwu")
 class LoggedInUser:
     def __init__(self, wwuid):
         self.wwuid = wwuid
-        profile = query_by_wwuid(Profile, wwuid)
-        user = query_user(wwuid)
+        profile = alchemy.query_by_wwuid(mask_model.Profile, wwuid)
+        user = alchemy.query_user(wwuid)
         if len(profile) == 0:
-            old_profile = archive_s.query(globals()['Archive' + get_last_year()]).filter_by(wwuid=str(wwuid)).all()
-            new_profile = Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
+            old_profile = alchemy.archive_db.query(globals()['Archive' + get_last_year()]).filter_by(wwuid=str(wwuid)).all()
+            new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
                 self.import_profile(new_profile, old_profile[0].export_info())
-            profile = addOrUpdate(new_profile)
+            profile = alchemy.addOrUpdate(new_profile)
         else:
             profile = profile[0]
         self.username = user.username
@@ -178,47 +178,3 @@ class BaseVerifyLoginHandler(BaseHandler):
 def get_last_year():
     year = tornado.options.options.current_year
     return str(int(year[:2]) - 1) + str(int(year[2:4]) - 1)
-
-#
-# # login and/or register users as needed
-# class SAMLLoginHandler(BaseHandler):
-#     # if someone gets here they have bigger problems than not being logged in
-#     def get(self):
-#         logger.debug("not logged in")
-#         self.write({'error': 'not logged in'})
-#
-#     # the main login/registration handler
-#     def post(self):
-#         logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
-#         username = self.get_argument('username', None)
-#
-#         # make sure we actually received something from the user
-#         if username and password:
-#             try:
-#                 # expects a dictionary to be returned here (JSON)
-#                 user_dict = self.loginWithWWU(username, password)
-#                 if user_dict:
-#                     # lookup the user
-#                     user = query_user(user_dict['wwuid'])
-#                     if not user:
-#                         # if a matching user doesn't exist, create it
-#                         user = User(wwuid=user_dict['wwuid'], username=user_dict['username'], full_name=user_dict['fullname'], status=user_dict['status'])
-#                         addOrUpdate(user)
-#                     # generate a new token for this login
-#                     token = self.generateToken(user_dict['wwuid'])
-#                     # create a new LoggedInUser model
-#                     user = LoggedInUser(user_dict['wwuid'])
-#                     # this worked out, send it all back to the user
-#                     self.write({'user': user.to_json(), 'token': str(token)})
-#                 else:
-#                     # self.loginWithWWU didn't return what we expected
-#                     logger.info("LoginHandler: error "+r.text)
-#                     self.write({'error':'invalid login credentials'})
-#             except Exception as e:
-#                 # you've got some debugging to get through if you're here
-#                 logger.error("LoginHandler exception: "+ str(e.message))
-#                 self.write({'error': str(e.message)})
-#         else:
-#             # tell the user to send some better information
-#             logger.error("LoginHandler: invalid post parameters")
-#             self.write({'error':'invalid post parameters'})

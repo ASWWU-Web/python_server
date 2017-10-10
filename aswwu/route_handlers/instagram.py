@@ -2,7 +2,7 @@ import logging
 
 from tornado.httpclient import HTTPClient
 
-from aswwu import BaseHandler
+from aswwu.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")
 
@@ -10,8 +10,8 @@ logger = logging.getLogger("aswwu")
 # This is the instagram handler for the atlas (I did this to hide the access token).
 class FeedHandler(BaseHandler):
     def get(self):
-        name = self.get_argument('name','')
-        if(name == "atlas"):
+        name = self.get_argument('name', '')
+        if name == "atlas":
             with open("/var/www/atlas/access.token", 'r') as f:
                 token = f.read()
                 f.close()
@@ -19,15 +19,17 @@ class FeedHandler(BaseHandler):
                 # TODO: Make this asynchronous and move access.token to aswwu/databases git repo
                 http_client = HTTPClient()
                 try:
-                    response = http_client.fetch("https://api.instagram.com/v1/users/self/media/recent/?access_token=" + token)
+                    response = http_client.fetch("https://api.instagram.com/v1/users/self/media/recent/?access_token="
+                                                 + token)
                     self.write(response.body)
                 except Exception as e:
                     self.write("{error: '" + str(e) + "'}")
                 http_client.close()
-        elif(name == "issuu"):
+        elif name == "issuu":
             http_client = HTTPClient()
             try:
-                response = http_client.fetch("http://search.issuu.com/api/2_0/document?username=aswwucollegian&pageSize=1&responseParams=title,description&sortBy=epoch")
+                response = http_client.fetch("http://search.issuu.com/api/2_0/document?username=aswwucollegian&pageSize"
+                                             "=1&responseParams=title,description&sortBy=epoch")
                 self.write(response.body)
             except Exception as e:
                 self.write("{error: '" + str(e) + "'}")

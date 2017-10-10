@@ -10,8 +10,15 @@ from tornado.options import define, options
 
 # import our super secret keys
 from settings import keys
-import aswwu.route_handlers as routes
-from aswwu.base_handlers import *
+import aswwu.route_handlers.ask_anything as ask_anything
+import aswwu.route_handlers.elections as elections
+import aswwu.route_handlers.forms as forms
+import aswwu.route_handlers.instagram as instagram
+import aswwu.route_handlers.mask as mask
+import aswwu.route_handlers.pages as pages
+import aswwu.route_handlers.saml as saml
+import aswwu.route_handlers.volunteers as volunteers
+import aswwu.base_handlers as base
 
 # import handlers as needed - here we import all of them
 
@@ -19,7 +26,8 @@ from aswwu.base_handlers import *
 # e.g. `python server.py --port=8881` would run the server on port 8881
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
-define("current_year", default="1617")
+define("current_year", default="1718")
+
 
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
@@ -32,38 +40,38 @@ class Application(tornado.web.Application):
 
         # list out the routes (as regex) and their corresponding handlers
         handlers = [
-            (r"/login", BaseLoginHandler),
-            (r"/profile/(.*)/(.*)", routes.mask.ProfileHandler),
-            (r"/profile_photo/(.*)/(.*)", routes.mask.ProfilePhotoHandler),
-            (r"/role/administrator", routes.mask.AdministratorRoleHandler),
-            (r"/role/volunteer", routes.volunteers.VolunteerRoleHandler),
-            (r"/search/all", routes.mask.SearchAllHandler),
-            (r"/search/(.*)/(.*)", routes.mask.SearchHandler),
-            (r"/update/(.*)", routes.mask.ProfileUpdateHandler),
-            (r"/volunteer", routes.volunteers.VolunteerHandler),
-            (r"/volunteer/(.*)", routes.volunteers.VolunteerHandler),
-            (r"/feed", routes.instagram.FeedHandler),
-            (r"/verify", BaseVerifyLoginHandler),
-            (r"/", BaseIndexHandler),
-            (r"/senate_election/showall", routes.elections.AllElectionVoteHandler),
-            (r"/senate_election/vote/(.*)", routes.elections.ElectionVoteHandler),
-            (r"/senate_election/livefeed", routes.elections.ElectionLiveFeedHandler),
-            (r"/saml/account/", routes.saml.SamlHandler),
-            (r"/matcher", routes.matcher.MatcherHandler),
-            (r"/forms/job/new", routes.forms.NewFormHandler),
-            (r"/forms/job/view/(.*)", routes.forms.ViewFormHandler),
-            (r"/forms/job/delete", routes.forms.DeleteFormHandler),
-            (r"/forms/application/submit", routes.forms.SubmitApplicationHandler),
-            (r"/forms/application/view/(.*)/(.*)", routes.forms.ViewApplicationHandler),
-            (r"/forms/application/status", routes.forms.ApplicationStatusHandler),
-            (r"/forms/resume/upload", routes.forms.ResumeUploadHandler),
-            (r"/forms/resume/download/(.*)/(.*)", routes.forms.ViewResumeHandler),
-            (r"/askanything/add", routes.ask_anything.AskAnythingAddHandler),
-            (r"/askanything/view", routes.ask_anything.AskAnythingViewAllHandler),
-            (r"/askanything/view/rejected", routes.ask_anything.AskAnythingRejectedHandler),
-            (r"/askanything/(.*)/vote", routes.ask_anything.AskAnythingVoteHandler),
-            (r"/askanything/authorize", routes.ask_anything.AskAnythingAuthorizeHandler),
-            (r"/askanything/(.*)/authorize", routes.ask_anything.AskAnythingAuthorizeHandler),
+            (r"/login", base.BaseLoginHandler),
+            (r"/profile/(.*)/(.*)", mask.ProfileHandler),
+            (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
+            (r"/role/administrator", mask.AdministratorRoleHandler),
+            (r"/role/volunteer", volunteers.VolunteerRoleHandler),
+            (r"/search/all", mask.SearchAllHandler),
+            (r"/search/(.*)/(.*)", mask.SearchHandler),
+            (r"/update/(.*)", mask.ProfileUpdateHandler),
+            (r"/volunteer", volunteers.VolunteerHandler),
+            (r"/volunteer/(.*)", volunteers.VolunteerHandler),
+            (r"/feed", instagram.FeedHandler),
+            (r"/verify", base.BaseVerifyLoginHandler),
+            (r"/", base.BaseIndexHandler),
+            (r"/senate_election/showall", elections.AllElectionVoteHandler),
+            (r"/senate_election/vote/(.*)", elections.ElectionVoteHandler),
+            (r"/senate_election/livefeed", elections.ElectionLiveFeedHandler),
+            (r"/saml/account/", saml.SamlHandler),
+            (r"/matcher", mask.MatcherHandler),
+            (r"/forms/job/new", forms.NewFormHandler),
+            (r"/forms/job/view/(.*)", forms.ViewFormHandler),
+            (r"/forms/job/delete", forms.DeleteFormHandler),
+            (r"/forms/application/submit", forms.SubmitApplicationHandler),
+            (r"/forms/application/view/(.*)/(.*)", forms.ViewApplicationHandler),
+            (r"/forms/application/status", forms.ApplicationStatusHandler),
+            (r"/forms/resume/upload", forms.ResumeUploadHandler),
+            (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
+            (r"/askanything/add", ask_anything.AskAnythingAddHandler),
+            (r"/askanything/view", ask_anything.AskAnythingViewAllHandler),
+            (r"/askanything/view/rejected", ask_anything.AskAnythingRejectedHandler),
+            (r"/askanything/(.*)/vote", ask_anything.AskAnythingVoteHandler),
+            (r"/askanything/authorize", ask_anything.AskAnythingAuthorizeHandler),
+            (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
         ]
 
         # a bunch of setup stuff
