@@ -28,7 +28,6 @@ define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
 define("current_year", default="1718")
 
-
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
     def __init__(self):
