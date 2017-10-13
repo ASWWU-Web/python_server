@@ -46,7 +46,7 @@ class ArchiveBase(object):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
 
     def export_info(self):
-        return self.to_json(limitlist=['photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'privacy', 'department', 'office', 'office_hours'])
+        return self.to_json(limitList=['photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'privacy', 'department', 'office', 'office_hours'])
 
 
 
