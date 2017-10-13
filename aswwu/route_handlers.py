@@ -209,7 +209,6 @@ def update_views(user, profile, year):
             addOrUpdate(view)
         else:
             for view in views:
-                logger.debug((datetime.datetime.now() - view.last_viewed).total_seconds())
                 if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
                     view.num_views += 1
                     view.last_viewed = datetime.datetime.now()
