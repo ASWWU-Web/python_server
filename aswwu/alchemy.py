@@ -39,11 +39,11 @@ people_db = dbs()
 ArchiveBase.metadata.bind = archive_engine
 archive_dbs = sessionmaker(bind=archive_engine)
 archive_db = archive_dbs()
-#same for elections
+# same for elections
 ElectionBase.metadata.bind = election_engine
 election_dbs = sessionmaker(bind=election_engine)
 election_db = election_dbs()
-#same for pages
+# same for pages
 PagesBase.metadata.bind = election_engine
 pages_dbs = sessionmaker(bind=pages_engine)
 page_db = pages_dbs()
@@ -54,7 +54,7 @@ jobs_db = jobs_dbs()
 
 
 # updates a model, or creates it if it doesn't exist
-def addOrUpdate(thing):
+def add_or_update(thing):
     try:
         people_db.add(thing)
         people_db.commit()
@@ -87,10 +87,10 @@ def query_by_wwuid(model, wwuid):
 
 
 # finds all rows for a given model matching the given ID
-def query_by_id(model, id):
+def query_by_id(model, aid):
     thing = None
     try:
-        thing = people_db.query(model).filter_by(id=id).first()
+        thing = people_db.query(model).filter_by(id=aid).first()
     except Exception as e:
         logger.info(e)
         people_db.rollback()
@@ -126,7 +126,7 @@ def delete_thing(thing):
         people_db.rollback()
 
 
-def query_all_Election(model):
+def query_all_election(model):
     thing = None
     try:
         thing = election_db.query(model).all()
@@ -136,7 +136,7 @@ def query_all_Election(model):
     return thing
 
 
-def addOrUpdateElection(thing):
+def add_or_update_election(thing):
     try:
         election_db.add(thing)
         election_db.commit()
@@ -147,7 +147,7 @@ def addOrUpdateElection(thing):
 
 
 # finds all rows for a given model matching the given WWUID
-def query_by_wwuid_Election(model, wwuid):
+def query_by_wwuid_election(model, wwuid):
     thing = None
     try:
         thing = election_db.query(model).filter_by(wwuid=str(wwuid)).all()
@@ -158,7 +158,7 @@ def query_by_wwuid_Election(model, wwuid):
 
 
 # updates a model, or creates it if it doesn't exist
-def addOrUpdatePage(thing):
+def add_or_update_page(thing):
     try:
         page_db.add(thing)
         page_db.commit()
@@ -188,29 +188,8 @@ def query_by_page_id(model, page_id):
     return thing
 
 
-def query_by_page_url(model, url):
-    thing = None
-    try:
-        thing = page_db.query(model).options(joinedload('*')).filter_by(url=str(url)).all()
-    except Exception as e:
-        logger.info(e)
-        page_db.rollback()
-    return thing
-
-# def query_page(page_id):
-#     thing = None
-#     try:
-#         thing = query_by_page_id(User, str(page_id))
-#         if thing:
-#             thing = thing[0]
-#     except Exception as e:
-#         logger.info(e)
-#         page_s.rollback()
-#     return thing
-
-
 # updates a model, or creates it if it doesn't exist
-def addOrUpdateForm(thing):
+def add_or_update_form(thing):
     try:
         jobs_db.add(thing)
         jobs_db.commit()
@@ -218,6 +197,7 @@ def addOrUpdateForm(thing):
     except Exception as e:
         logger.info(e)
         jobs_db.rollback()
+
 
 def query_by_job_name(model, name):
     thing = None
@@ -228,7 +208,8 @@ def query_by_job_name(model, name):
         jobs_db.rollback()
     return thing
 
-def query_all_Forms(model):
+
+def query_all_forms(model):
     thing = None
     try:
         thing = jobs_db.query(model).all()
@@ -237,8 +218,9 @@ def query_all_Forms(model):
         jobs_db.rollback()
     return thing
 
+
 # permanently deletes a given model
-def delete_thing_Forms(thing):
+def delete_thing_forms(thing):
     try:
         jobs_db.delete(thing)
         jobs_db.commit()

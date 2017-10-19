@@ -18,7 +18,7 @@ class AskAnythingAddHandler(BaseHandler):
     def post(self):
         ask_anything = ask_anything_model.AskAnything()
         ask_anything.question = bleach.clean(self.get_argument("question"))
-        alchemy.addOrUpdate(ask_anything)
+        alchemy.add_or_update(ask_anything)
         self.set_status(201)
         self.write({"status": "Question Submitted"})
 
@@ -28,6 +28,7 @@ class AskAnythingViewAllHandler(BaseHandler):
         results = people_db.query(ask_anything_model.AskAnything).filter_by(authorized=True, reviewed=True)
         to_return = []
         user = self.get_current_user()
+        questions_voted = {}
         if user:
             votes = people_db.query(ask_anything_model.AskAnythingVote).filter_by(voter=user.username).all()
             questions_voted = {}
@@ -35,7 +36,7 @@ class AskAnythingViewAllHandler(BaseHandler):
                 questions_voted[vote.question_id] = True
         for question in results:
             serialized = question.serialize()
-            serialized["has_voted"] = questions_voted.has_key(question.id) if user else False
+            serialized["has_voted"] = question.id in questions_voted if user else False
             to_return.append(serialized)
         self.write(json.dumps(to_return))
 
@@ -71,7 +72,7 @@ class AskAnythingVoteHandler(BaseHandler):
             vote = ask_anything_model.AskAnythingVote()
             vote.question_id = q_id
             vote.voter = user.username
-            alchemy.addOrUpdate(vote)
+            alchemy.add_or_update(vote)
             self.set_status(200)
             self.write({"status": "Success. Vote Added"})
 
@@ -98,7 +99,7 @@ class AskAnythingAuthorizeHandler(BaseHandler):
             ask_anything = people_db.query(ask_anything_model.AskAnything).filter_by(id=question_id).one()
             ask_anything.authorized = authorized
             ask_anything.reviewed = True
-            alchemy.addOrUpdate(ask_anything)
+            alchemy.add_or_update(ask_anything)
             self.set_status(200)
             self.write({"status": "Success"})
         else:

@@ -22,7 +22,7 @@ class SamlHandler(BaseHandler):
                     if not user:
                         user = mask_model.User(wwuid=employee_id, username=email_address.split('@', 1)[0],
                                                full_name=full_name, status='Student')
-                        alchemy.addOrUpdate(user)
+                        alchemy.add_or_update(user)
                     self.write({'status': 'success'})
                 else:
                     logger.info("AccountHandler: error")

@@ -42,7 +42,7 @@ class AdministratorRoleHandler(BaseHandler):
                     roles.append(self.get_argument('newRole', None))
                     roles = set(roles)
                     fuser.roles = ', '.join(roles)
-                    alchemy.addOrUpdate(fuser)
+                    alchemy.add_or_update(fuser)
                     self.write({'response': 'success'})
 
 
@@ -85,8 +85,6 @@ class SearchHandler(BaseHandler):
 class SearchAllHandler(BaseHandler):
     def get(self):
         profiles = alchemy.query_all(mask_model.Profile)
-        code = self.get_argument('code', '')
-        # pass in this super secret code to get ALL info for ALL profiles
         self.write({'results': [p.base_info() for p in profiles]})
 
 
@@ -132,13 +130,13 @@ def update_views(user, profile, year):
             view.viewed = profile.username
             view.last_viewed = datetime.datetime.now()
             view.num_views = 1
-            alchemy.addOrUpdate(view)
+            alchemy.add_or_update(view)
         else:
             for view in views:
                 if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
                     view.num_views += 1
                     view.last_viewed = datetime.datetime.now()
-                    alchemy.addOrUpdate(view)
+                    alchemy.add_or_update(view)
 
 
 # queries the server for a user's photos
@@ -215,7 +213,7 @@ class ProfileUpdateHandler(BaseHandler):
                 profile.office = bleach.clean(self.get_argument('office', ''))
                 profile.office_hours = bleach.clean(self.get_argument('office_hours', ''))
 
-            alchemy.addOrUpdate(profile)
+            alchemy.add_or_update(profile)
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})

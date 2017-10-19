@@ -28,7 +28,7 @@ class NewFormHandler(BaseHandler):
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
-                alchemy.addOrUpdateForm(form)
+                alchemy.add_or_update_form(form)
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = json.loads(self.get_argument('questions'))
                 for q in questions:
@@ -36,7 +36,7 @@ class NewFormHandler(BaseHandler):
                         question = forms_model.JobQuestion()
                         question.question = q['question']
                         question.jobID = form.id
-                        alchemy.addOrUpdateForm(question)
+                        alchemy.add_or_update_form(question)
                 self.set_status(201)
                 self.write({"status": "submitted"})
             else:
@@ -53,7 +53,7 @@ class ViewFormHandler(BaseHandler):
     def get(self, job_id):
         try:
             if job_id == "all":
-                forms = alchemy.query_all_Forms(forms_model.JobForm)
+                forms = alchemy.query_all_forms(forms_model.JobForm)
                 self.write({'forms': [f.min() for f in forms]})
             else:
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
@@ -73,9 +73,9 @@ class DeleteFormHandler(BaseHandler):
             if 'forms-admin' in user.roles:
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=self.get_argument("jobID")).one()
                 for q in form.questions:
-                    alchemy.delete_thing_Forms(alchemy.jobs_db.query(forms_model.JobQuestion)
+                    alchemy.delete_thing_forms(alchemy.jobs_db.query(forms_model.JobQuestion)
                                                .filter_by(id=int(q.id)).one())
-                alchemy.delete_thing_Forms(form)
+                alchemy.delete_thing_forms(form)
                 self.set_status(200)
                 self.write({"status": "Form Deleted"})
             else:
@@ -101,13 +101,13 @@ class SubmitApplicationHandler(BaseHandler):
                 try:
                     app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
                                                                                       username=user.username).one()
-                except Exception as e:
+                except:
                     temp_var = True
                     app = forms_model.JobApplication()
                     app.status = "new"
                 app.jobID = bleach.clean(self.get_argument('jobID'))
                 app.username = user.username
-                alchemy.addOrUpdateForm(app)
+                alchemy.add_or_update_form(app)
                 if temp_var:
                     app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
                                                                                       username=user.username).one()
@@ -115,13 +115,13 @@ class SubmitApplicationHandler(BaseHandler):
                     try:
                         answer = alchemy.jobs_db.query(forms_model.JobAnswer)\
                             .filter_by(applicationID=app.id, questionID=a['questionID']).one()
-                    except Exception as e:
+                    except:
                         answer = forms_model.JobAnswer()
                     if 'questionID' in a:
                         answer.questionID = bleach.clean(a['questionID'])
                         answer.answer = bleach.clean(a['answer'])
                         answer.applicationID = app.id
-                        alchemy.addOrUpdateForm(answer)
+                        alchemy.add_or_update_form(answer)
                 self.set_status(201)
                 self.write({"status": "submitted"})
             else:
@@ -141,7 +141,7 @@ class ViewApplicationHandler(BaseHandler):
             user = self.current_user
             if job_id == "all" and username == "all":
                 if 'forms-admin' in user.roles:
-                    apps = alchemy.query_all_Forms(forms_model.JobApplication)
+                    apps = alchemy.query_all_forms(forms_model.JobApplication)
                     self.write({'applications': [a.min() for a in apps]})
             elif job_id == "all" and username != "all":
                 if 'forms-admin' in user.roles or username == user.username:
@@ -172,7 +172,7 @@ class ApplicationStatusHandler(BaseHandler):
                 app = alchemy.jobs_db.query(forms_model.JobApplication)\
                     .filter_by(jobID=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
                 app.status = bleach.clean(self.get_argument("status"))
-                alchemy.addOrUpdateForm(app)
+                alchemy.add_or_update_form(app)
                 self.set_status(200)
                 self.write({"status": "success"})
             else:
@@ -193,7 +193,7 @@ class ResumeUploadHandler(BaseHandler):
             job_id = self.get_argument("jobID")
             try:
                 alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=job_id).one()
-            except Exception:
+            except:
                 self.set_status(404)
                 self.write({"status": "Error", "message": "Job doesn't exist"})
             fileinfo = self.request.files['file'][0]
@@ -232,7 +232,7 @@ class ViewResumeHandler(BaseHandler):
                 self.set_header('Content-Disposition', 'inline; filename=' + os.path.basename(resume.name) + '')
                 self.write(resume.read())
                 resume.close()
-            except Exception as e:
+            except:
                 self.set_status(404)
                 self.write({"status": "Error", "message": "File not found"})
         except Exception as e:

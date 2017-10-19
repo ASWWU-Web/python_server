@@ -20,7 +20,7 @@ class VolunteerHandler(BaseHandler):
             volunteer = alchemy.query_by_wwuid(volunteer_model.Volunteer, wwuid)
             if len(volunteer) == 0:
                 volunteer = volunteer_model.Volunteer(wwuid=user.wwuid)
-                volunteer = alchemy.addOrUpdate(volunteer)
+                volunteer = alchemy.add_or_update(volunteer)
             else:
                 volunteer = volunteer[0]
             self.write(volunteer.to_json())
@@ -89,7 +89,7 @@ class VolunteerHandler(BaseHandler):
         volunteer.wants_to_be_involved = (True if self.get_argument('wants_to_be_involved', 0) == '1' else False)
 
         logger.debug(volunteer.only_true())
-        alchemy.addOrUpdate(volunteer)
+        alchemy.add_or_update(volunteer)
         self.write(json.dumps('success'))
 
 
@@ -119,7 +119,7 @@ class VolunteerRoleHandler(BaseHandler):
                     roles.append('volunteer')
                     roles = set(roles)
                     fuser.roles = ','.join(roles)
-                    alchemy.addOrUpdate(fuser)
+                    alchemy.add_or_update(fuser)
                     self.write({'response': 'success'})
             elif cmd == 'search' or cmd == 'viewPrintOut':
                 # searcheth away!

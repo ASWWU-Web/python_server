@@ -53,7 +53,7 @@ class PagesUpdateHandler(BaseHandler):
                     page[0].tags = bleach.clean(self.get_argument('tags'))
                     page[0].category = bleach.clean(self.get_argument('category'))
                     page[0].theme_blob = bleach.clean(self.get_argument('theme_blob'))
-                alchemy.addOrUpdatePage(page[0])
+                alchemy.add_or_update_page(page[0])
 
         except Exception as e:
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))

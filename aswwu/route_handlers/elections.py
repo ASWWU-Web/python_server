@@ -14,7 +14,7 @@ election_db = alchemy.election_db
 # get all of the profiles in our database
 class AllElectionVoteHandler(BaseHandler):
     def get(self):
-        votes = alchemy.query_all_Election(election_model.Election)
+        votes = alchemy.query_all_election(election_model.Election)
         self.write({'results': [v.info() for v in votes]})
 
 
@@ -24,11 +24,11 @@ class ElectionVoteHandler(BaseHandler):
     def post(self, username):
         user = self.current_user
         if user.username == username or 'administrator' in user.roles:
-            usrvote = alchemy.query_by_wwuid_Election(election_model.Election, str(user.wwuid))
+            usrvote = alchemy.query_by_wwuid_election(election_model.Election, str(user.wwuid))
             # Fix this to be more efficient
             if len(usrvote) == 0:
                 new_vote = election_model.Election(wwuid=str(user.wwuid))
-                vote = alchemy.addOrUpdateElection(new_vote)
+                vote = alchemy.add_or_update_election(new_vote)
             else:
                 vote = election_db.query(election_model.Election).filter_by(wwuid=str(user.wwuid)).one()
             vote.candidate_one = self.get_argument('candidate_one', '')
@@ -38,7 +38,7 @@ class ElectionVoteHandler(BaseHandler):
             vote.new_department = self.get_argument('new_department', '')
             vote.district = self.get_argument('district', '')
 
-            alchemy.addOrUpdateElection(vote)
+            alchemy.add_or_update_election(vote)
 
             self.write({'vote': 'successfully voted'})
         else:
@@ -47,5 +47,5 @@ class ElectionVoteHandler(BaseHandler):
 
 class ElectionLiveFeedHandler(BaseHandler):
     def get(self):
-        votes = alchemy.query_all_Election(election_model.Election)
+        votes = alchemy.query_all_election(election_model.Election)
         self.write({'size': len(votes)})

@@ -8,17 +8,16 @@ import tornado.ioloop
 import tornado.web
 from tornado.options import define, options
 
-# import our super secret keys
-from settings import keys
+import aswwu.base_handlers as base
 import aswwu.route_handlers.ask_anything as ask_anything
 import aswwu.route_handlers.elections as elections
 import aswwu.route_handlers.forms as forms
 import aswwu.route_handlers.instagram as instagram
 import aswwu.route_handlers.mask as mask
-import aswwu.route_handlers.pages as pages
 import aswwu.route_handlers.saml as saml
 import aswwu.route_handlers.volunteers as volunteers
-import aswwu.base_handlers as base
+# import our super secret keys
+from settings import keys
 
 # import handlers as needed - here we import all of them
 
@@ -27,6 +26,7 @@ import aswwu.base_handlers as base
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
 define("current_year", default="1718")
+
 
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
@@ -85,6 +85,7 @@ class Application(tornado.web.Application):
         logger.addHandler(fh)
         tornado.web.Application.__init__(self, handlers, **settings)
         logger.info("Application started on port " + str(options.port))
+
 
 # running `python server.py` actually tells python to rename this file as "__main__"
 # hence this check to make sure we actually wanted to run the server
