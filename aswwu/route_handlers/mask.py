@@ -8,6 +8,7 @@ from sqlalchemy import or_
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.models.mask as mask_model
+import aswwu.archive_models as archives
 import aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
@@ -56,7 +57,7 @@ class SearchHandler(BaseHandler):
             results = alchemy.people_db.query(model)
         # otherwise we're going old school with the Archives
         else:
-            model = globals()['Archive'+str(year)]
+            model = archives.get_archive_model(year)
             results = alchemy.archive_db.query(model)
 
         # break up the query <-- expected to be a standard URIEncodedComponent
@@ -95,7 +96,7 @@ class ProfileHandler(BaseHandler):
         if year == tornado.options.options.current_year:
             profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
-            profile = alchemy.archive_db.query(globals()['Archive'+str(year)]).filter_by(username=str(username)).all()
+            profile = alchemy.archive_db.query(archives.get_archive_model(year)).filter_by(username=str(username)).all()
         # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -156,9 +157,9 @@ class ProfilePhotoHandler(BaseHandler):
                 profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
             if wwuid:
-                profile = alchemy.archive_db.query(globals()['Archive'+str(year)]).filter_by(wwuid=str(wwuid)).all()
+                profile = alchemy.archive_db.query(archives.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
             else:
-                profile = alchemy.archive_db.query(globals()['Archive'+str(year)])\
+                profile = alchemy.archive_db.query(archives.get_archive_model(year))\
                     .filter_by(username=str(username)).all()
         if len(profile) == 0:
             self.write({'error': 'no profile found'})

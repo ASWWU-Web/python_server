@@ -158,5 +158,9 @@ class Archive0607(ArchiveBase):
     id = Column(String(50), primary_key=True)
 
 
-for y in ["1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
-    set_archive_columns(globals()["Archive" + y])
+def get_archive_model(archive_year):
+    return eval("Archive" + str(archive_year))
+
+
+for year in ["1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
+    set_archive_columns(get_archive_model(year))
