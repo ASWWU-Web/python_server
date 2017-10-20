@@ -15,6 +15,7 @@ from settings import testing
 # import models and alchemy functions as needed
 import aswwu.models.mask as mask_model
 import aswwu.alchemy as alchemy
+import aswwu.archive_models as archives
 
 logger = logging.getLogger("aswwu")
 
@@ -33,7 +34,7 @@ class LoggedInUser:
         profile = alchemy.query_by_wwuid(mask_model.Profile, wwuid)
         user = alchemy.query_user(wwuid)
         if len(profile) == 0:
-            old_profile = alchemy.archive_db.query(globals()['Archive' + get_last_year()]).\
+            old_profile = alchemy.archive_db.query(archives.get_archive_model(get_last_year())).\
                 filter_by(wwuid=str(wwuid)).all()
             new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
