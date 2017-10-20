@@ -4,8 +4,9 @@
 # at this point the fields have all been standardized
 # each year just add another model class and add the year's shorthand (i.e. 1415) to the array at the bottom
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+
 
 # define a base model for the Archives
 class ArchiveBase(object):
@@ -28,7 +29,7 @@ class ArchiveBase(object):
                 # NOTE: this should be encoded more properly sometime
                 try:
                     obj[key] = str(value)
-                except Exception as e:
+                except:
                     pass
         return obj
 
@@ -40,19 +41,32 @@ class ArchiveBase(object):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'views', 'privacy'])
 
     def impers_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors',
+                                       'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author',
+                                       'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music',
+                                       'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office',
+                                       'office_hours'])
 
     def view_other(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office', 'office_hours'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone',
+                                       'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing',
+                                       'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote',
+                                       'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
+                                       'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department',
+                                       'office', 'office_hours'])
 
     def export_info(self):
-        return self.to_json(limitList=['photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors', 'graduate', 'preprofessional', 'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves', 'personality', 'privacy', 'department', 'office', 'office_hours'])
-
+        return self.to_json(limitList=['photo', 'gender', 'birthday', 'email', 'phone', 'website', 'majors', 'minors',
+                                       'graduate', 'preprofessional', 'high_school', 'class_of', 'relationship_status',
+                                       'attached_to', 'quote', 'quote_author', 'hobbies', 'career_goals',
+                                       'favorite_books', 'favorite_movies', 'favorite_music', 'pet_peeves',
+                                       'personality', 'privacy', 'department', 'office', 'office_hours'])
 
 
 ArchiveBase = declarative_base(cls=ArchiveBase)
 
-def setArchiveColumns(self):
+
+def set_archive_columns(self):
     self.wwuid = Column(Integer, nullable=False)
     self.username = Column(String(250))
     self.full_name = Column(String(250))
@@ -87,49 +101,62 @@ def setArchiveColumns(self):
     self.office = Column(String(250))
     self.office_hours = Column(String(250))
 
+
 class Archive1617(ArchiveBase):
     __tablename__ = 'profiles1617'
-    id = Column(String(50),primary_key=True)
+    id = Column(String(50), primary_key=True)
+
 
 class Archive1516(ArchiveBase):
     __tablename__ = 'profiles1516'
-    id = Column(String(50),primary_key=True)
+    id = Column(String(50), primary_key=True)
+
 
 class Archive1415(ArchiveBase):
     __tablename__ = 'profiles1415'
     id = Column(String(50), primary_key=True)
-# FIXME: Projects here and after cannot have a blank query (return internal server error instead of a list of all profiles);
+
+
+# FIXME: Projects here and after cannot have a blank query(return internal server error instead of a list of all profiles);
 class Archive1314(ArchiveBase):
     __tablename__ = 'profiles1314'
     id = Column(String(50), primary_key=True)
+
 
 class Archive1213(ArchiveBase):
     __tablename__ = 'profiles1213'
     id = Column(String(50), primary_key=True)
 
+
 class Archive1112(ArchiveBase):
     __tablename__ = 'profiles1112'
     id = Column(String(50), primary_key=True)
+
 
 class Archive1011(ArchiveBase):
     __tablename__ = 'profiles1011'
     id = Column(String(50), primary_key=True)
 
+
 class Archive0910(ArchiveBase):
     __tablename__ = 'profiles0910'
     id = Column(String(50), primary_key=True)
+
 
 class Archive0809(ArchiveBase):
     __tablename__ = 'profiles0809'
     id = Column(String(50), primary_key=True)
 
+
 class Archive0708(ArchiveBase):
     __tablename__ = 'profiles0708'
     id = Column(String(50), primary_key=True)
+
 
 class Archive0607(ArchiveBase):
     __tablename__ = 'profiles0607'
     id = Column(String(50), primary_key=True)
 
-for y in ["1617", "1516","1415","1314","1213","1112","1011","0910","0809","0708","0607"]:
-    setArchiveColumns(globals()["Archive"+y])
+
+for y in ["1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
+    set_archive_columns(globals()["Archive" + y])

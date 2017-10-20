@@ -1,26 +1,32 @@
 # server.py
 
-import os
 import logging
+
+import tornado.autoreload
 import tornado.escape
 import tornado.ioloop
 import tornado.web
-import tornado.autoreload
 from tornado.options import define, options
 
-
-# import handlers as needed - here we import all of them
-from aswwu.base_handlers import *
-from aswwu.route_handlers import *
-
+import aswwu.base_handlers as base
+import aswwu.route_handlers.ask_anything as ask_anything
+import aswwu.route_handlers.elections as elections
+import aswwu.route_handlers.forms as forms
+import aswwu.route_handlers.instagram as instagram
+import aswwu.route_handlers.mask as mask
+import aswwu.route_handlers.saml as saml
+import aswwu.route_handlers.volunteers as volunteers
 # import our super secret keys
 from settings import keys
+
+# import handlers as needed - here we import all of them
 
 # define some initial options that can be passed in at run time
 # e.g. `python server.py --port=8881` would run the server on port 8881
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
 define("current_year", default="1718")
+
 
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
@@ -33,41 +39,38 @@ class Application(tornado.web.Application):
 
         # list out the routes (as regex) and their corresponding handlers
         handlers = [
-            # (r"/collegian_search/(.*)", CollegianArticleSearch),
-            (r"/login", BaseLoginHandler),
-            (r"/profile/(.*)/(.*)", ProfileHandler),
-            (r"/profile_photo/(.*)/(.*)", ProfilePhotoHandler),
-            (r"/role/administrator", AdministratorRoleHandler),
-            # (r"/role/collegian", CollegianRoleHandler),
-            (r"/role/volunteer", VolunteerRoleHandler),
-            (r"/search/all", SearchAllHandler),
-            (r"/search/(.*)/(.*)", SearchHandler),
-            (r"/update/(.*)", ProfileUpdateHandler),
-            (r"/volunteer", VolunteerHandler),
-            (r"/volunteer/(.*)", VolunteerHandler),
-            (r"/feed", FeedHandler),
-            (r"/verify", BaseVerifyLoginHandler),
-            (r"/", BaseIndexHandler),
-            (r"/senate_election/showall", AllElectionVoteHandler),
-            (r"/senate_election/vote/(.*)", ElectionVoteHandler),
-            (r"/senate_election/livefeed", ElectionLiveFeedHandler),
-            # (r"/pages", PagesHandler),
-            (r"/saml/account/", SamlHandler),
-            (r"/matcher", MatcherHandler),
-            (r"/forms/job/new", NewFormHandler),
-            (r"/forms/job/view/(.*)", ViewFormHandler),
-            (r"/forms/job/delete", DeleteFormHandler),
-            (r"/forms/application/submit", SubmitApplicationHandler),
-            (r"/forms/application/view/(.*)/(.*)", ViewApplicationHandler),
-            (r"/forms/application/status", ApplicationStatusHandler),
-            (r"/forms/resume/upload", ResumeUploadHandler),
-            (r"/forms/resume/download/(.*)/(.*)", ViewResumeHandler),
-            (r"/askanything/add",AskAnythingAddHandler),
-            (r"/askanything/view", AskAnythingViewAllHandler),
-            (r"/askanything/view/rejected", AskAnythingRejectedHandler),
-            (r"/askanything/(.*)/vote", AskAnythingVoteHandler),
-            (r"/askanything/authorize", AskAnythingAuthorizeHandler),
-            (r"/askanything/(.*)/authorize", AskAnythingAuthorizeHandler),
+            (r"/login", base.BaseLoginHandler),
+            (r"/profile/(.*)/(.*)", mask.ProfileHandler),
+            (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
+            (r"/role/administrator", mask.AdministratorRoleHandler),
+            (r"/role/volunteer", volunteers.VolunteerRoleHandler),
+            (r"/search/all", mask.SearchAllHandler),
+            (r"/search/(.*)/(.*)", mask.SearchHandler),
+            (r"/update/(.*)", mask.ProfileUpdateHandler),
+            (r"/volunteer", volunteers.VolunteerHandler),
+            (r"/volunteer/(.*)", volunteers.VolunteerHandler),
+            (r"/feed", instagram.FeedHandler),
+            (r"/verify", base.BaseVerifyLoginHandler),
+            (r"/", base.BaseIndexHandler),
+            (r"/senate_election/showall", elections.AllElectionVoteHandler),
+            (r"/senate_election/vote/(.*)", elections.ElectionVoteHandler),
+            (r"/senate_election/livefeed", elections.ElectionLiveFeedHandler),
+            (r"/saml/account/", saml.SamlHandler),
+            (r"/matcher", mask.MatcherHandler),
+            (r"/forms/job/new", forms.NewFormHandler),
+            (r"/forms/job/view/(.*)", forms.ViewFormHandler),
+            (r"/forms/job/delete", forms.DeleteFormHandler),
+            (r"/forms/application/submit", forms.SubmitApplicationHandler),
+            (r"/forms/application/view/(.*)/(.*)", forms.ViewApplicationHandler),
+            (r"/forms/application/status", forms.ApplicationStatusHandler),
+            (r"/forms/resume/upload", forms.ResumeUploadHandler),
+            (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
+            (r"/askanything/add", ask_anything.AskAnythingAddHandler),
+            (r"/askanything/view", ask_anything.AskAnythingViewAllHandler),
+            (r"/askanything/view/rejected", ask_anything.AskAnythingRejectedHandler),
+            (r"/askanything/(.*)/vote", ask_anything.AskAnythingVoteHandler),
+            (r"/askanything/authorize", ask_anything.AskAnythingAuthorizeHandler),
+            (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
         ]
 
         # a bunch of setup stuff
@@ -82,6 +85,7 @@ class Application(tornado.web.Application):
         logger.addHandler(fh)
         tornado.web.Application.__init__(self, handlers, **settings)
         logger.info("Application started on port " + str(options.port))
+
 
 # running `python server.py` actually tells python to rename this file as "__main__"
 # hence this check to make sure we actually wanted to run the server
