@@ -51,8 +51,8 @@ class LoggedInUser:
         self.status = user.status
 
     def to_json(self):
-        return {'wwuid': str(self.wwuid), 'username': str(self.username), 'full_name': str(self.full_name),
-                'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': str(self.status)}
+        return {'wwuid': str(self.wwuid), 'username': self.username, 'full_name': self.full_name,
+                'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': self.status}
 
 
 # this is the root/base handler for all other handlers

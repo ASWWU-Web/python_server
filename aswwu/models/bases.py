@@ -46,7 +46,15 @@ class Base(object):
                 try:
                     obj[key] = str(value)
                 except Exception as e:
-                    pass
+                    # This tries to leave the string in unicode if it cannot be converted using str()
+                    # NOTE: This should also be done more properly sometime
+                    try:
+                        obj[key] = value.encode("utf-8")
+                    except Exception as e:
+                        # Oh well
+                        pass
+
+
             elif key == "views":
                 obj[key] = str(self.num_views())
         return obj
