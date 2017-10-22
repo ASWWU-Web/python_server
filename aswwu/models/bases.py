@@ -41,18 +41,13 @@ class Base(object):
             if key not in skip_list and key != "views":
                 # fancy way of saying "self.key"
                 value = getattr(self, key)
-                # try to set the value as a string, but that doesn't always work
-                # NOTE: this should be encoded more properly sometime
+                # try to set the value as a utf-8 string
                 try:
-                    obj[key] = str(value)
+                    obj[key] = value.encode("utf-8")
+                # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
-                    # This tries to leave the string in unicode if it cannot be converted using str()
-                    # NOTE: This should also be done more properly sometime
-                    try:
-                        obj[key] = value.encode("utf-8")
-                    except Exception as e:
-                        # Oh well
-                        pass
+                    obj[key] = 'None'
+                    pass
 
 
             elif key == "views":
