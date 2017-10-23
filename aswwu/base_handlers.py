@@ -52,7 +52,7 @@ class LoggedInUser:
 
     def to_json(self):
         return {'wwuid': str(self.wwuid), 'username': self.username, 'full_name': self.full_name,
-                'photo': self.photo, 'roles': str(','.join(self.roles)), 'status': self.status}
+                'photo': self.photo, 'roles': ','.join(self.roles), 'status': self.status}
 
 
 # this is the root/base handler for all other handlers
