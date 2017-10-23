@@ -1,12 +1,14 @@
 # models.py
-
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Text
-import uuid
 import datetime
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship
-import hashlib
+import logging
+import uuid
+
+import six
 from pattern.en import pluralize
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+
+logger = logging.getLogger("aswwu")
 
 
 # create a UUID generator function
@@ -43,10 +45,13 @@ class Base(object):
                 value = getattr(self, key)
                 # try to set the value as a utf-8 string
                 try:
+                    if not isinstance(value, six.string_types):
+                        value = str(value)
                     obj[key] = value.encode("utf-8")
                 # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
                     obj[key] = 'None'
+                    logger.debug("obj[{}] = {} failed to json encode in to_json. Error message: {}".format(key, value, e))
                     pass
 
 
