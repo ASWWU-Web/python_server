@@ -1,4 +1,4 @@
-# test_sample.py
+# test_server.py
 # Start the normal server
 import os
 import logging
@@ -7,7 +7,6 @@ import tornado.ioloop
 import tornado.web
 import tornado.autoreload
 from tornado.options import define, options
-
 
 # import handlers as needed - here we import all of them
 from aswwu.base_handlers import *
