@@ -809,11 +809,11 @@ class ResumeUploadHandler(BaseHandler):
                 self.write({"status": "Error", "message": "Job doesn't exist"})
             fileinfo = self.request.files['file'][0]
             if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
-                for f in glob.glob("../databases/resume/" + user.username + "_" + jobID.replace("/", "").replace("..",
+                for f in glob.glob("../../databases/resume/" + user.username + "_" + jobID.replace("/", "").replace("..",
                                                                                                                  "") + "*"):
                     os.remove(f)
                 fh = open(
-                    "../databases/resume/" + user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1],
+                    "../../databases/resume/" + user.username + "_" + jobID + os.path.splitext(fileinfo['filename'])[1],
                     'w+')
                 fh.write(fileinfo['body'])
                 self.set_status(201)
@@ -837,7 +837,7 @@ class ViewResumeHandler(BaseHandler):
             else:
                 uname = user.username
             try:
-                File = open(glob.glob("../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
+                File = open(glob.glob("../../databases/resume/" + uname + "_" + jobID + "*")[0], "r")
                 self.set_status(200)
                 self.set_header("Content-type", "application/" + os.path.splitext(File.name)[1].replace(".",""))
                 self.set_header('Content-Disposition', 'inline; filename=' + os.path.basename(File.name) + '')

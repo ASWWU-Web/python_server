@@ -8,6 +8,10 @@ import tornado.web
 import tornado.autoreload
 from tornado.options import define, options
 
+# Run this script in the context of '../src/'
+import sys
+sys.path.append('./src')
+
 # import handlers as needed - here we import all of them
 from aswwu.base_handlers import *
 from aswwu.route_handlers import *
@@ -29,7 +33,7 @@ def setup_module(module):
 
     # initiate the IO loop for Tornado
     io_loop = tornado.ioloop.IOLoop.instance()
-    tornado.options.parse_config_file("aswwu/"+conf_name+".conf")
+    tornado.options.parse_config_file("../src/aswwu/"+conf_name+".conf")
     # create a new instance of our Application
     application = Application()
     application.listen(options.port)

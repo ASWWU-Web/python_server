@@ -12,11 +12,11 @@ from aswwu.models import *
 from aswwu.archive_models import *
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///../databases/people.db")
-archive_engine = create_engine("sqlite:///../databases/archives.db")
-election_engine = create_engine("sqlite:///../databases/senate_elections.db")
-pages_engine = create_engine("sqlite:///../databases/pages.db")
-jobs_engine = create_engine("sqlite:///../databases/jobs.db")
+engine = create_engine("sqlite:///../../databases/people.db")
+archive_engine = create_engine("sqlite:///../../databases/archives.db")
+election_engine = create_engine("sqlite:///../../databases/senate_elections.db")
+pages_engine = create_engine("sqlite:///../../databases/pages.db")
+jobs_engine = create_engine("sqlite:///../../databases/jobs.db")
 
 # create the model tables if they don't already exist
 Base.metadata.create_all(engine)
