@@ -13,9 +13,9 @@ import tornado.web
 from settings import testing
 
 # import models and alchemy functions as needed
-import aswwu.models.mask as mask_model
-import aswwu.alchemy as alchemy
-import aswwu.archive_models as archives
+import src.aswwu.models.mask as mask_model
+import src.aswwu.alchemy as alchemy
+import src.aswwu.archive_models as archives
 
 logger = logging.getLogger("aswwu")
 

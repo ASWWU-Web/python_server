@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-import aswwu.models.bases as base
+import src.aswwu.models.bases as base
 
 Base = declarative_base(cls=base.Base)
 

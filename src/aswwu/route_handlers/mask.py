@@ -6,10 +6,10 @@ import bleach
 import tornado.web
 from sqlalchemy import or_
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.models.mask as mask_model
-import aswwu.archive_models as archives
-import aswwu.alchemy as alchemy
+from src.aswwu.base_handlers import BaseHandler
+import src.aswwu.models.mask as mask_model
+import src.aswwu.archive_models as archives
+import src.aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 

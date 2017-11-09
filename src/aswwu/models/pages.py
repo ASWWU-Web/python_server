@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-import aswwu.models.bases as base
+import src.aswwu.models.bases as base
 
 PagesBase = declarative_base(cls=base.PagesBase)
 

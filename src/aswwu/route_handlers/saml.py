@@ -1,10 +1,10 @@
 import logging
 
-from aswwu.base_handlers import BaseHandler
+from src.aswwu.base_handlers import BaseHandler
 from settings import keys
 
-import aswwu.models.mask as mask_model
-import aswwu.alchemy as alchemy
+import src.aswwu.models.mask as mask_model
+import src.aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 

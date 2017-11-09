@@ -2,7 +2,7 @@ import logging
 
 from tornado.httpclient import HTTPClient
 
-from aswwu.base_handlers import BaseHandler
+from src.aswwu.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")
 

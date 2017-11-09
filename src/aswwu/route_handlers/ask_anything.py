@@ -4,9 +4,9 @@ import logging
 import bleach
 import tornado.web
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.models.ask_anything as ask_anything_model
-import aswwu.alchemy as alchemy
+from src.aswwu.base_handlers import BaseHandler
+import src.aswwu.models.ask_anything as ask_anything_model
+import src.aswwu.alchemy as alchemy
 
 logger = logging.getLogger("aswwu")
 

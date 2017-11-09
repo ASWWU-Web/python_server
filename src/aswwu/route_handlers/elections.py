@@ -2,9 +2,9 @@ import logging
 
 import tornado.web
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.alchemy as alchemy
-import aswwu.models.elections as election_model
+from src.aswwu.base_handlers import BaseHandler
+import src.aswwu.alchemy as alchemy
+import src.aswwu.models.elections as election_model
 
 logger = logging.getLogger("aswwu")
 
