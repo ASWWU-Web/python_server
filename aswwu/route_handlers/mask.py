@@ -183,7 +183,7 @@ class ProfileUpdateHandler(BaseHandler):
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
             profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
-            profile.full_name = bases.shorten(bleach.clean(self.get_argument('full_name')), 250)
+            profile.full_name = bleach.clean(self.get_argument('full_name'))
             profile.photo = bleach.clean(self.get_argument('photo', ''))
             profile.gender = bleach.clean(self.get_argument('gender', ''))
             profile.birthday = bleach.clean(self.get_argument('birthday', ''))
