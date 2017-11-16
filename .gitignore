@@ -6,3 +6,4 @@ settings.py
 .idea/
 .DS_Store
 .cache
+./databases/**
