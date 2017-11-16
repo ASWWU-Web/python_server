@@ -1,6 +1,7 @@
 # server.py
 
 import logging
+import threading
 
 import tornado.autoreload
 import tornado.escape
@@ -86,6 +87,15 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
         logger.info("Application started on port " + str(options.port))
 
+def run_server():
+    # create a new instance of our Application
+    application = Application()
+    application.listen(options.port)
+    # tell it to autoreload if anything changes
+    tornado.autoreload.start()
+    io_loop.start()
+
+
 
 # running `python server.py` actually tells python to rename this file as "__main__"
 # hence this check to make sure we actually wanted to run the server
@@ -99,11 +109,20 @@ if __name__ == "__main__":
         conf_name = config[0]
 
     # initiate the IO loop for Tornado
-    io_loop = tornado.ioloop.IOLoop.instance()
+    io_loop = tornado.ioloop.IOLoop(make_current=False).instance()
     tornado.options.parse_config_file("src/aswwu/"+conf_name+".conf")
-    # create a new instance of our Application
-    application = Application()
-    application.listen(options.port)
-    # tell it to autoreload if anything changes
-    tornado.autoreload.start()
-    io_loop.start()
+
+    # create thread for running the server
+    thread = threading.Thread(target=run_server)
+    thread.daemon = True
+    thread.start()
+
+    print 'services running, press ctrl+c to stop'
+    try:
+        while True:
+            raw_input('')
+    except KeyboardInterrupt:
+        print 'stopping services...'
+        io_loop.stop()
+        print 'tornado server stopped'
+        exit(0)
