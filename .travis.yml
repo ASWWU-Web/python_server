@@ -8,6 +8,7 @@ install:
   # ASWWU Python Server
   - pip install pattern requests SQLAlchemy tornado bleach
   - pip install -U pytest
+#  - pip install -r requirements.txt
 script:
   - pytest
   - pytest --cov=src tests/
