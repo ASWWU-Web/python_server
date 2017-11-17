@@ -1,7 +1,15 @@
 language: python
 python: "2.7"
 install:
+  # CodeClimate
+  - pip install pytest-cov
+  - pip install coverage
+  - pip install codeclimate-test-reporter
+  # ASWWU Python Server
   - pip install pattern requests SQLAlchemy tornado bleach
   - pip install -U pytest
 script:
   - pytest
+  - pytest --cov=src tests/
+after_success:
+  - codeclimate-test-reporter
