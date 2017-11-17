@@ -34,7 +34,6 @@ define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
 define("current_year", default="1718")
 
-
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
     def __init__(self):
@@ -101,23 +100,13 @@ def run_server():
     tornado.autoreload.start()
     io_loop.start()
 
-
-
-# running `python server.py` actually tells python to rename this file as "__main__"
-# hence this check to make sure we actually wanted to run the server
 def start_server():
-    # pass in the conf name with `python server.py CONF_NAME`
-    # by default this is "default"
-    #config = tornado.options.parse_command_line()
-    # if len(config) == 0:
-    #    conf_name = "default"
-    # else:
-    #     conf_name = config[0]
+    # pass in the conf default name
     conf_name = "default"
 
     # initiate the IO loop for Tornado
     global io_loop
-    io_loop = tornado.ioloop.IOLoop(make_current=False).instance()
+    io_loop = tornado.ioloop.IOLoop.instance()
     tornado.options.parse_config_file("src/aswwu/"+conf_name+".conf")
 
     # create thread for running the server
@@ -128,10 +117,10 @@ def start_server():
     # allow server to start before running tests
     import time
     time.sleep(1)
-    print 'starting services...'
+    print('starting services...')
 
 def stop_server():
-    print 'stopping services...'
+    print('stopping services...')
     io_loop.stop()
 
 class test_system(unittest.TestCase):
@@ -145,7 +134,7 @@ class test_system(unittest.TestCase):
         stop_server()
         print("teardown_class()")
 
-    def test_search_all(self):
+    def test_root(self):
         expected_data = {
                 "username": "ryan.rabello",
                 "wwuid": "919428746",
@@ -156,6 +145,23 @@ class test_system(unittest.TestCase):
             }
 
         url = 'http://127.0.0.1:8888/'
+        resp = requests.get(url)
+        assert(resp.status_code == 200)
+        assert(json.loads(resp.text) == expected_data)
+
+    def test_search_all(self):
+        expected_data = {
+                "results": [
+                        {"username": "john.doe", "photo": "profiles/1718/00958-2019687.jpg", "email": "", "full_name": "John Doe", "views": "6"},
+                        {"username": "ryan.rabello", "photo": "profiles/1718/00958-2019687.jpg", "email": "ryan.rabello@wallawalla.edu", "full_name": "Ryan Rabello", "views": "9"},
+                        {"username": "jane.anderson", "photo": "profiles/1718/00958-2019687.jpg", "email": "", "full_name": "Jane Anderson", "views": "8"},
+                        {"username": "michael.scott", "photo": "None", "email": "None", "full_name": "Michael Scott", "views": "0"},
+                        {"username": "mary.johnson", "photo": "profiles/1718/00958-2019687.jpg", "email": "", "full_name": "Mary Johnson", "views": "6"},
+                        {"username": "susan.brown", "photo": "profiles/1718/00958-2019687.jpg", "email": "", "full_name": "Susan Brown", "views": "18"}
+                ]
+        };
+
+        url = 'http://127.0.0.1:8888/search/all'
         resp = requests.get(url)
         assert(resp.status_code == 200)
         assert(json.loads(resp.text) == expected_data)
