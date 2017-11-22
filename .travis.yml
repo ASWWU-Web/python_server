@@ -1,6 +1,12 @@
 language: python
 python: "2.7"
 install:
+  # Coverage
+  - pip install coverage
+  # Coveralls
+  - pip install codacy-coverage
+  # Coveralls
+  - pip install python-coveralls
   # CodeClimate
   - pip install pytest-cov
   - pip install coverage
