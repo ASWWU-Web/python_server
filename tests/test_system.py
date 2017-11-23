@@ -4,11 +4,10 @@ import unittest
 import requests
 import json
 
-import logging
 import threading
 
 import tornado.ioloop
-from tornado.options import define, options
+from tornado.options import define
 
 import application
 
@@ -45,7 +44,8 @@ class test_system(unittest.TestCase):
         stop_testing_server()
         print("teardown_class()")
 
-    def test_root(self):
+    @staticmethod
+    def test_root():
         expected_data = {
                 "username": "ryan.rabello",
                 "wwuid": "919428746",
@@ -60,7 +60,8 @@ class test_system(unittest.TestCase):
         assert(resp.status_code == 200)
         assert(json.loads(resp.text) == expected_data)
 
-    def test_search_all(self):
+    @staticmethod
+    def test_search_all():
         expected_data = {
                 "results": [
                         {"username": "john.doe", "photo": "profiles/1718/00958-2019687.jpg", "email": "", "full_name": "John Doe", "views": "6"},

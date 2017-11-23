@@ -6,4 +6,4 @@ from src.myclass import myClass
 
 def test_answer():
     c = myClass()
-    assert c.func(3) == 4
+    assert(c.func(3) == 4)

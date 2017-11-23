@@ -2,7 +2,7 @@
 import threading
 
 import tornado.ioloop
-from tornado.options import define, options
+from tornado.options import define
 
 import application
 

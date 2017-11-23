@@ -30,15 +30,8 @@ define("current_year", default="1718")
 
 # the main class that wraps everything up nice and neat
 class Application(tornado.web.Application):
-    def __init__(self):
-        # define some global settings
-        settings = {
-            "login_url": "/login",
-            "secret_key": keys["hmac"]
-        }
-
-        # list out the routes (as regex) and their corresponding handlers
-        handlers = [
+    # list out the routes (as regex) and their corresponding handlers
+    handlers = [
             (r"/login", base.BaseLoginHandler),
             (r"/profile/(.*)/(.*)", mask.ProfileHandler),
             (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
@@ -73,6 +66,13 @@ class Application(tornado.web.Application):
             (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
         ]
 
+    def __init__(self):
+        # define some global settings
+        settings = {
+            "login_url": "/login",
+            "secret_key": keys["hmac"]
+        }
+
         # a bunch of setup stuff
         # mostly for logging and telling Tornado to start with the given settings
         self.options = options
@@ -83,7 +83,7 @@ class Application(tornado.web.Application):
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
         logger.addHandler(fh)
-        tornado.web.Application.__init__(self, handlers, **settings)
+        tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(options.port))
 
 def start_server(tornado, io_loop):
