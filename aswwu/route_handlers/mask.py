@@ -10,7 +10,6 @@ from aswwu.base_handlers import BaseHandler
 import aswwu.models.mask as mask_model
 import aswwu.archive_models as archives
 import aswwu.alchemy as alchemy
-from aswwu.models import bases
 
 logger = logging.getLogger("aswwu")
 
