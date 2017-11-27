@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -19,13 +19,13 @@ class User(Base):
 # table for profile data
 class Profile(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-    username = Column(String(250))
-    full_name = Column(String(250))
+    username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
     photo = Column(String(250))
     gender = Column(String(250))
     birthday = Column(String(250))
-    email = Column(String(250))
-    phone = Column(String(250))
+    email = Column(String(250), CheckConstraint('LENGTH(email) < 250'))
+    phone = Column(String(250), CheckConstraint('LENGTH(phone) < 250'))
     website = Column(String(250))
     majors = Column(String(500))
     minors = Column(String(500))
