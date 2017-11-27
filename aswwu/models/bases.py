@@ -177,7 +177,3 @@ class JobsBase(object):
 
 
 JobsBase = declarative_base(cls=JobsBase)
-
-
-def shorten(input_str, length):
-    return input_str[0:length]

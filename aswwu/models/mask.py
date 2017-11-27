@@ -20,12 +20,12 @@ class User(Base):
 class Profile(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
-    full_name = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
     photo = Column(String(250))
     gender = Column(String(250))
     birthday = Column(String(250))
-    email = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
-    phone = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    email = Column(String(250), CheckConstraint('LENGTH(email) < 250'))
+    phone = Column(String(250), CheckConstraint('LENGTH(phone) < 250'))
     website = Column(String(250))
     majors = Column(String(500))
     minors = Column(String(500))
@@ -51,7 +51,6 @@ class Profile(Base):
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))
-
 
     def num_views(self):
         count = 0
