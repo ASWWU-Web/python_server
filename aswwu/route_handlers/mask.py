@@ -85,9 +85,21 @@ class SearchHandler(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        profiles = alchemy.query_all(mask_model.Profile)
-        self.write({'results': [p.base_info() for p in profiles]})
-
+        # profiles = alchemy.query_all(mask_model.Profile)
+        profiles = alchemy.search_all_profiles()
+        # print [p for p in profiles]
+        results = []
+        user = {}
+        # keys = ['username', 'full_name', 'photo', 'email', 'views']
+        for profile in profiles:
+            user['username'] = profile[0]
+            user['full_name'] = profile[1]
+            user['photo'] = profile[2]
+            user['email'] = profile[3]
+            user['views'] = profile[4] or 0
+            results.append(user)
+            user = {}
+        self.write({'results': results})
 
 # get user's profile information
 class ProfileHandler(BaseHandler):

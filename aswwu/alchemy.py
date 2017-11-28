@@ -75,6 +75,16 @@ def query_all(model):
     return thing
 
 
+def search_all_profiles():
+    thing = None
+    try:
+        thing = people_db.execute("SELECT username, full_name, photo, email, views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+
 # finds all rows for a given model matching the given WWUID
 def query_by_wwuid(model, wwuid):
     thing = None
