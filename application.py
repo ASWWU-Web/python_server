@@ -7,6 +7,7 @@ import tornado.escape
 import tornado.ioloop
 import tornado.web
 from tornado.options import define, options
+import tornado.httpserver
 
 import src.aswwu.base_handlers as base
 import src.aswwu.route_handlers.ask_anything as ask_anything
@@ -88,13 +89,17 @@ class Application(tornado.web.Application):
 
 def start_server(tornado, io_loop):
     # create a new instance of our Application
+    global application
     application = Application()
-    application.listen(options.port)
+    global server
+    server = tornado.httpserver.HTTPServer(application)
+    server.listen(options.port)
     # tell it to autoreload if anything changes
     tornado.autoreload.start()
     io_loop.start()
     print 'tornado server started'
 
 def stop_server(io_loop):
-    io_loop.stop()
+    io_loop.add_callback(io_loop.stop)
+    server.stop()
     print 'tornado server stopped'

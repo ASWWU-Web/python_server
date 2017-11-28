@@ -19,11 +19,12 @@ logger = logging.getLogger("aswwu")
 # import the necessary models (all of them in this case)
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///databases/people.db")
-archive_engine = create_engine("sqlite:///databases/archives.db")
-election_engine = create_engine("sqlite:///databases/senate_elections.db")
-pages_engine = create_engine("sqlite:///databases/pages.db")
-jobs_engine = create_engine("sqlite:///databases/jobs.db")
+# ?check_same_thread=False should only be a temp fix
+engine = create_engine("sqlite:///databases/people.db?check_same_thread=False")
+archive_engine = create_engine("sqlite:///databases/archives.db?check_same_thread=False")
+election_engine = create_engine("sqlite:///databases/senate_elections.db?check_same_thread=False")
+pages_engine = create_engine("sqlite:///databases/pages.db?check_same_thread=False")
+jobs_engine = create_engine("sqlite:///databases/jobs.db?check_same_thread=False")
 
 # create the model tables if they don't already exist
 Base.metadata.create_all(engine)
