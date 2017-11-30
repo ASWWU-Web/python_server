@@ -12,9 +12,9 @@ This is a python based REST api that ASWWU web uses for EVERYTHING.
 
 **Note:** This uses python 2 so if you don't have that installed, install it [here](https://www.python.org/downloads/).
 
-The following python packages need to be installed and they can be installed with the following command.
+The following python packages (pattern, requests, SQLAlchemy, tornado, bleach, etc.) need to be installed and they can be installed with the following command.
 ```
-pip install pattern requests SQLAlchemy tornado bleach
+pip install -r requirements.txt
 ```
 You should be ready to run the server now.
 ```

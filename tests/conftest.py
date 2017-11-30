@@ -2,6 +2,7 @@ import pytest
 import threading
 import tornado.ioloop
 import application
+from sqlalchemy import create_engine
 
 
 def start_testing_server():
@@ -35,3 +36,12 @@ def testing_server():
     (io_loop, thread) = start_testing_server()
     yield
     stop_testing_server(io_loop, thread)
+
+
+@pytest.fixture()
+def peopledb_conn(scope="module"):
+    engine = create_engine(
+        'sqlite:///databases/people.db?check_same_thread=False')
+    conn = engine.connect()
+    yield conn
+    conn.close()

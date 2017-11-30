@@ -1,20 +1,7 @@
 language: python
 python: "2.7"
 install:
-  # Coverage
-  - pip install coverage
-  # Coveralls
-  - pip install codacy-coverage
-  # Coveralls
-  - pip install python-coveralls
-  # CodeClimate
-  - pip install pytest-cov
-  - pip install coverage
-  - pip install codeclimate-test-reporter
-  # ASWWU Python Server
-  - pip install pattern requests SQLAlchemy tornado bleach
-  - pip install -U pytest
-#  - pip install -r requirements.txt
+  - pip install -r requirements.txt
 script:
   - pytest
   - pytest --cov=src tests/
