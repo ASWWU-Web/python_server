@@ -53,11 +53,11 @@ class Profile(Base):
     office_hours = Column(String(250))
 
     def num_views(self):
-        # count = 0
-        # for view in self.views:
-        #     count += view.num_views
-        # return count
-        return self.views.with_entities(func.sum(ProfileView.num_views)).scalar()
+        count = 0
+        for view in self.views:
+            count += view.num_views
+        return count
+        # return self.views.with_entities(func.sum(ProfileView.num_views)).scalar()
 
     # sometimes useful to only get a small amount of information about a user
     # e.g. listing ALL of the profiles in a cache for faster search later
