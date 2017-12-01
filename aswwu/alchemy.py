@@ -78,7 +78,7 @@ def query_all(model):
 def search_all_profiles():
     thing = None
     try:
-        thing = people_db.execute("SELECT username, full_name, photo, email, views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
     except Exception as e:
         logger.info(e)
         people_db.rollback()
