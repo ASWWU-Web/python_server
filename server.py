@@ -17,7 +17,7 @@ import aswwu.route_handlers.mask as mask
 import aswwu.route_handlers.saml as saml
 import aswwu.route_handlers.volunteers as volunteers
 # import our super secret keys
-from settings import keys
+from settings import keys, testing
 
 # import handlers as needed - here we import all of them
 
@@ -105,5 +105,6 @@ if __name__ == "__main__":
     application = Application()
     application.listen(options.port)
     # tell it to autoreload if anything changes
-    tornado.autoreload.start()
+    if testing['dev']:
+        tornado.autoreload.start()
     io_loop.start()
