@@ -1,6 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 import aswwu.models.bases as base
 
@@ -19,13 +19,13 @@ class User(Base):
 # table for profile data
 class Profile(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-    username = Column(String(250))
-    full_name = Column(String(250))
+    username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
     photo = Column(String(250))
     gender = Column(String(250))
     birthday = Column(String(250))
-    email = Column(String(250))
-    phone = Column(String(250))
+    email = Column(String(250), CheckConstraint('LENGTH(email) < 250'))
+    phone = Column(String(250), CheckConstraint('LENGTH(phone) < 250'))
     website = Column(String(250))
     majors = Column(String(500))
     minors = Column(String(500))
@@ -46,7 +46,7 @@ class Profile(Base):
     favorite_music = Column(String(1000))
     pet_peeves = Column(String(500))
     personality = Column(String(250))
-    views = relationship("ProfileView", backref="profile", lazy="joined")
+    views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
     privacy = Column(Integer)
     department = Column(String(250))
     office = Column(String(250))
@@ -57,6 +57,7 @@ class Profile(Base):
         for view in self.views:
             count += view.num_views
         return count
+        # return self.views.with_entities(func.sum(ProfileView.num_views)).scalar()
 
     # sometimes useful to only get a small amount of information about a user
     # e.g. listing ALL of the profiles in a cache for faster search later
@@ -87,4 +88,4 @@ class ProfileView(Base):
     viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
     viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
     last_viewed = Column(DateTime)
-    num_views = Column(Integer, default=0)
+    num_views = Column(Integer, default=0, index=True)
