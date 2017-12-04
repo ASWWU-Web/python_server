@@ -1,6 +1,12 @@
+"""This module contains convenience functions for creating data and inserting it into the databases
+   for testing
+"""
 from contextlib import contextmanager
-from sqlalchemy import Table, Column, String, MetaData, DateTime, Boolean
 from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table
+
+from names import get_first_name, get_last_name
 
 METADATA = MetaData()
 ASKANYTHING_TABLE = Table('askanythings', METADATA,
@@ -16,65 +22,93 @@ ASKANYTHING_VOTE_TABLE = Table('askanythingvotes', METADATA,
                                    'question_id', String(50), nullable=False),
                                Column('voter', String(75)))
 
-ASKANYTHINGS_DATA = [{
-    "id": 1,
-    "updated_at": datetime.now(),
-    "question": "Something",
-    "reviewed": True,
-    "authorized": True
-}, {
-    "id": 2,
-    "updated_at": datetime.now(),
-    "question": "Something Else",
-    "reviewed": True,
-    "authorized": True
-}, {
-    "id": 3,
-    "updated_at": datetime.now(),
-    "question": "Something More",
-    "reviewed": True,
-    "authorized": True
-}]
 
-ASKANYTHINGVOTES_DATA = [{
-    "id": 1,
-    "updated_at": datetime.now(),
-    "question_id": 1,
-    "voter": "ryan.rabello"
-}, {
-    "id": 2,
-    "updated_at": datetime.now(),
-    "question_id": 2,
-    "voter": "ryan.rabello"
-}, {
-    "id": 3,
-    "updated_at": datetime.now(),
-    "question_id": 3,
-    "voter": "ryan.rabello"
-}]
+def gen_askanythings(number=5):
+    """Generate askanythings
+
+    Keyword Arguments:
+    number(int) -- The upper limit of generated records (default 5)
+
+    Yields:
+    dict        -- Record information
+
+    """
+    for i in xrange(number):
+        yield {
+            "id": i,
+            "updated_at": datetime.now(),
+            "question": "Something_{}".format(i),
+            "reviewed": True,
+            "authorized": True
+        }
+
+
+def gen_askanythingvotes(number=5):
+    """Generate askanthing votes
+
+    Keyword Arguments:
+    number(int) -- The upper limit of generated records (default 5)
+
+    Yields:
+    dict        -- Record information
+
+    """
+    for i in xrange(number):
+        yield {
+            "id": i,
+            "updated_at": datetime.now(),
+            "question_id": 1,
+            "voter": get_first_name() + '.' + get_last_name()
+        }
+
+
+def edit(generator, changes):
+    """Edit the records produced by a generator and yield result
+
+    Keyword Arguments:
+    generator(generator(dict)) -- A generator which yields dicts
+    changes(dict)              -- A dictionary of chages to be made
+
+    Yields
+    dict                       -- Modified records
+
+    """
+    for i, record in enumerate(generator):
+        if i in changes.iterkeys():
+            record.update(changes[i])
+
+        yield record
 
 
 @contextmanager
-def askanything(conn, askanythings=ASKANYTHINGS_DATA):
+def askanything(conn, askanythings=None):
+    """Insert list of records into askanything table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    askanythings(list(dict)) -- Records to be inserted into the db (default None)
+
+    """
+    if askanythings is None:
+        askanythings = list(gen_askanythings())
+
     conn.execute(ASKANYTHING_TABLE.insert(), askanythings)
     yield askanythings
     conn.execute(ASKANYTHING_TABLE.delete())
 
 
 @contextmanager
-def askanthingvote(conn, askanythingvotes=ASKANYTHINGVOTES_DATA):
+def askanthingvote(conn, askanythingvotes=None):
+    """Insert list of records into askanything table
+
+    Keyword Arguments:
+    conn(conn)                   -- A connection object to the database
+    askanythingvotes(list(dict)) -- Records to be inserted into the db (default None)
+
+    """
+    if askanythingvotes is None:
+        askanythingvotes = list(gen_askanythingvotes())
+
     conn.execute(ASKANYTHING_VOTE_TABLE.insert(), askanythingvotes)
     yield askanythingvotes
     conn.execute(ASKANYTHING_VOTE_TABLE.delete())
-
-
-def gen_askanythings(number=5):
-    arr = []
-    for i in number:
-        arr.push({
-            "id": i,
-            "updated_at": datetime.now(),
-            "question": "Something_{}".format(i),
-            "reviewed": True,
-            "authorized": True
-        })

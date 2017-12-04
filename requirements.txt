@@ -11,3 +11,4 @@ python-coveralls
 requests
 SQLAlchemy
 tornado
+names
