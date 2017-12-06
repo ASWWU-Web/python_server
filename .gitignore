@@ -8,3 +8,4 @@ settings.py
 .cache
 ./databases/**
 env/
+.coverage

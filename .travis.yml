@@ -7,3 +7,4 @@ script:
   - pytest --cov=src tests/
 after_success:
   - codeclimate-test-reporter
+  
