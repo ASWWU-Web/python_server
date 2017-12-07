@@ -93,7 +93,7 @@ def gen_askanythings(number=5):
 
 
 def gen_askanythingvotes(number=5):
-    """Generate askanthing votes
+    """Generate askanything votes
 
     Keyword Arguments:
     number(int) -- The upper limit of generated records (default 5)
