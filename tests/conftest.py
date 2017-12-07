@@ -46,3 +46,12 @@ def peopledb_conn(scope="module"):
     conn = engine.connect()
     yield conn
     conn.close()
+    
+
+@pytest.fixture()
+def electiondb_conn(scope="module"):
+    engine = create_engine(
+        'sqlite:///databases/senate_elections.db?check_same_thread=False')
+    conn = engine.connect()
+    yield conn
+    conn.close()

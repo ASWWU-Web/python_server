@@ -22,6 +22,17 @@ ASKANYTHING_VOTE_TABLE = Table('askanythingvotes', METADATA,
                                    'question_id', String(50), nullable=False),
                                Column('voter', String(75)))
 
+ELECTION_TABLE = Table('elections', METADATA,
+                          Column('id', String(50), nullable=False),
+                          Column('wwuid', String(7), nullable=False),
+                          Column('candidate_one', String(50)),
+                          Column('candidate_two', String(50)),
+                          Column('sm_one', String(50)),
+                          Column('sm_two', String(50)),
+                          Column('new_department', String(150)),
+                          Column('district', String(50)),
+                          Column('updated_at', DateTime))
+
 
 def gen_askanythings(number=5):
     """Generate askanythings
@@ -112,3 +123,44 @@ def askanthingvote(conn, askanythingvotes=None):
     conn.execute(ASKANYTHING_VOTE_TABLE.insert(), askanythingvotes)
     yield askanythingvotes
     conn.execute(ASKANYTHING_VOTE_TABLE.delete())
+
+
+@contextmanager
+def election(conn, elections=None):
+    """Insert list of records into elections table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    elections(list(dict)) -- Records to be inserted into the db (default None)
+
+    """
+    if elections is None:
+        elections = list(gen_elections())
+
+    conn.execute(ELECTION_TABLE.insert(), elections)
+    yield elections
+    conn.execute(ELECTION_TABLE.delete())
+
+
+def gen_elections(number=5):
+    """Generate elections
+
+    Keyword Arguments:
+    number(int) -- The upper limit of generated records (default 5)
+
+    Yields:
+    dict        -- Record information
+
+    """
+    for i in xrange(number):
+        yield {
+            "id": "{}".format(i),
+            "wwuid": "900000{}".format(i),
+            "candidate_one": "person_A{}".format(i),
+            "candidate_two": "person_B{}".format(i),
+            "sm_one": "person_C{}".format(i),
+            "sm_two": "person_D{}".format(i),
+            "new_department": "department_{}".format(i),
+            "district": "district_{}".format(i),
+            "updated_at": datetime(2000, 1, 1)
+        }
