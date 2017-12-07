@@ -4,7 +4,6 @@ install:
   - pip install -r requirements.txt
 script:
   - pytest
-  - pytest --cov=src tests/
-after_success:
-  - codeclimate-test-reporter
-  
+after_script:
+  - pytest --cov-report xml --cov=src tests/
+  - python-codacy-coverage -r coverage.xml
