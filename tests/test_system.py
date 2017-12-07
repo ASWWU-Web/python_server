@@ -7,7 +7,7 @@ def test_root(testing_server):
     expected_data = {
         "username": "ryan.rabello",
         "wwuid": "919428746",
-        "roles": "",
+        "roles": "forms-admin",
         "photo": "profiles/1718/00958-2019687.jpg",
         "status": None,
         "full_name": "Ryan Rabello"

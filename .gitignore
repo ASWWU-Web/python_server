@@ -6,6 +6,6 @@ settings.py
 .idea/
 .DS_Store
 .cache
-./databases/**
+./databases/*
 env/
 .coverage
