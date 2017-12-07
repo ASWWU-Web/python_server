@@ -24,6 +24,22 @@ ASKANYTHING_VOTE_TABLE = Table('askanythingvotes', METADATA,
                                    'question_id', String(50), nullable=False),
                                Column('voter', String(75)))
 
+PROFILES_TABLE = Table('profiles', METADATA,
+                        Column('id', String(50), primary_key=True),
+                        Column('wwuid', String(10), nullable=False),
+                        Column('photo', String(250)),
+                        Column('majors', String(500)),
+                        Column('username', String(105)),
+                        Column('gender', String(250)))
+
+PROFILES1617_TABLE = Table('profiles1617', METADATA,
+                        Column('id', String(50), primary_key=True),
+                        Column('wwuid', String(10), nullable=False),
+                        Column('photo', String(250)),
+                        Column('majors', String(500)),
+                        Column('username', String(105)),
+                        Column('gender', String(250)))
+
 JOB_POSTING_TABLE = Table(
     'jobforms', METADATA,
     Column('id', Integer(), nullable=False),
@@ -129,6 +145,31 @@ def edit(generator, changes):
         yield record
 
 
+# Generator to create archived user profiles
+def gen_profiles(number=5):
+        """Generate Mask profilesaskanythings
+
+        Keyword Arguments:
+        number(int) -- The upper limit of generated records (default 5)
+
+        Yields:
+        dict        -- Record information
+
+        """
+        for i in xrange(number):
+            username = "test.profile"
+            username += `i`
+
+            yield {
+                "id" : 100 + i,
+                "wwuid": 9000000 + i,
+                "photo": "profiles/1617/00958-2019687.jpg",
+                "majors": "Computer Science",
+                "username" : username, #Generates a new username archived.profile0, archived.profile1, etc.
+                "gender": "female"
+        }
+
+
 @contextmanager
 def askanything(conn, askanythings=None):
     """Insert list of records into askanything table
@@ -162,6 +203,40 @@ def askanthingvote(conn, askanythingvotes=None):
     yield askanythingvotes
     conn.execute(ASKANYTHING_VOTE_TABLE.delete())
 
+
+
+@contextmanager
+def archived_profile(conn, profiles=None):
+    """Insert list of records into profile table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    profiles(list(dict))     -- Records to be inserted into the db (default None)
+
+    """
+    if profiles is None:
+        profiles = list(gen_profiles())
+
+    conn.execute(PROFILES1617_TABLE.insert(), profiles)
+    yield profiles
+    conn.execute(PROFILES1617_TABLE.delete())
+
+
+@contextmanager
+def profile(conn, profiles=None):
+    """Insert list of records into profile table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    profiles(list(dict))     -- Records to be inserted into the db (default None)
+
+    """
+    if profiles is None:
+        profiles = list(gen_profiles())
+
+    conn.execute(PROFILES_TABLE.insert(), profiles)
+    yield profiles
+    conn.execute(PROFILES_TABLE.delete())
 
 def gen_job_posting(number=5):
     """
