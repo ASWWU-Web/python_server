@@ -1,6 +1,3 @@
-# test_get_request.py
-# Author: Cameron Smith
-
 import requests
 import json
 from tests.utils import profile, archived_profile, gen_profiles

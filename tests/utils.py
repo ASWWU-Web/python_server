@@ -11,34 +11,37 @@ from sqlalchemy.exc import IntegrityError
 from names import get_first_name, get_last_name
 
 METADATA = MetaData()
-ASKANYTHING_TABLE = Table('askanythings', METADATA,
-                          Column('id', String(50), nullable=False),
-                          Column('updated_at', DateTime),
-                          Column('question', String(500), nullable=False),
-                          Column('reviewed', Boolean),
-                          Column('authorized', Boolean))
+ASKANYTHING_TABLE = Table(
+    'askanythings', METADATA,
+    Column('id', String(50), nullable=False),
+    Column('updated_at', DateTime),
+    Column('question', String(500), nullable=False),
+    Column('reviewed', Boolean),
+    Column('authorized', Boolean))
 
-ASKANYTHING_VOTE_TABLE = Table('askanythingvotes', METADATA,
-                               Column('id', String(50), nullable=False),
-                               Column(
-                                   'question_id', String(50), nullable=False),
-                               Column('voter', String(75)))
+ASKANYTHING_VOTE_TABLE = Table(
+    'askanythingvotes', METADATA,
+    Column('id', String(50), nullable=False),
+    Column('question_id', String(50), nullable=False),
+    Column('voter', String(75)))
 
-PROFILES_TABLE = Table('profiles', METADATA,
-                        Column('id', String(50), primary_key=True),
-                        Column('wwuid', String(10), nullable=False),
-                        Column('photo', String(250)),
-                        Column('majors', String(500)),
-                        Column('username', String(105)),
-                        Column('gender', String(250)))
+PROFILES_TABLE = Table(
+    'profiles', METADATA,
+    Column('id', String(50), primary_key=True),
+    Column('wwuid', String(10), nullable=False),
+    Column('photo', String(250)),
+    Column('majors', String(500)),
+    Column('username', String(105)),
+    Column('gender', String(250)))
 
-PROFILES1617_TABLE = Table('profiles1617', METADATA,
-                        Column('id', String(50), primary_key=True),
-                        Column('wwuid', String(10), nullable=False),
-                        Column('photo', String(250)),
-                        Column('majors', String(500)),
-                        Column('username', String(105)),
-                        Column('gender', String(250)))
+PROFILES1617_TABLE = Table(
+    'profiles1617', METADATA,
+    Column('id', String(50), primary_key=True),
+    Column('wwuid', String(10), nullable=False),
+    Column('photo', String(250)),
+    Column('majors', String(500)),
+    Column('username', String(105)),
+    Column('gender', String(250)))
 
 JOB_POSTING_TABLE = Table(
     'jobforms', METADATA,
@@ -147,111 +150,25 @@ def edit(generator, changes):
 
 # Generator to create archived user profiles
 def gen_profiles(number=5):
-        """Generate Mask profilesaskanythings
-
-        Keyword Arguments:
-        number(int) -- The upper limit of generated records (default 5)
-
-        Yields:
-        dict        -- Record information
-
-        """
-        for i in xrange(number):
-            username = "test.profile"
-            username += `i`
-
-            yield {
-                "id" : 100 + i,
-                "wwuid": 9000000 + i,
-                "photo": "profiles/1617/00958-2019687.jpg",
-                "majors": "Computer Science",
-                "username" : username, #Generates a new username archived.profile0, archived.profile1, etc.
-                "gender": "female"
-        }
-
-
-@contextmanager
-def askanything(conn, askanythings=None):
-    """Insert list of records into askanything table
+    """Generate Mask profilesaskanythings
 
     Keyword Arguments:
-    conn(conn)               -- A connection object to the database
-    askanythings(list(dict)) -- Records to be inserted into the db (default None)
+    number(int) -- The upper limit of generated records (default 5)
+
+    Yields:
+    dict        -- Record information
 
     """
-    if askanythings is None:
-        askanythings = list(gen_askanythings())
+    for i in xrange(number):
 
-    conn.execute(ASKANYTHING_TABLE.insert(), askanythings)
-    yield askanythings
-    conn.execute(ASKANYTHING_TABLE.delete())
-
-
-@contextmanager
-def askanthingvote(conn, askanythingvotes=None):
-    """Insert list of records into askanything table
-
-    Keyword Arguments:
-    conn(conn)                   -- A connection object to the database
-    askanythingvotes(list(dict)) -- Records to be inserted into the db (default None)
-
-    """
-    if askanythingvotes is None:
-        askanythingvotes = list(gen_askanythingvotes())
-
-    conn.execute(ASKANYTHING_VOTE_TABLE.insert(), askanythingvotes)
-    yield askanythingvotes
-    conn.execute(ASKANYTHING_VOTE_TABLE.delete())
-
-
-
-@contextmanager
-def archived_profile(conn, profiles=None):
-    """Insert list of records into profile table
-
-    Keyword Arguments:
-    conn(conn)               -- A connection object to the database
-    profiles(list(dict))     -- Records to be inserted into the db (default None)
-
-    """
-    if profiles is None:
-        profiles = list(gen_profiles())
-
-    conn.execute(PROFILES1617_TABLE.insert(), profiles)
-    yield profiles
-    conn.execute(PROFILES1617_TABLE.delete())
-
-
-@contextmanager
-def profile(conn, profiles=None):
-    """Insert list of records into profile table
-
-    Keyword Arguments:
-    conn(conn)               -- A connection object to the database
-    profiles(list(dict))     -- Records to be inserted into the db (default None)
-
-    """
-    if profiles is None:
-        profiles = list(gen_profiles())
-
-    conn.execute(PROFILES_TABLE.insert(), profiles)
-    yield profiles
-    conn.execute(PROFILES_TABLE.delete())
-
-def gen_job_posting(number=5):
-    """
-    Generator for job postings
-    """
-    for i in xrange(2, number + 2):
         yield {
-            "id": i,
-            "job_name": "Job number {}".format(i),
-            "job_description": "A description for the job",
-            "department": "department {}".format(i),
-            "visibility": 0,
-            "owner": get_first_name() + '.' + get_last_name(),
-            "image": "/images/{}".format(i)
-        }
+            "id" : 100 + i,
+            "wwuid": 9000000 + i,
+            "photo": "profiles/1617/00958-2019687.jpg",
+            "majors": "Computer Science",
+            "username" : "test.profile" + `i`,
+            "gender": "female"
+    }
 
 
 def gen_job_answer(number_answers_per_app=5, num_apps=5):
@@ -289,6 +206,114 @@ def gen_job_question(number_questions_per_posting=5, num_postings=5):
             "question": "Question Number {}".format(i),
             "jobID": i % (num_postings) + 2
         }
+
+
+def gen_job_posting(number=5):
+    """
+    Generator for job postings
+    """
+    for i in xrange(2, number + 2):
+        yield {
+            "id": i,
+            "job_name": "Job number {}".format(i),
+            "job_description": "A description for the job",
+            "department": "department {}".format(i),
+            "visibility": 0,
+            "owner": get_first_name() + '.' + get_last_name(),
+            "image": "/images/{}".format(i)
+        }
+
+
+def gen_elections(number=5):
+    """Generate elections
+
+    Keyword Arguments:
+    number(int) -- The upper limit of generated records (default 5)
+
+    Yields:
+    dict        -- Record information
+
+    """
+    for i in xrange(number):
+        yield {
+            "id": "{}".format(i),
+            "wwuid": "900000{}".format(i),
+            "candidate_one": "person_A{}".format(i),
+            "candidate_two": "person_B{}".format(i),
+            "sm_one": "person_C{}".format(i),
+            "sm_two": "person_D{}".format(i),
+            "new_department": "department_{}".format(i),
+            "district": "district_{}".format(i),
+            "updated_at": datetime(2000, 1, 1)
+        }
+
+
+@contextmanager
+def askanything(conn, askanythings=None):
+    """Insert list of records into askanything table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    askanythings(list(dict)) -- Records to be inserted into the db (default None)
+
+    """
+    if askanythings is None:
+        askanythings = list(gen_askanythings())
+
+    conn.execute(ASKANYTHING_TABLE.insert(), askanythings)
+    yield askanythings
+    conn.execute(ASKANYTHING_TABLE.delete())
+
+
+@contextmanager
+def askanthingvote(conn, askanythingvotes=None):
+    """Insert list of records into askanything table
+
+    Keyword Arguments:
+    conn(conn)                   -- A connection object to the database
+    askanythingvotes(list(dict)) -- Records to be inserted into the db (default None)
+
+    """
+    if askanythingvotes is None:
+        askanythingvotes = list(gen_askanythingvotes())
+
+    conn.execute(ASKANYTHING_VOTE_TABLE.insert(), askanythingvotes)
+    yield askanythingvotes
+    conn.execute(ASKANYTHING_VOTE_TABLE.delete())
+
+
+@contextmanager
+def archived_profile(conn, profiles=None):
+    """Insert list of records into profile table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    profiles(list(dict))     -- Records to be inserted into the db (default None)
+
+    """
+    if profiles is None:
+        profiles = list(gen_profiles())
+
+    conn.execute(PROFILES1617_TABLE.insert(), profiles)
+    yield profiles
+    conn.execute(PROFILES1617_TABLE.delete())
+
+
+@contextmanager
+def profile(conn, profiles=None):
+    """Insert list of records into profile table
+
+    Keyword Arguments:
+    conn(conn)               -- A connection object to the database
+    profiles(list(dict))     -- Records to be inserted into the db (default None)
+
+    """
+    if profiles is None:
+        profiles = list(gen_profiles())
+
+    conn.execute(PROFILES_TABLE.insert(), profiles)
+    yield profiles
+    conn.execute(PROFILES_TABLE.delete())
 
 
 @contextmanager
@@ -414,27 +439,3 @@ def election(conn, elections=None):
     conn.execute(ELECTION_TABLE.insert(), elections)
     yield elections
     conn.execute(ELECTION_TABLE.delete())
-
-
-def gen_elections(number=5):
-    """Generate elections
-
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
-
-    Yields:
-    dict        -- Record information
-
-    """
-    for i in xrange(number):
-        yield {
-            "id": "{}".format(i),
-            "wwuid": "900000{}".format(i),
-            "candidate_one": "person_A{}".format(i),
-            "candidate_two": "person_B{}".format(i),
-            "sm_one": "person_C{}".format(i),
-            "sm_two": "person_D{}".format(i),
-            "new_department": "department_{}".format(i),
-            "district": "district_{}".format(i),
-            "updated_at": datetime(2000, 1, 1)
-        }
