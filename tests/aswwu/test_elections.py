@@ -58,3 +58,45 @@ def test_data(testing_server, electiondb_conn):
         resp = requests.get(url)
     assert (resp.status_code == 200)
     assert (json.loads(resp.text) == expected_data)
+
+
+def test_vote(testing_server, db_query):
+    post_data = {
+        "candidate_one": "person_A0",
+        "candidate_two": "person_B0",
+        "sm_one": "person_C0",
+        "sm_two": "person_D0",
+        "new_department": "department_0",
+        "district": "district_0"
+    }
+    expected_post_response = {
+        "vote": "successfully voted"
+    }
+
+    expected_get_response = {
+        "results": [
+            {
+                "wwuid": "919428746",
+                "district": "district_0",
+                "candidate_two": "person_B0",
+                "sm_two": "person_D0",
+                "candidate_one": "person_A0",
+                "updated_at": "2000-01-01 00:00:00",
+                "new_department": "department_0",
+                "sm_one": "person_C0"
+            }
+        ]
+    }
+
+    post_url = "http://127.0.0.1:8888/senate_election/vote/ryan.rabello"
+    get_url = "http://127.0.0.1:8888/senate_election/showall"
+    post_resp = requests.post(post_url, data=post_data)
+    get_resp = requests.get(get_url)
+
+    # modify get_resp json to the standard updated_at time
+    mod_get_response = json.loads(get_resp.text)
+    mod_get_response['results'][0]['updated_at'] = "2000-01-01 00:00:00"
+
+    assert (post_resp.status_code == 200)
+    assert (json.loads(post_resp.text) == expected_post_response)
+    assert (mod_get_response == expected_get_response)

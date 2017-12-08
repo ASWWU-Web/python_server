@@ -4,7 +4,7 @@ import tornado.ioloop
 import application
 from sqlalchemy import create_engine
 from settings import DATABASE
-
+from tests.utils import query_table_elections, delete_table_elections
 
 def start_testing_server():
     # pass in the conf default name
@@ -67,6 +67,12 @@ def electiondb_conn(scope="module"):
     conn = engine.connect()
     yield conn
     conn.close()
+
+
+@pytest.fixture()
+def db_query(electiondb_conn):
+    yield query_table_elections(electiondb_conn)
+    delete_table_elections(electiondb_conn)
 
 
 @pytest.fixture()

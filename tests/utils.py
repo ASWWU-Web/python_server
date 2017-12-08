@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 
-from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey
+from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
 from sqlalchemy.exc import IntegrityError
 
 from names import get_first_name, get_last_name
@@ -438,4 +438,12 @@ def election(conn, elections=None):
 
     conn.execute(ELECTION_TABLE.insert(), elections)
     yield elections
+    conn.execute(ELECTION_TABLE.delete())
+
+
+def query_table_elections(conn):
+    yield conn.execute(select(ELECTION_TABLE))
+
+
+def delete_table_elections(conn):
     conn.execute(ELECTION_TABLE.delete())
