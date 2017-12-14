@@ -4,6 +4,8 @@ install:
   - pip install -r requirements.txt
 script:
   - pytest
-after_script:
+  - pytest --cov=src tests/
+after_success:
+  - codecov
   - pytest --cov-report xml --cov=src tests/
   - python-codacy-coverage -r coverage.xml

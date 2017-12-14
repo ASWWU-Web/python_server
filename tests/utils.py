@@ -150,25 +150,31 @@ def edit(generator, changes):
 
 # Generator to create archived user profiles
 def gen_profiles(number=5):
-    """Generate Mask profilesaskanythings
+        """Generate Mask profiles
 
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
+        Keyword Arguments:
+        number(int) -- The upper limit of generated records (default 5)
 
-    Yields:
-    dict        -- Record information
+        Yields:
+        dict        -- Record information
 
-    """
-    for i in xrange(number):
+        """
+        gender = ["male", "female"]
+        majors = ["Computer Science", "Software Engineering", ""]
+        pet_peeves = ["Being tinkered with", ""]
+        for i in xrange(number):
+            #Generates a new username archived.profile0, archived.profile1, etc.
+            username = "test.profile" + `i`
 
-        yield {
-            "id" : 100 + i,
-            "wwuid": 9000000 + i,
-            "photo": "profiles/1617/00958-2019687.jpg",
-            "majors": "Computer Science",
-            "username" : "test.profile" + `i`,
-            "gender": "female"
-    }
+            yield {
+                "id" : 100 + i,
+                "wwuid": 9000000 + i,
+                "photo": "profiles/00958-2019687.jpg",
+                "majors": majors[i%3],
+                "username" : username, 
+                "gender": gender[i%2],
+                "pet_peeves": pet_peeves[i%2]
+            }
 
 
 def gen_job_answer(number_answers_per_app=5, num_apps=5):

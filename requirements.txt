@@ -1,6 +1,7 @@
 bandit
 bleach
 codacy-coverage
+codecov
 coverage
 coveralls
 names
