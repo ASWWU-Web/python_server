@@ -17,28 +17,20 @@ class Page(PagesBase):
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
     is_visible = Column(Boolean, default=False)
     last_update = Column(DateTime, onupdate=datetime.datetime.now)
-    tags = relationship("PageTag", backref="Pages", lazy="joined")
+    tags = Column(String(250))
     category = Column(String(50), default='Other')
     theme_blob = Column(String(150))
 
     def serialize(self):
-        taggies = []
+        tag_list = []
         for tag in self.tags:
-            taggies.append(tag.tag)
-        eddies = []
+            tag_list.append(tag.tag)
+        editor_list = []
         for editor in self.editors:
-            eddies.append(editor.serialize())
+            editor_list.append(editor.serialize())
         return {'url': self.url, 'title': self.title, 'content': self.content, 'author': self.author,
                 'is_visible': self.is_visible, 'last_update': self.last_update, 'category': self.category,
-                'theme_blob': self.theme_blob, 'editors': eddies, 'tags': taggies}
-
-
-class PageTag(PagesBase):
-    tag = Column(String(50))
-    pageID = Column(String(50), ForeignKey('pages.id'))
-
-    def serialize(self):
-        return {'tag': self.tag}
+                'theme_blob': self.theme_blob, 'editors': editor_list, 'tags': tag_list}
 
 
 class PageEditor(PagesBase):
