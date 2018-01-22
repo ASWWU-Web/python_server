@@ -3,7 +3,7 @@
 # import and set up the logging
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, joinedload
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
@@ -78,7 +78,24 @@ def query_all(model):
 def search_all_profiles():
     thing = None
     try:
-        thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
+            join(mask_model.Profile.views). \
+            group_by(mask_model.ProfileView.viewed)
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+
+def num_views(username):
+    thing = None
+    try:
+        thing = people_db.execute("SELECT SUM(num_views) FROM profileviews WHERE viewed = \"{}\""
+                                  .format(username)).first()[0] or None
+        # thing = people_db.query(func.sum(mask_model.ProfileView.num_views)). \
+        #     group_by(mask_model.ProfileView.viewed). \
+        #     filter(mask_model.ProfileView.viewed == username).all()
     except Exception as e:
         logger.info(e)
         people_db.rollback()
