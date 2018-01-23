@@ -55,31 +55,65 @@ class SearchHandler(BaseHandler):
         if year == self.application.options.current_year:
             model = mask_model.Profile
             # results = alchemy.people_db.query(model)
-            results = alchemy.search_all_profiles()
+
+            # profiles = alchemy.search_all_profiles()
+            # results = {r[0] for r in profiles}
         # otherwise we're going old school with the Archives
         else:
             model = archives.get_archive_model(year)
             results = alchemy.archive_db.query(model)
+            # break up the query <-- expected to be a standard URIEncodedComponent
+            fields = [q.split("=") for q in query.split(";")]
+            for f in fields:
+                if len(f) == 1:
+                    # throw %'s around everything to make the search relative
+                    # e.g. searching for "b" will return anything that has b *somewhere* in it
+                    v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
+                    results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
+                else:
+                    # we want these queries to matche exactly
+                    # e.g. "%male%" would also return "female"
+                    if f[0] in ['gender']:
+                        results = results.filter(getattr(model, f[0]).ilike(f[1]))
+                    else:
+                        attribute_arr = f[1].encode('ascii', 'ignore').split(",")
+                        if len(attribute_arr) > 1:
+                            results = results.filter(
+                                or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
+                        else:
+                            results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
+
+            self.write({'results': [r.base_info() for r in results]})
+            return
         # break up the query <-- expected to be a standard URIEncodedComponent
         fields = [q.split("=") for q in query.split(";")]
+        if len(fields) == 0 or len(fields) == 1 and len(fields[0]) == 1 and fields[0][0] == '':
+            profiles = alchemy.search_all_profiles()
+            self.write({'results': [r[0].to_json(views=r[1], limitList=['username', 'full_name', 'photo', 'email', 'views'])
+                                    for r in profiles]})
+            return
         for f in fields:
             if len(f) == 1:
                 # throw %'s around everything to make the search relative
                 # e.g. searching for "b" will return anything that has b *somewhere* in it
                 v = '%'+f[0].replace(' ', '%').replace('.', '%')+'%'
-                results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
+                # results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
+                results = alchemy.search_profiles("relative", v)
             else:
-                # we want these queries to matche exactly
+                # we want these queries to match exactly
                 # e.g. "%male%" would also return "female"
-                if f[0] in ['gender']:
-                    results = results.filter(getattr(model, f[0]).ilike(f[1]))
+                if f[0] == "gender":
+                    # results = results.filter(getattr(model, "gender").ilike(f[1]))
+                    results = alchemy.search_profiles("gender", f[1])
                 else:
                     attribute_arr = f[1].encode('ascii', 'ignore').split(",")
-                    if len(attribute_arr) > 1:
-                        results = results.filter(or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
-                    else:
-                        results = results.filter(getattr(model, f[0]).ilike('%'+f[1]+'%'))
-        self.write({'results': [r.base_info() for r in results]})
+                    # if len(attribute_arr) > 1:
+                    #     results = results.filter(or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
+                    # else:
+                    #     results = results.filter(getattr(model, f[0]).ilike('%'+f[1]+'%'))
+                    results = alchemy.search_profiles("exact", [attribute_arr, f[0], f[1]])
+        self.write({'results': [r[0].to_json(views=r[1], limitList=['username', 'full_name', 'photo', 'email', 'views']) for r in results]})
+        # self.write({'results': [r.base_info() for r in results]})
 
 
 # get all of the profiles in our database

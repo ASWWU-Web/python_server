@@ -3,7 +3,7 @@
 # import and set up the logging
 import logging
 
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, or_
 from sqlalchemy.orm import sessionmaker, joinedload
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
@@ -82,6 +82,36 @@ def search_all_profiles():
         thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
             join(mask_model.Profile.views). \
             group_by(mask_model.ProfileView.viewed)
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+def search_profiles(type, query_data):
+    thing = None
+    try:
+        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        if type == "fuzzy":
+            thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
+                filter(or_(mask_model.username.ilike(query_data), mask_model.full_name.ilike(query_data))). \
+                join(mask_model.Profile.views). \
+                group_by(mask_model.ProfileView.viewed)
+        elif type == "gender":
+            thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
+                filter(getattr(mask_model, "gender").ilike(query_data)). \
+                join(mask_model.Profile.views). \
+                group_by(mask_model.ProfileView.viewed)
+        elif type == "exact":
+            if len(query_data[0]) > 1:
+                thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
+                    filter(or_(getattr(mask_model, query_data[1]).ilike("%" + v + "%") for v in query_data[0])). \
+                    join(mask_model.Profile.views). \
+                    group_by(mask_model.ProfileView.viewed)
+            else:
+                thing = people_db.query(mask_model.Profile, func.sum(mask_model.ProfileView.num_views)). \
+                    filter(getattr(mask_model, query_data[1]).ilike('%' + query_data[2] + '%')). \
+                    join(mask_model.Profile.views). \
+                    group_by(mask_model.ProfileView.viewed)
     except Exception as e:
         logger.info(e)
         people_db.rollback()
