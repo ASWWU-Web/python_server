@@ -98,7 +98,7 @@ class SearchHandler(BaseHandler):
                 # e.g. searching for "b" will return anything that has b *somewhere* in it
                 v = '%'+f[0].replace(' ', '%').replace('.', '%')+'%'
                 # results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
-                results = alchemy.search_profiles("relative", v)
+                results = alchemy.search_profiles("fuzzy", v)
             else:
                 # we want these queries to match exactly
                 # e.g. "%male%" would also return "female"
