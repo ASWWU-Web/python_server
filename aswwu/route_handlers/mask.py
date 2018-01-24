@@ -82,58 +82,34 @@ class SearchHandler(BaseHandler):
                                 or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
                         else:
                             results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
-
             self.write({'results': [r.base_info() for r in results]})
             return
-        # break up the query <-- expected to be a standard URIEncodedComponent
-        fields = [q.split("=") for q in query.split(";")]
-        if len(fields) == 0 or len(fields) == 1 and len(fields[0]) == 1 and fields[0][0] == '':
-            profiles = alchemy.search_all_profiles()
-            self.write({'results': [r[0].to_json(views=r[1], limitList=['username', 'full_name', 'photo', 'email', 'views'])
-                                    for r in profiles]})
-            return
-        for f in fields:
-            if len(f) == 1:
-                # throw %'s around everything to make the search relative
-                # e.g. searching for "b" will return anything that has b *somewhere* in it
-                v = '%'+f[0].replace(' ', '%').replace('.', '%')+'%'
-                # results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
-                results = alchemy.search_profiles("fuzzy", v)
-            else:
-                # we want these queries to match exactly
-                # e.g. "%male%" would also return "female"
-                if f[0] == "gender":
-                    # results = results.filter(getattr(model, "gender").ilike(f[1]))
-                    results = alchemy.search_profiles("gender", f[1])
-                else:
-                    attribute_arr = f[1].encode('ascii', 'ignore').split(",")
-                    # if len(attribute_arr) > 1:
-                    #     results = results.filter(or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
-                    # else:
-                    #     results = results.filter(getattr(model, f[0]).ilike('%'+f[1]+'%'))
-                    results = alchemy.search_profiles("exact", [attribute_arr, f[0], f[1]])
-        self.write({'results': [r[0].to_json(views=r[1], limitList=['username', 'full_name', 'photo', 'email', 'views']) for r in results]})
-        # self.write({'results': [r.base_info() for r in results]})
+
+        try:
+            search_criteria = {}
+            # Put query into JSON form
+            for q in query.split(";"):
+                search_criteria[q.split("=")[0]] = q.split("=")[1]
+            results = alchemy.search_profiles(search_criteria)
+        except:
+            search_criteria = query
+            # If there's no search parameters
+            if len(search_criteria) == 0:
+                results = alchemy.search_all_profiles()
+            # If only a username is being passed into the search parameters
+            elif len(search_criteria) > 0:
+                search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
+                results = alchemy.search_profiles(search_criteria)
+
+        keys = ['username', 'full_name', 'photo', 'email', 'views']
+        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
 
 
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        # profiles = alchemy.query_all(mask_model.Profile)
         profiles = alchemy.search_all_profiles()
-        # print [p for p in profiles]
-        results = []
-        user = {}
         keys = ['username', 'full_name', 'photo', 'email', 'views']
-        # for profile in profiles:
-        #     user['username'] = profile[0]
-        #     user['full_name'] = profile[1]
-        #     user['photo'] = profile[2]
-        #     user['email'] = profile[3]
-        #     user['views'] = profile[4] or 0
-        #     results.append(user)
-        #     user = {}
-        # self.write({'results': results})
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in profiles]})
 
 # get user's profile information
