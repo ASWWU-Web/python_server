@@ -56,7 +56,6 @@ class Base(object):
                     pass
 
             elif key == "views":
-                # obj[key] = str(self.num_views())
                 obj[key] = views or str(self.num_views())
         return obj
 

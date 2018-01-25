@@ -54,7 +54,7 @@ class Profile(Base):
 
     def num_views(self):
         from aswwu.alchemy import num_views
-        views = num_views(self.username)[0]
+        views = num_views(self.username)
         return views
 
     # sometimes useful to only get a small amount of information about a user
