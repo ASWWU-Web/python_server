@@ -119,11 +119,13 @@ def search_profiles(search_criteria):
 def num_views(username):
     thing = None
     try:
-        thing = people_db.execute("SELECT SUM(num_views) FROM profileviews WHERE viewed = \"{}\""
-                                  .format(username)).first()[0] or None
-        # thing = people_db.query(func.sum(mask_model.ProfileView.num_views)). \
-        #     group_by(mask_model.ProfileView.viewed). \
-        #     filter(mask_model.ProfileView.viewed == username).all()
+        thing = people_db.query(label("views", func.sum(mask_model.ProfileView.num_views))). \
+            group_by(mask_model.ProfileView.viewed). \
+            filter(mask_model.ProfileView.viewed == username)
+        try:
+            thing = thing.one().views
+        except Exception:
+            thing = None
     except Exception as e:
         logger.info(e)
         people_db.rollback()
