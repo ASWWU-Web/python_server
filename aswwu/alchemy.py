@@ -3,8 +3,10 @@
 # import and set up the logging
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.sql import label
+
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
 from aswwu.archive_models import ArchiveBase
@@ -78,7 +80,50 @@ def query_all(model):
 def search_all_profiles():
     thing = None
     try:
-        thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views) AS real_views FROM profileviews GROUP BY viewed) AS pv ON profiles.username = pv.viewed)")
+        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
+            join(mask_model.Profile.views). \
+            group_by(mask_model.ProfileView.viewed). \
+            order_by(desc("views"))
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+
+def search_term_generator(search_criteria):
+    for key in search_criteria:
+        if key == "gender":
+            yield mask_model.Profile.gender.ilike(search_criteria["gender"])
+        if key == "username" or key == "full_name":
+            yield and_(mask_model.Profile.username.ilike("%" + search_criteria[key] + "%") + mask_model.Profile.full_name.ilike("%" + search_criteria[key] + "%"))
+        else:
+            yield getattr(mask_model.Profile, key).ilike("%" + search_criteria[key] + "%")
+
+
+def search_profiles(search_criteria):
+    thing = None
+    try:
+        search_statement = and_(search_term_generator(search_criteria))
+        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
+            filter(search_statement). \
+            join(mask_model.Profile.views). \
+            group_by(mask_model.ProfileView.viewed).\
+            order_by(desc("views"))
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+
+def num_views(username):
+    thing = None
+    try:
+        thing = people_db.execute("SELECT SUM(num_views) FROM profileviews WHERE viewed = \"{}\""
+                                  .format(username)).first()[0] or None
+        # thing = people_db.query(func.sum(mask_model.ProfileView.num_views)). \
+        #     group_by(mask_model.ProfileView.viewed). \
+        #     filter(mask_model.ProfileView.viewed == username).all()
     except Exception as e:
         logger.info(e)
         people_db.rollback()
