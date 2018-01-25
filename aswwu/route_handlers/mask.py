@@ -100,7 +100,6 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = alchemy.search_profiles(search_criteria)
-
         keys = ['username', 'full_name', 'photo', 'email', 'views']
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
 
