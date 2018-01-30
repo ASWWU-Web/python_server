@@ -2,7 +2,7 @@
 ## Installation
 The following python packages need to be installed and they can be installed with the following command.
 ```
-pip install pattern requests SQLAlchemy tornado bleach
+pip install -r requirements.txt
 ```
 
 Then you need to get a copy of the database file. In your git projects folder run the following command

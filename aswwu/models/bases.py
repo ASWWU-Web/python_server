@@ -39,6 +39,7 @@ class Base(object):
         # if called similarly to skipList, then only those columns will even be checked
         # by default we check all of the table's columns
         limit_list = kwargs.get('limitList', columns)
+        views = kwargs.get('views')
         for key in limit_list:
             if key not in skip_list and key != "views":
                 # fancy way of saying "self.key"
@@ -54,9 +55,8 @@ class Base(object):
                     logger.debug("obj[{}] = {} failed to json encode in to_json. Error message: {}".format(key, value, e))
                     pass
 
-
             elif key == "views":
-                obj[key] = str(self.num_views())
+                obj[key] = views or str(self.num_views())
         return obj
 
 
