@@ -20,6 +20,8 @@ class Page(PagesBase):
     tags = Column(String(250))
     category = Column(String(50), default='Other')
     theme_blob = Column(String(150))
+    current = Column(Boolean)
+    # TODO: Every 24 hours is an editing period for a page. Past that, the previous one is archived and a new one is created
 
     def serialize(self):
         tag_list = []
