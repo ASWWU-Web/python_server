@@ -61,10 +61,6 @@ class Profile(Base):
     # e.g. listing ALL of the profiles in a cache for faster search later
     def base_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
-    # TODO: remove email from base_info
-
-    def no_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'views', 'privacy'])
 
     def impers_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors',

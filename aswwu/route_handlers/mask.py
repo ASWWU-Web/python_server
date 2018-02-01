@@ -136,7 +136,7 @@ class ProfileHandler(BaseHandler):
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
                 else:
-                    self.write(profile.no_info())
+                    self.write(profile.base_info())
             else:
                 if user.username == profile.username:
                     self.write(profile.to_json())
