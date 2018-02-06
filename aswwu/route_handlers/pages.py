@@ -10,11 +10,11 @@ import aswwu.alchemy as alchemy
 logger = logging.getLogger("aswwu")
 
 
-class PagesHandler(BaseHandler):
+class GetAllHandler(BaseHandler):
     def get(self):
-        page_id = '12345'
         try:
-            page = alchemy.query_by_page_id(pages_model.Page, page_id)
+            # page = alchemy.query_by_page_id(pages_model.Page, page_id)
+            # TODO: Need get all alchemy function
             if len(page) == 0:
                 self.write({'error': 'no page found'})
             elif len(page) > 1:
@@ -27,12 +27,12 @@ class PagesHandler(BaseHandler):
             self.write({'error': str(e.message)})
 
 
-class PagesUpdateHandler(BaseHandler):
+class SpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, page_id):
+    def post(self, url):
         try:
             user = self.current_user
-            page = alchemy.query_by_page_id(pages_model.Page, page_id)
+            page = alchemy.query_by_url(pages_model.Page, url)
             editors = []
             for temp_dict in page[0].serialize()['editors']:
                 temp = temp_dict['name']
@@ -46,13 +46,18 @@ class PagesUpdateHandler(BaseHandler):
                 else:
                     page[0].url = bleach.clean(self.get_argument('url'))
                     page[0].title = bleach.clean(self.get_argument('title'))
-                    page[0].content = bleach.clean(self.get_argument('content'))
+                    page[0].content = bleach.clean(
+                        self.get_argument('content'))
                     page[0].author = bleach.clean(self.get_argument('author'))
-                    page[0].editors = bleach.clean(self.get_argument('editors'))
-                    page[0].is_visible = bleach.clean(self.get_argument('is_visible'))
+                    page[0].editors = bleach.clean(
+                        self.get_argument('editors'))
+                    page[0].is_visible = bleach.clean(
+                        self.get_argument('is_visible'))
                     page[0].tags = bleach.clean(self.get_argument('tags'))
-                    page[0].category = bleach.clean(self.get_argument('category'))
-                    page[0].theme_blob = bleach.clean(self.get_argument('theme_blob'))
+                    page[0].category = bleach.clean(
+                        self.get_argument('category'))
+                    page[0].theme_blob = bleach.clean(
+                        self.get_argument('theme_blob'))
                 alchemy.add_or_update_page(page[0])
 
         except Exception as e:

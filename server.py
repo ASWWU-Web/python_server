@@ -16,6 +16,7 @@ import aswwu.route_handlers.instagram as instagram
 import aswwu.route_handlers.mask as mask
 import aswwu.route_handlers.saml as saml
 import aswwu.route_handlers.volunteers as volunteers
+import aswwu.route_handlers.pages as pages
 # import our super secret keys
 from settings import keys, testing
 
@@ -71,6 +72,13 @@ class Application(tornado.web.Application):
             (r"/askanything/(.*)/vote", ask_anything.AskAnythingVoteHandler),
             (r"/askanything/authorize", ask_anything.AskAnythingAuthorizeHandler),
             (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
+            (r"/pages", pages.GetAllHandler),
+            (r"/pages/search/(.*)", pages.SearchHandler),
+            (r"/pages/admin", pages.AdminAllHandler),
+            (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
+            (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
+            (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
+            (r"/pages/(.*)", pages.GetHandler),
         ]
 
         # a bunch of setup stuff

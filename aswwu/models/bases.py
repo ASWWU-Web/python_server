@@ -72,7 +72,7 @@ class ElectionBase(object):
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now())
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     def to_json(self, **kwargs):
@@ -110,7 +110,7 @@ class PagesBase(object):
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now())
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     # TODO: Make this properly print multilevel lists. (ex. tags, editors)
@@ -149,7 +149,7 @@ class JobsBase(object):
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(Integer, primary_key=True)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now())
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     # TODO: Make this properly print multilevel lists. (ex. tags, editors)

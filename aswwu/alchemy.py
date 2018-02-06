@@ -228,7 +228,8 @@ def add_or_update_page(thing):
 def query_by_page_url(model, url):
     thing = None
     try:
-        thing = page_db.query(model).options(joinedload('*')).filter_by(url=str(url)).all()
+        thing = page_db.query(model)\
+            .options(joinedload('*')).filter_by(url=str(url)).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -238,7 +239,8 @@ def query_by_page_url(model, url):
 def query_by_page_id(model, page_id):
     thing = None
     try:
-        thing = page_db.query(model).options(joinedload('*')).filter_by(id=str(page_id)).all()
+        thing = page_db.query(model)\
+            .options(joinedload('*')).filter_by(id=str(page_id)).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
