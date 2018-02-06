@@ -9,6 +9,7 @@ from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
+import aswwu.models.pages as pages_model
 from aswwu.archive_models import ArchiveBase
 
 Base = base.Base
@@ -17,8 +18,6 @@ PagesBase = base.PagesBase
 JobsBase = base.JobsBase
 
 logger = logging.getLogger("aswwu")
-
-# import the necessary models (all of them in this case)
 
 # defines the databases URLs relative to "server.py"
 engine = create_engine("sqlite:///../databases/people.db")
@@ -46,10 +45,11 @@ ElectionBase.metadata.bind = election_engine
 election_dbs = sessionmaker(bind=election_engine)
 election_db = election_dbs()
 # same for pages
-PagesBase.metadata.bind = election_engine
+PagesBase.metadata.bind = pages_engine
 pages_dbs = sessionmaker(bind=pages_engine)
 page_db = pages_dbs()
 
+# TODO: Figure out the consequences of this mistake
 JobsBase.metadata.bind = election_engine
 jobs_dbs = sessionmaker(bind=jobs_engine)
 jobs_db = jobs_dbs()
@@ -215,39 +215,6 @@ def query_by_wwuid_election(model, wwuid):
 
 
 # updates a model, or creates it if it doesn't exist
-def add_or_update_page(thing):
-    try:
-        page_db.add(thing)
-        page_db.commit()
-        return thing
-    except Exception as e:
-        logger.info(e)
-        page_db.rollback()
-
-
-def query_by_page_url(model, url):
-    thing = None
-    try:
-        thing = page_db.query(model)\
-            .options(joinedload('*')).filter_by(url=str(url)).all()
-    except Exception as e:
-        logger.info(e)
-        page_db.rollback()
-    return thing
-
-
-def query_by_page_id(model, page_id):
-    thing = None
-    try:
-        thing = page_db.query(model)\
-            .options(joinedload('*')).filter_by(id=str(page_id)).all()
-    except Exception as e:
-        logger.info(e)
-        page_db.rollback()
-    return thing
-
-
-# updates a model, or creates it if it doesn't exist
 def add_or_update_form(thing):
     try:
         jobs_db.add(thing)
@@ -286,3 +253,37 @@ def delete_thing_forms(thing):
     except Exception as e:
         logger.info(e)
         jobs_db.rollback()
+
+
+# Section for ASWWU Pages Functions
+
+# updates a model, or creates it if it doesn't exist
+def add_or_update_page(thing):
+    try:
+        page_db.add(thing)
+        page_db.commit()
+        return thing
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+
+
+def query_by_page_url(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model).options(joinedload('*'))\
+            .filter_by(url=str(url), current=True).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_all_pages():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing

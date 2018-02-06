@@ -4,9 +4,10 @@ from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-import aswwu.models.bases as base
+# import aswwu.models.bases as base
+from aswwu.models.bases import PagesBase
 
-PagesBase = declarative_base(cls=base.PagesBase)
+# PagesBase = declarative_base(cls=base.PagesBase)
 
 
 class Page(PagesBase):
@@ -18,8 +19,8 @@ class Page(PagesBase):
     is_visible = Column(Boolean, default=False)
     created = Column(DateTime, default=datetime.datetime.now())
     tags = relationship("PageTag", backref="Page_Tag", lazy="joined")
-    category = Column(String(50), ForeignKey('categories.category_title'))
-    department = Column(String(100), ForeignKey('departments.name'))
+    category = Column(String(50), ForeignKey('categories.category'))
+    department = Column(String(100), ForeignKey('departments.department'))
     current = Column(Boolean)
     # TODO: Every 24 hours is an editing period for a page.
     # Past that, the previous one is archived and a new one is created
@@ -49,11 +50,19 @@ class PageTag(PagesBase):
 
 
 class Category(PagesBase):
-    category_title = Column(String(50), unique=True)
-    category_description = Column(String(250))
+    category = Column(String(50), unique=True)
+    description = Column(String(250))
 
     def serialize(self):
-        return {'category': self.category_title}
+        return {'category': self.category}
+
+
+class Department(PagesBase):
+    department = Column(String(50), unique=True)
+    description = Column(String(250))
+
+    def serialize(self):
+        return {'department': self.department}
 
 
 class Featured(PagesBase):
