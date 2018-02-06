@@ -88,7 +88,8 @@ class SearchHandler(BaseHandler):
         try:
             search_criteria = {}
             # Put query into JSON form
-            for q in query.split(";"):
+            temp_query = query.rstrip(";")
+            for q in temp_query.split(";"):
                 search_criteria[q.split("=")[0]] = q.split("=")[1]
             results = alchemy.search_profiles(search_criteria)
         except:
@@ -135,7 +136,7 @@ class ProfileHandler(BaseHandler):
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
                 else:
-                    self.write(profile.no_info())
+                    self.write(profile.base_info())
             else:
                 if user.username == profile.username:
                     self.write(profile.to_json())
