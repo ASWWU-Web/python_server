@@ -46,13 +46,13 @@ class Page(PagesBase):
 
 
 class PageEditor(PagesBase):
-    editor_username = Column(String(50))
-    pageID = Column(String(50), ForeignKey('pages.id'))
+    username = Column(String(50))
+    url = Column(String(50), ForeignKey('pages.url'))
 
 
 class PageTag(PagesBase):
     tag = Column(String(50))
-    pageID = Column(String(50), ForeignKey('pages.id'))
+    url = Column(String(50), ForeignKey('pages.url'))
 
 
 class Category(PagesBase):
