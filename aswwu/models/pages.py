@@ -42,8 +42,7 @@ class Page(PagesBase):
                 'tags': tag_list,
                 'category': self.category,
                 'department': self.department,
-                'current': self.current,
-                }
+                'current': self.current}
 
 
 class PageEditor(PagesBase):
