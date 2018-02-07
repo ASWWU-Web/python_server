@@ -32,11 +32,17 @@ class Page(PagesBase):
         editor_list = []
         for editor in self.editors:
             editor_list.append(editor.serialize())
-        return {'url': self.url, 'title': self.title, 'content': self.content,
-                'author': self.author, 'is_visible': self.is_visible,
-                'last_update': self.last_update, 'category': self.category,
-                'theme_blob': self.theme_blob, 'editors': editor_list,
-                'tags': tag_list}
+        return {'url': self.url,
+                'title': self.title,
+                'content': self.content,
+                'owner': self.owner,
+                'editors': editor_list,
+                'is_visible': self.is_visible,
+                'created': self.created,
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department,
+                'current': self.current}
 
 
 class PageEditor(PagesBase):
