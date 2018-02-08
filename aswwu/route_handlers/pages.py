@@ -17,6 +17,7 @@ class GetAllHandler(BaseHandler):
             self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
             logger.error("PagesHandler: error.\n" + str(e.message))
+            self.set_status(500)
             self.write({'error': str(e.message)})
 
 
@@ -31,8 +32,8 @@ class GetHandler(BaseHandler):
             else:
                 self.write(page.serialize())
         except Exception as e:
-            print(type(page))
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))
+            self.set_status(500)
             self.write({'error': str(e.message)})
 
 
