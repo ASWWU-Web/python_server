@@ -13,19 +13,28 @@ logger = logging.getLogger("aswwu")
 class GetAllHandler(BaseHandler):
     def get(self):
         try:
-            pages = alchemy.get_all_pages()
-            self.write({"results": [p for p in pages]})
-            # TODO: Need get all alchemy function
-            # if len(page) == 0:
-            #     self.write({'error': 'no page found'})
-            # elif len(page) > 1:
-            #     self.write({'error': 'too many pages found'})
-            # else:
-            #     logger.info(page[0].serialize())
-            #     self.write(page[0].serialize())
+            pages = alchemy.get_all_visible_current_pages()
+            self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
-            logger.error("PagesHandler: error.\n" + str(e.message))
-            self.write({'error': str(e.message)})
+            logger.error("GetAllHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class GetHandler(BaseHandler):
+    def get(self, url):
+        try:
+            page = alchemy.query_by_page_url(url)
+            if page is None:
+                logger.error("PagesUpdateHandler: error.\n ")
+                self.set_status(404)
+                self.write({'error': "No page by that URL"})
+            else:
+                self.write(page.serialize())
+        except Exception as e:
+            logger.error("GetHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
 
 
 class SpecificPageHandler(BaseHandler):

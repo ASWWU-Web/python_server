@@ -271,8 +271,7 @@ def add_or_update_page(thing):
 def query_by_page_url(url):
     thing = None
     try:
-        thing = page_db.query(pages_model).options(joinedload('*'))\
-            .filter_by(url=str(url), current=True).one()
+        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(url=str(url), is_visible=True, current=True).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -307,6 +306,17 @@ def search_pages(search_criteria):
         search_statement = or_(pages_search_term_generator(search_criteria))
         thing = page_db.query(pages_model.Page). \
             filter(search_statement)
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_all_visible_current_pages():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(is_visible=True, current=True).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()

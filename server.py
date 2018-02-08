@@ -78,7 +78,7 @@ class Application(tornado.web.Application):
             # (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
             # (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
             # (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
-            # (r"/pages/(.*)", pages.GetHandler),
+            (r"/pages/(.*)", pages.GetHandler),
         ]
 
         # a bunch of setup stuff
