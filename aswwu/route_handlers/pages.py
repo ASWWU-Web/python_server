@@ -37,6 +37,19 @@ class GetHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
+class AdminAllHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            user = self.current_user
+            pages = alchemy.get_owner_pages(user.username) + alchemy.get_editor_pages(user.username)
+            self.write({"results": [p.serialize_preview() for p in pages]})
+        except Exception as e:
+            logger.error("AdminAllHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
 class SpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, url):

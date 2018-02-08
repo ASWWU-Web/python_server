@@ -278,6 +278,16 @@ def query_by_page_url(url):
     return thing
 
 
+def admin_query_by_page_url(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(url=str(url), current=True).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_all_pages():
     thing = None
     try:
@@ -317,6 +327,29 @@ def get_all_visible_current_pages():
     try:
         thing = page_db.query(pages_model.Page).options(joinedload('*'))\
             .filter_by(is_visible=True, current=True).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_owner_pages(user):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(owner=user, current=True).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_editor_pages(user):
+    thing = None
+    try:
+        editables = page_db.query(pages_model.PageEditor).options(joinedload('*')).filter_by(username=user).all()
+        thing = []
+        for editable in editables:
+            thing.append(admin_query_by_page_url(editable.url))
     except Exception as e:
         logger.info(e)
         page_db.rollback()
