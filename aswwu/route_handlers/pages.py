@@ -13,10 +13,26 @@ logger = logging.getLogger("aswwu")
 class GetAllHandler(BaseHandler):
     def get(self):
         try:
-            pages = alchemy.get_all_visible_pages()
-            self.write({"results": [p.serialize() for p in pages]})
+            pages = alchemy.get_all_visible_current_pages()
+            self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
             logger.error("PagesHandler: error.\n" + str(e.message))
+            self.write({'error': str(e.message)})
+
+
+class GetHandler(BaseHandler):
+    def get(self, url):
+        try:
+            page = alchemy.query_by_page_url(url)
+            if page is None:
+                logger.error("PagesUpdateHandler: error.\n ")
+                self.set_status(404)
+                self.write({'error': "No page by that URL"})
+            else:
+                self.write(page.serialize())
+        except Exception as e:
+            print(type(page))
+            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
             self.write({'error': str(e.message)})
 
 

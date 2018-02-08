@@ -44,6 +44,18 @@ class Page(PagesBase):
                 'department': self.department,
                 'current': self.current}
 
+    def serialize_preview(self):
+        tag_list = []
+        for tag in self.tags:
+            tag_list.append(tag.tag)
+        return {'url': self.url,
+                'title': self.title,
+                'owner': self.owner,
+                'created': self.created,
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department}
+
 
 class PageEditor(PagesBase):
     username = Column(String(50))
