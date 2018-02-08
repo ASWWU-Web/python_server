@@ -4,7 +4,7 @@
 import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc
-from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
 from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
@@ -283,6 +283,30 @@ def get_all_pages():
     thing = None
     try:
         thing = page_db.query(pages_model.Page).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def pages_search_term_generator(search_criteria):
+    if len(search_criteria) == 1 and hasattr(search_criteria, "general"):
+        for prop in class_mapper(pages_model.Page).iterate_properties:
+            yield getattr(pages_model.Page, prop.key)\
+                .ilike("%" + search_criteria["general"] + "%")
+    else:
+        for key in search_criteria:
+            if hasattr(pages_model.Page, key):
+                yield getattr(pages_model.Page, key).\
+                    ilike("%" + search_criteria[key] + "%")
+
+
+def search_pages(search_criteria):
+    thing = None
+    try:
+        search_statement = or_(pages_search_term_generator(search_criteria))
+        thing = page_db.query(pages_model.Page). \
+            filter(search_statement)
     except Exception as e:
         logger.info(e)
         page_db.rollback()
