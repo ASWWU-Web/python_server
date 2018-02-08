@@ -266,6 +266,7 @@ def add_or_update_page(thing):
     except Exception as e:
         logger.info(e)
         page_db.rollback()
+        raise Exception(e)
 
 
 def query_by_page_url(url):
