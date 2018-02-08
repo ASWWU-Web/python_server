@@ -16,9 +16,9 @@ class GetAllHandler(BaseHandler):
             pages = alchemy.get_all_visible_current_pages()
             self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
-            logger.error("PagesHandler: error.\n" + str(e.message))
+            logger.error("GetAllHandler: error.\n" + str(e.message))
             self.set_status(500)
-            self.write({'error': str(e.message)})
+            self.write({'status': 'error'})
 
 
 class GetHandler(BaseHandler):
@@ -32,9 +32,9 @@ class GetHandler(BaseHandler):
             else:
                 self.write(page.serialize())
         except Exception as e:
-            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
+            logger.error("GetHandler: error.\n" + str(e.message))
             self.set_status(500)
-            self.write({'error': str(e.message)})
+            self.write({'status': 'error'})
 
 
 class SpecificPageHandler(BaseHandler):
