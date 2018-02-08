@@ -72,3 +72,17 @@ class SpecificPageHandler(BaseHandler):
 
         except Exception as e:
             logger.error("PagesUpdateHandler: error.\n" + str(e.message))
+
+
+class SearchHandler(BaseHandler):
+    def get(self):
+        try:
+            search_criteria = {}
+            # Put query into JSON form
+            query = self.request.arguments
+            for key, value in query.items():
+                search_criteria[key] = value
+            results = alchemy.search_profiles(search_criteria)
+            self.write({'results': [p.serialize_preview() for p in results]})
+        except Exception as e:
+            logger.error("SearchHandler: error.\n" + str(e.message))
