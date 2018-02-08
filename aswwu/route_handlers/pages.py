@@ -29,7 +29,7 @@ class GetHandler(BaseHandler):
             if page is None:
                 logger.error("PagesUpdateHandler: error.\n ")
                 self.set_status(404)
-                self.write({'error': "No page by that URL"})
+                self.write({'status': 'No page by that URL'})
             else:
                 self.write(page.serialize())
         except Exception as e:
