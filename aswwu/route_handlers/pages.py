@@ -27,7 +27,6 @@ class GetHandler(BaseHandler):
         try:
             page = alchemy.query_by_page_url(url)
             if page is None:
-                logger.error("PagesUpdateHandler: error.\n ")
                 self.set_status(404)
                 self.write({'status': 'No page by that URL'})
             else:
@@ -122,6 +121,27 @@ class AdminAllHandler(BaseHandler):
             logger.error("AdminAllHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "error"})
+
+
+class AdminSpecificPageHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, url):
+        try:
+            user = self.current_user
+            # check if page is owned
+            page = alchemy.get_owner_page(user.username, url)
+            # check if editor to page
+            if page is None:
+                page = alchemy.get_editor_page(user.username, url)
+            if page is None:
+                self.set_status(404)
+                self.write({'status': 'No page by that URL'})
+            else:
+                self.write(page.serialize())
+        except Exception as e:
+            logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
 
 
 class SearchHandler(BaseHandler):

@@ -334,10 +334,37 @@ def get_all_visible_current_pages():
     return thing
 
 
+def get_owner_page(user, url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(url=str(url), owner=user, current=True).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_owner_pages(user):
     thing = None
     try:
-        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(owner=user, current=True).all()
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(owner=user, current=True).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_editor_page(user, url):
+    thing = None
+    try:
+        editables = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
+            .filter_by(username=user).all()
+        for editable in editables:
+            if editable.url == str(url):
+                thing = admin_query_by_page_url(url)
+                break
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -347,7 +374,8 @@ def get_owner_pages(user):
 def get_editor_pages(user):
     thing = None
     try:
-        editables = page_db.query(pages_model.PageEditor).options(joinedload('*')).filter_by(username=user).all()
+        editables = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
+            .filter_by(username=user).all()
         thing = []
         for editable in editables:
             thing.append(admin_query_by_page_url(editable.url))
