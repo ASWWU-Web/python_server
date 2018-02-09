@@ -78,7 +78,7 @@ class AdminAllHandler(BaseHandler):
     def get(self):
         try:
             user = self.current_user
-            pages = alchemy.get_owner_pages(user.username) + alchemy.get_editor_pages(user.username)
+            pages = alchemy.get_admin_pages(user.username)
             self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
             logger.error("AdminAllHandler: error.\n" + str(e.message))
@@ -128,10 +128,8 @@ class AdminSpecificPageHandler(BaseHandler):
     def get(self, url):
         try:
             user = self.current_user
-            # check if page is owned
-            page = alchemy.get_owner_page(user.username, url)
-            # check if editor to page
-            if page is None:
+            page = alchemy.admin_query_by_page_url(url)
+            if page is None or page.owner != user.username:
                 page = alchemy.get_editor_page(user.username, url)
             if page is None:
                 self.set_status(404)
