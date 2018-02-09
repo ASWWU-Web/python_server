@@ -32,7 +32,7 @@ class Page(PagesBase):
             tag_list.append(tag.tag)
         editor_list = []
         for editor in self.editors:
-            editor_list.append(editor.serialize())
+            editor_list.append(editor.username)
         return {'url': self.url,
                 'title': self.title,
                 'description': self.description,
@@ -40,7 +40,7 @@ class Page(PagesBase):
                 'owner': self.owner,
                 'editors': editor_list,
                 'is_visible': self.is_visible,
-                'created': self.created,
+                'created': self.created.isoformat(),
                 'tags': tag_list,
                 'category': self.category,
                 'department': self.department,
@@ -54,7 +54,7 @@ class Page(PagesBase):
                 'title': self.title,
                 'description': self.description,
                 'owner': self.owner,
-                'created': self.created,
+                'created': self.created.isoformat(),
                 'tags': tag_list,
                 'category': self.category,
                 'department': self.department}
