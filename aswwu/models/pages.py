@@ -12,7 +12,7 @@ from aswwu.models.bases import PagesBase
 
 class Page(PagesBase):
     url = Column(String(50), unique=True, nullable=False)
-    title = Column(String(100), unique=True, nullable=False)
+    title = Column(String(100), nullable=False)
     description = Column(String(500))
     content = Column(String(5000))
     owner = Column(String(50))
@@ -33,35 +33,31 @@ class Page(PagesBase):
         editor_list = []
         for editor in self.editors:
             editor_list.append(editor.username)
-        return {
-            'url': self.url,
-            'title': self.title,
-            'description': self.description,
-            'content': self.content,
-            'owner': self.owner,
-            'editors': editor_list,
-            'is_visible': self.is_visible,
-            'created': self.created,
-            'tags': tag_list,
-            'category': self.category,
-            'department': self.department,
-            'current': self.current
-        }
+        return {'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'content': self.content,
+                'owner': self.owner,
+                'editors': editor_list,
+                'is_visible': self.is_visible,
+                'created': self.created.isoformat(),
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department,
+                'current': self.current}
 
     def serialize_preview(self):
         tag_list = []
         for tag in self.tags:
             tag_list.append(tag.tag)
-        return {
-            'url': self.url,
-            'title': self.title,
-            'description': self.description,
-            'owner': self.owner,
-            'created': self.created,
-            'tags': tag_list,
-            'category': self.category,
-            'department': self.department
-        }
+        return {'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'owner': self.owner,
+                'created': self.created.isoformat(),
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department}
 
 
 class PageEditor(PagesBase):

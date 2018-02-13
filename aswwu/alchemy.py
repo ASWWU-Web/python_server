@@ -1,6 +1,7 @@
 # alchemy.py
 
 # import and set up the logging
+import ast
 import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc
@@ -299,22 +300,48 @@ def get_all_pages():
     return thing
 
 
-def pages_search_term_generator(search_criteria):
-    if len(search_criteria) == 1 and hasattr(search_criteria, "general"):
-        for prop in class_mapper(pages_model.Page).iterate_properties:
+def pages_general_search_term_generator(search_criteria):
+    """Search for a general search term in all fields"""
+    # Search in all fields(except tags and editors)
+    for prop in class_mapper(pages_model.Page).iterate_properties:
+        if str(prop.key) != "editors" and str(prop.key) != "tags":
             yield getattr(pages_model.Page, prop.key)\
                 .ilike("%" + search_criteria["general"] + "%")
-    else:
-        for key in search_criteria:
-            if hasattr(pages_model.Page, key):
+    # Search all tags
+    for x in pages_specific_search_term_generator(
+            {"tags": "[\"" + search_criteria["general"] + "\"]"}):
+        yield x
+
+
+def pages_specific_search_term_generator(search_criteria):
+    """Search by specific field."""
+    for key in search_criteria:
+        if hasattr(pages_model.Page, key):
+            if key == "tags":
+                search_tags = ast.literal_eval(search_criteria[key])
+                for tag in search_tags:
+                    page_tags = page_db.query(pages_model.PageTag)\
+                        .filter_by(tag=tag).all()
+                    for db_tag in page_tags:
+                        yield getattr(pages_model.Page, "url").\
+                            ilike(db_tag.url)
+            else:
                 yield getattr(pages_model.Page, key).\
                     ilike("%" + search_criteria[key] + "%")
 
 
 def search_pages(search_criteria):
+    """General search function for ASWWU pages."""
     thing = None
     try:
-        search_statement = or_(pages_search_term_generator(search_criteria))
+        if len(search_criteria) == 1 and "general" in search_criteria:
+            search_statement = or_(
+                pages_general_search_term_generator(search_criteria)
+            )
+        else:
+            search_statement = and_(
+                pages_specific_search_term_generator(search_criteria)
+            )
         thing = page_db.query(pages_model.Page). \
             filter(search_statement)
     except Exception as e:
@@ -339,8 +366,8 @@ def get_admin_pages(user):
     try:
         owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
             .filter_by(owner=user, current=True).all()
-        editables = page_db.query(pages_model.PageEditor).options(joinedload('*')) \
-            .filter_by(username=user).all()
+        editables = page_db.query(pages_model.PageEditor)\
+            .options(joinedload('*')).filter_by(username=user).all()
         editable_pages = []
         for editable in editables:
             editable_pages.append(admin_query_by_page_url(editable.url))
