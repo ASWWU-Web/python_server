@@ -32,32 +32,36 @@ class Page(PagesBase):
             tag_list.append(tag.tag)
         editor_list = []
         for editor in self.editors:
-            editor_list.append(editor.serialize())
-        return {'url': self.url,
-                'title': self.title,
-                'description': self.description,
-                'content': self.content,
-                'owner': self.owner,
-                'editors': editor_list,
-                'is_visible': self.is_visible,
-                'created': self.created,
-                'tags': tag_list,
-                'category': self.category,
-                'department': self.department,
-                'current': self.current}
+            editor_list.append(editor.username)
+        return {
+            'url': self.url,
+            'title': self.title,
+            'description': self.description,
+            'content': self.content,
+            'owner': self.owner,
+            'editors': editor_list,
+            'is_visible': self.is_visible,
+            'created': self.created,
+            'tags': tag_list,
+            'category': self.category,
+            'department': self.department,
+            'current': self.current
+        }
 
     def serialize_preview(self):
         tag_list = []
         for tag in self.tags:
             tag_list.append(tag.tag)
-        return {'url': self.url,
-                'title': self.title,
-                'description': self.description,
-                'owner': self.owner,
-                'created': self.created,
-                'tags': tag_list,
-                'category': self.category,
-                'department': self.department}
+        return {
+            'url': self.url,
+            'title': self.title,
+            'description': self.description,
+            'owner': self.owner,
+            'created': self.created,
+            'tags': tag_list,
+            'category': self.category,
+            'department': self.department
+        }
 
 
 class PageEditor(PagesBase):
