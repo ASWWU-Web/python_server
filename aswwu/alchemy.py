@@ -334,21 +334,6 @@ def get_all_visible_current_pages():
     return thing
 
 
-def get_editor_page(user, url):
-    thing = None
-    try:
-        editables = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
-            .filter_by(username=user).all()
-        for editable in editables:
-            if editable.url == str(url):
-                thing = admin_query_by_page_url(url)
-                break
-    except Exception as e:
-        logger.info(e)
-        page_db.rollback()
-    return thing
-
-
 def get_admin_pages(user):
     thing = None
     try:
