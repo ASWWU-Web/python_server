@@ -273,7 +273,8 @@ def add_or_update_page(thing):
 def query_by_page_url(url):
     thing = None
     try:
-        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(url=str(url), is_visible=True, current=True).one()
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(url=str(url), is_visible=True, current=True).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -283,7 +284,8 @@ def query_by_page_url(url):
 def admin_query_by_page_url(url):
     thing = None
     try:
-        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(url=str(url), current=True).one()
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(url=str(url), current=True).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -376,3 +378,57 @@ def get_admin_pages(user):
         logger.info(e)
         page_db.rollback()
     return thing
+
+
+def query_page_tags(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageTag).options(joinedload('*'))\
+            .filter_by(url=str(url)).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def query_page_tag(url, tag):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageTag).options(joinedload('*'))\
+            .filter_by(url=str(url), tag=tag).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def query_page_editors(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
+            .filter_by(url=str(url)).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def query_page_editor(url, username):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
+            .filter_by(url=str(url), username=username).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+# permanently deletes a given model
+def delete_pages_thing(thing):
+    try:
+        page_db.delete(thing)
+        page_db.commit()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
