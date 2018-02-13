@@ -12,7 +12,7 @@ from aswwu.models.bases import PagesBase
 
 class Page(PagesBase):
     url = Column(String(50), unique=True, nullable=False)
-    title = Column(String(100), unique=True, nullable=False)
+    title = Column(String(100), nullable=False)
     description = Column(String(500))
     content = Column(String(5000))
     owner = Column(String(50))
