@@ -1,12 +1,13 @@
+import ast
 import logging
 
 import bleach
+import datetime
 import tornado.web
-import ast
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.models.pages as pages_model
 import aswwu.alchemy as alchemy
+import aswwu.models.pages as pages_model
+from aswwu.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")
 
@@ -56,6 +57,12 @@ class AdminAllHandler(BaseHandler):
             if 'pages' not in user.roles and 'administrator' not in user.roles:
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
+                return
+            page = alchemy.query_by_page_url(self.get_argument("url"))
+            if page is not None:
+                self.set_status(409)
+                self.write({'error': 'Page with that url already exists'})
+                return
             page = pages_model.Page()
             query = self.request.arguments
             new_tags = []
@@ -111,9 +118,16 @@ class AdminSpecificPageHandler(BaseHandler):
             user = self.current_user
             query = self.request.arguments
             page = alchemy.admin_query_by_page_url(url)
-            if user.username != page.owner and user.username not in page.editors:
+            today = datetime.datetime.today().date()
+            if getattr(page, "updated_at").date() < today:
+                setattr(page, "current", False)
+                alchemy.add_or_update_page(page)
+                page = pages_model.Page(url=url, owner=user.username)
+            if user.username != page.owner \
+                    and user.username not in page.editors:
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
+                return
             new_tags = []
             new_editors = []
             for key, value in query.items():
@@ -154,7 +168,7 @@ class AdminSpecificPageHandler(BaseHandler):
                 if t is None:
                     t = pages_model.PageTag(tag=tag, url=page.url)
                     alchemy.add_or_update_page(t)
-                    
+
             self.write({"status": "Page Updated"})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
@@ -176,3 +190,14 @@ class SearchHandler(BaseHandler):
             logger.error("SearchHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "error"})
+
+
+class GetAllRevisionsHandler(BaseHandler):
+    def get(self, url):
+        try:
+            pages = alchemy.get_all_page_revisions(url)
+            self.write({"results": [p.serialize_revisions_preview() for p in pages]})
+        except Exception as e:
+            logger.error("GetAllHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})

@@ -424,6 +424,17 @@ def query_page_editor(url, username):
     return thing
 
 
+def get_all_page_revisions(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(url=url).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 # permanently deletes a given model
 def delete_pages_thing(thing):
     try:

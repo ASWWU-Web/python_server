@@ -11,7 +11,7 @@ from aswwu.models.bases import PagesBase
 
 
 class Page(PagesBase):
-    url = Column(String(50), unique=True, nullable=False)
+    url = Column(String(50), nullable=False)
     title = Column(String(100), nullable=False)
     description = Column(String(500))
     content = Column(String(5000))
@@ -55,9 +55,22 @@ class Page(PagesBase):
                 'description': self.description,
                 'owner': self.owner,
                 'created': self.created.isoformat(),
+                'visible': self.is_visible,
                 'tags': tag_list,
                 'category': self.category,
                 'department': self.department}
+
+    def serialize_revisions_preview(self):
+        tag_list = []
+        return {
+                'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'created': self.created.isoformat(),
+                'visible': self.is_visible,
+                'current': self.current,
+                'last_updated': self.updated_at.isoformat()
+                }
 
 
 class PageEditor(PagesBase):

@@ -75,7 +75,7 @@ class Application(tornado.web.Application):
             (r"/pages", pages.GetAllHandler),
             (r"/pages/search", pages.SearchHandler),
             (r"/pages/admin", pages.AdminAllHandler),
-            # (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
+            (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
             # (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
             (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
             (r"/pages/(.*)", pages.GetHandler),
