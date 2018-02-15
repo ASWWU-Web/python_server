@@ -28,7 +28,7 @@ class GetHandler(BaseHandler):
             page = alchemy.query_by_page_url(url)
             if page is None:
                 self.set_status(404)
-                self.write({'status': 'No page by that URL'})
+                self.write({'status': 'no page by that URL'})
             else:
                 self.write(page.serialize())
         except Exception as e:
@@ -47,7 +47,6 @@ class SpecificPageHandler(BaseHandler):
             for temp_dict in page[0].serialize()['editors']:
                 temp = temp_dict['name']
                 editors.append(temp)
-            print(editors)
             if user.username in editors or user.username == page.author:
                 if not len(page):
                     page = [pages_model.Page()]
@@ -90,8 +89,9 @@ class AdminAllHandler(BaseHandler):
         try:
             user = self.current_user
             if 'pages' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(401)
+                self.set_status(403)
                 self.write({'error': 'insufficient permissions'})
+                return
             page = pages_model.Page()
             query = self.request.arguments
             new_tags = []
@@ -106,6 +106,30 @@ class AdminAllHandler(BaseHandler):
                         editors = ast.literal_eval(value[0])
                         for editor in editors:
                             new_editors.append(editor)
+                    elif key == "category":
+                        categories = alchemy.get_categories()
+                        matched = False
+                        for category in categories:
+                            if category.category == value[0]:
+                                setattr(page, key, category.category)
+                                matched = True
+                                break
+                        if not matched:
+                            self.set_status(412)
+                            self.write({"status": "category does not exist"})
+                            return
+                    elif key == "department":
+                        departments = alchemy.get_departments()
+                        matched = False
+                        for department in departments:
+                            if department.department == value[0]:
+                                setattr(page, key, department.department)
+                                matched = True
+                                break
+                        if not matched:
+                            self.set_status(412)
+                            self.write({"status": "department does not exist"})
+                            return
                     else:
                         setattr(page, key, value[0])
             page.owner = user.username
@@ -116,7 +140,7 @@ class AdminAllHandler(BaseHandler):
             for editor in new_editors:
                 ed = pages_model.PageEditor(username=editor, url=page.url)
                 alchemy.add_or_update_page(ed)
-            self.write({"status": "Page Created"})
+            self.write({"status": "page created"})
         except Exception as e:
             logger.error("AdminAllHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -127,14 +151,22 @@ class AdminSpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url):
         try:
+            page = alchemy.admin_query_by_page_url(url)
             user = self.current_user
-            pages = alchemy.get_admin_pages(user.username)
-            for page in pages:
-                if page.url == url:
+            if not page:
+                self.set_status(404)
+                self.write({'status': 'no page by that URL'})
+                return
+            if page.owner == user.username:
+                self.write(page.serialize())
+                return
+            editors = alchemy.get_editors()
+            for editor in editors:
+                if editor.username == user.username and editor.url == url:
                     self.write(page.serialize())
                     return
-            self.set_status(404)
-            self.write({'status': 'No page by that URL'})
+            self.set_status(403)
+            self.write({'error': 'insufficient permissions'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)

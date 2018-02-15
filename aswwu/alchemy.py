@@ -339,12 +339,42 @@ def get_admin_pages(user):
     try:
         owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
             .filter_by(owner=user, current=True).all()
-        editables = page_db.query(pages_model.PageEditor).options(joinedload('*')) \
+        editables = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
             .filter_by(username=user).all()
         editable_pages = []
         for editable in editables:
             editable_pages.append(admin_query_by_page_url(editable.url))
         thing = owned_pages + editable_pages
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_editors():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageEditor).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_categories():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Category).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_departments():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Department).options(joinedload('*')).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
