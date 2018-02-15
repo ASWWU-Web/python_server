@@ -90,7 +90,7 @@ class AdminAllHandler(BaseHandler):
             user = self.current_user
             if 'pages' not in user.roles and 'administrator' not in user.roles:
                 self.set_status(403)
-                self.write({'error': 'insufficient permissions'})
+                self.write({'status': 'insufficient permissions'})
                 return
             page = pages_model.Page()
             query = self.request.arguments
@@ -160,13 +160,44 @@ class AdminSpecificPageHandler(BaseHandler):
             if page.owner == user.username:
                 self.write(page.serialize())
                 return
-            editors = alchemy.get_editors()
+            editors = alchemy.get_editors(url)
             for editor in editors:
-                if editor.username == user.username and editor.url == url:
+                if editor.username == user.username:
                     self.write(page.serialize())
                     return
             self.set_status(403)
-            self.write({'error': 'insufficient permissions'})
+            self.write({'status': 'insufficient permissions'})
+        except Exception as e:
+            logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+    @tornado.web.authenticated
+    def delete(self, url):
+        try:
+            # TODO: query all pages by url including non current using get_all_page_revisions() in Ethan's branch
+            page = alchemy.admin_query_by_page_url(url)
+            if not page:
+                self.set_status(404)
+                self.write({'status': 'no page by that URL'})
+                return
+            user = self.current_user
+            if page.owner == user.username:
+                editors = alchemy.get_editors(url)
+                for editor in editors:
+                    alchemy.delete_thing_pages(editor)
+                tags = alchemy.get_tags(url)
+                for tag in tags:
+                    alchemy.delete_thing_pages(tag)
+                featureds = alchemy.get_featureds(url)
+                for featured in featureds:
+                    alchemy.delete_thing_pages(featured)
+                # TODO: delete all pages by url including non current
+                alchemy.delete_thing_pages(page)
+                self.write({'status': 'page deleted'})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)

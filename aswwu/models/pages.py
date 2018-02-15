@@ -91,5 +91,5 @@ class Department(PagesBase):
 
 
 class Featured(PagesBase):
-    page = Column(String(50), ForeignKey('pages.url'))
+    url = Column(String(50), ForeignKey('pages.url'))
     featured = Column(Boolean)

@@ -269,6 +269,15 @@ def add_or_update_page(thing):
         raise Exception(e)
 
 
+def delete_thing_pages(thing):
+    try:
+        page_db.delete(thing)
+        page_db.commit()
+    except Exception as e:
+        logger.info(e)
+        jobs_db.rollback()
+
+
 def query_by_page_url(url):
     thing = None
     try:
@@ -282,7 +291,8 @@ def query_by_page_url(url):
 def admin_query_by_page_url(url):
     thing = None
     try:
-        thing = page_db.query(pages_model.Page).options(joinedload('*')).filter_by(url=str(url), current=True).one()
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(url=str(url), current=True).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -351,10 +361,33 @@ def get_admin_pages(user):
     return thing
 
 
-def get_editors():
+def get_editors(url):
     thing = None
     try:
-        thing = page_db.query(pages_model.PageEditor).options(joinedload('*')).all()
+        thing = page_db.query(pages_model.PageEditor).options(joinedload('*'))\
+            .filter_by(url=str(url)).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_tags(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageTag).options(joinedload('*'))\
+            .filter_by(url=str(url)).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_featureds(url):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Featured).options(joinedload('*'))\
+            .filter_by(url=str(url)).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
