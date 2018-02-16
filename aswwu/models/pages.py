@@ -38,10 +38,10 @@ class Page(PagesBase):
                 'description': self.description,
                 'content': self.content,
                 'owner': self.owner,
-                'editors': editor_list,
+                'editors': ','.join(editor_list),
                 'is_visible': self.is_visible,
                 'created': self.created.isoformat(),
-                'tags': tag_list,
+                'tags': ','.join(tag_list),
                 'category': self.category,
                 'department': self.department,
                 'current': self.current}
@@ -56,12 +56,11 @@ class Page(PagesBase):
                 'owner': self.owner,
                 'created': self.created.isoformat(),
                 'visible': self.is_visible,
-                'tags': tag_list,
+                'tags': ','.join(tag_list),
                 'category': self.category,
                 'department': self.department}
 
     def serialize_revisions_preview(self):
-        tag_list = []
         return {
                 'url': self.url,
                 'title': self.title,
