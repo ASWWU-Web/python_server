@@ -37,6 +37,38 @@ class GetHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
+class CategoryHandler(BaseHandler):
+    def get(self):
+        try:
+            categories = alchemy.get_categories()
+            categories_json = {
+                'categories': []
+            }
+            for category in categories:
+                categories_json['categories'].append(category.serialize_full())
+            self.write(categories_json)
+        except Exception as e:
+            logger.error("CategoryHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class DepartmentHandler(BaseHandler):
+    def get(self):
+        try:
+            departments = alchemy.get_departments()
+            departments_json = {
+                'departments': []
+            }
+            for department in departments:
+                departments_json['departments'].append(department.serialize_full())
+            self.write(departments_json)
+        except Exception as e:
+            logger.error("DepartmentHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
 class SpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, url):

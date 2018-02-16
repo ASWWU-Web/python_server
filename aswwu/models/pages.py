@@ -81,6 +81,12 @@ class Category(PagesBase):
     def serialize(self):
         return {'category': self.category}
 
+    def serialize_full(self):
+        return {
+            'category': self.category,
+            'description': self.description
+        }
+
 
 class Department(PagesBase):
     department = Column(String(50), unique=True)
@@ -89,6 +95,11 @@ class Department(PagesBase):
     def serialize(self):
         return {'department': self.department}
 
+    def serialize_full(self):
+        return {
+            'department': self.department,
+            'description': self.description
+        }
 
 class Featured(PagesBase):
     url = Column(String(50), ForeignKey('pages.url'))

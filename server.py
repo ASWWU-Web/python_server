@@ -74,6 +74,8 @@ class Application(tornado.web.Application):
             (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
             (r"/pages", pages.GetAllHandler),
             (r"/pages/search", pages.SearchHandler),
+            (r"/pages/category", pages.CategoryHandler),
+            (r"/pages/department", pages.DepartmentHandler),
             (r"/pages/admin", pages.AdminAllHandler),
             # (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
             # (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
