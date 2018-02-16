@@ -1,9 +1,9 @@
-import ast
 import logging
 
 import bleach
 import datetime
 import tornado.web
+import json
 
 import aswwu.alchemy as alchemy
 import aswwu.models.pages as pages_model
@@ -137,11 +137,11 @@ class AdminAllHandler(BaseHandler):
             for key, value in query.items():
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = ast.literal_eval(value[0])
+                        tags = json.loads(value[0])['tags']
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = ast.literal_eval(value[0])
+                        editors = json.loads(value[0])['editors']
                         for editor in editors:
                             new_editors.append(editor)
                     elif key == "category":
@@ -232,11 +232,11 @@ class AdminSpecificPageHandler(BaseHandler):
             for key, value in query.items():
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = ast.literal_eval(value[0])
+                        tags = json.loads(value[0])['tags']
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = ast.literal_eval(value[0])
+                        editors = json.loads(value[0])['editors']
                         for editor in editors:
                             new_editors.append(editor)
                     elif key != "url":

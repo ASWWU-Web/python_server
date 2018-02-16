@@ -38,10 +38,10 @@ class Page(PagesBase):
                 'description': self.description,
                 'content': self.content,
                 'owner': self.owner,
-                'editors': ','.join(editor_list),
+                'editors': editor_list,
                 'is_visible': self.is_visible,
                 'created': self.created.isoformat(),
-                'tags': ','.join(tag_list),
+                'tags': tag_list,
                 'category': self.category,
                 'department': self.department,
                 'current': self.current}
@@ -56,7 +56,7 @@ class Page(PagesBase):
                 'owner': self.owner,
                 'created': self.created.isoformat(),
                 'visible': self.is_visible,
-                'tags': ','.join(tag_list),
+                'tags': tag_list,
                 'category': self.category,
                 'department': self.department}
 
