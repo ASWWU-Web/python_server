@@ -122,7 +122,7 @@ class AdminSpecificPageHandler(BaseHandler):
             if getattr(page, "updated_at").date() < today:
                 setattr(page, "current", False)
                 alchemy.add_or_update_page(page)
-                page = pages_model.Page(url=url, owner=user.username)
+                page = pages_model.Page(url=url, owner=user.username, current=True)
             if user.username != page.owner \
                     and user.username not in page.editors:
                 self.set_status(401)
