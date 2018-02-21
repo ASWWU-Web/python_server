@@ -112,7 +112,6 @@ class AdminAllHandler(BaseHandler):
                             new_editors.append(editor)
                     elif key == "category":
                         categories = alchemy.get_categories()
-                        print(categories)
                         if any(body_json["category"] == category.category for category in categories):
                             setattr(page, key, body_json["category"])
                         else:
@@ -121,7 +120,6 @@ class AdminAllHandler(BaseHandler):
                             return
                     elif key == "department":
                         departments = alchemy.get_departments()
-                        print(departments)
                         if any(body_json["department"] == department.department for department in departments):
                             setattr(page, key, body_json["department"])
                         else:
