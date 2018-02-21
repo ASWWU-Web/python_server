@@ -284,18 +284,8 @@ class AdminSpecificPageHandler(BaseHandler):
                 return
             user = self.current_user
             if page.owner == user.username:
-                editors = alchemy.get_editors(url)
-                for editor in editors:
-                    alchemy.delete_thing_pages(editor)
-                tags = alchemy.get_tags(url)
-                for tag in tags:
-                    alchemy.delete_thing_pages(tag)
-                featureds = alchemy.get_featureds(url)
-                for featured in featureds:
-                    alchemy.delete_thing_pages(featured)
-                revisions = alchemy.get_all_page_revisions(url)
-                for revision in revisions:
-                    alchemy.delete_thing_pages(revision)
+                page.current = False
+                alchemy.add_or_update_page(page)
                 self.write({'status': 'page deleted'})
             else:
                 self.set_status(403)
