@@ -1,9 +1,9 @@
-import ast
 import logging
 
 import bleach
 import datetime
 import tornado.web
+import json
 
 import aswwu.alchemy as alchemy
 import aswwu.models.pages as pages_model
@@ -29,13 +29,80 @@ class GetHandler(BaseHandler):
             page = alchemy.query_by_page_url(url)
             if page is None:
                 self.set_status(404)
-                self.write({'status': 'No page by that URL'})
+                self.write({'status': 'no page by that URL'})
             else:
                 self.write(page.serialize())
         except Exception as e:
             logger.error("GetHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({'status': 'error'})
+
+
+class CategoryHandler(BaseHandler):
+    def get(self):
+        try:
+            categories = alchemy.get_categories()
+            categories_json = {
+                'categories': []
+            }
+            for category in categories:
+                categories_json['categories'].append(category.serialize_full())
+            self.write(categories_json)
+        except Exception as e:
+            logger.error("CategoryHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class DepartmentHandler(BaseHandler):
+    def get(self):
+        try:
+            departments = alchemy.get_departments()
+            departments_json = {
+                'departments': []
+            }
+            for department in departments:
+                departments_json['departments'].append(department.serialize_full())
+            self.write(departments_json)
+        except Exception as e:
+            logger.error("DepartmentHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class SpecificPageHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, url):
+        try:
+            user = self.current_user
+            page = alchemy.query_by_url(pages_model.Page, url)
+            editors = []
+            for temp_dict in page[0].serialize()['editors']:
+                temp = temp_dict['name']
+                editors.append(temp)
+            if user.username in editors or user.username == page.author:
+                if not len(page):
+                    page = [pages_model.Page()]
+                elif len(page) > 1:
+                    raise ValueError('Too many pages found')
+                else:
+                    page[0].url = bleach.clean(self.get_argument('url'))
+                    page[0].title = bleach.clean(self.get_argument('title'))
+                    page[0].content = bleach.clean(
+                        self.get_argument('content'))
+                    page[0].author = bleach.clean(self.get_argument('author'))
+                    page[0].editors = bleach.clean(
+                        self.get_argument('editors'))
+                    page[0].is_visible = bleach.clean(
+                        self.get_argument('is_visible'))
+                    page[0].tags = bleach.clean(self.get_argument('tags'))
+                    page[0].category = bleach.clean(
+                        self.get_argument('category'))
+                    page[0].theme_blob = bleach.clean(
+                        self.get_argument('theme_blob'))
+                alchemy.add_or_update_page(page[0])
+        except Exception as e:
+            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
 
 
 class AdminAllHandler(BaseHandler):
@@ -70,13 +137,37 @@ class AdminAllHandler(BaseHandler):
             for key, value in query.items():
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = ast.literal_eval(value[0])
+                        tags = json.loads(value[0])['tags']
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = ast.literal_eval(value[0])
+                        editors = json.loads(value[0])['editors']
                         for editor in editors:
                             new_editors.append(editor)
+                    elif key == "category":
+                        categories = alchemy.get_categories()
+                        matched = False
+                        for category in categories:
+                            if category.category == value[0]:
+                                setattr(page, key, category.category)
+                                matched = True
+                                break
+                        if not matched:
+                            self.set_status(412)
+                            self.write({"status": "category does not exist"})
+                            return
+                    elif key == "department":
+                        departments = alchemy.get_departments()
+                        matched = False
+                        for department in departments:
+                            if department.department == value[0]:
+                                setattr(page, key, department.department)
+                                matched = True
+                                break
+                        if not matched:
+                            self.set_status(412)
+                            self.write({"status": "department does not exist"})
+                            return
                     else:
                         setattr(page, key, value[0])
             page.owner = user.username
@@ -88,7 +179,7 @@ class AdminAllHandler(BaseHandler):
             for editor in new_editors:
                 ed = pages_model.PageEditor(username=editor, url=page.url)
                 alchemy.add_or_update_page(ed)
-            self.write({"status": "Page Created"})
+            self.write({"status": "page created"})
         except Exception as e:
             logger.error("AdminAllHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -99,14 +190,22 @@ class AdminSpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url):
         try:
+            page = alchemy.admin_query_by_page_url(url)
             user = self.current_user
-            pages = alchemy.get_admin_pages(user.username)
-            for page in pages:
-                if page.url == url:
+            if not page:
+                self.set_status(404)
+                self.write({'status': 'no page by that URL'})
+                return
+            if page.owner == user.username:
+                self.write(page.serialize())
+                return
+            editors = alchemy.get_editors(url)
+            for editor in editors:
+                if editor.username == user.username:
                     self.write(page.serialize())
                     return
-            self.set_status(404)
-            self.write({'status': 'No page by that URL'})
+            self.set_status(403)
+            self.write({'status': 'insufficient permissions'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -133,11 +232,11 @@ class AdminSpecificPageHandler(BaseHandler):
             for key, value in query.items():
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = ast.literal_eval(value[0])
+                        tags = json.loads(value[0])['tags']
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = ast.literal_eval(value[0])
+                        editors = json.loads(value[0])['editors']
                         for editor in editors:
                             new_editors.append(editor)
                     elif key != "url":
@@ -170,6 +269,27 @@ class AdminSpecificPageHandler(BaseHandler):
                     alchemy.add_or_update_page(t)
 
             self.write({"status": "Page Updated"})
+        except Exception as e:
+            logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+    @tornado.web.authenticated
+    def delete(self, url):
+        try:
+            page = alchemy.admin_query_by_page_url(url)
+            if not page:
+                self.set_status(404)
+                self.write({'status': 'no page by that URL'})
+                return
+            user = self.current_user
+            if page.owner == user.username:
+                page.current = False
+                alchemy.add_or_update_page(page)
+                self.write({'status': 'page deleted'})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
