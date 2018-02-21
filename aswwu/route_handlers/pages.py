@@ -70,6 +70,21 @@ class DepartmentHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
+class TagsHandler(BaseHandler):
+    def get(self):
+        try:
+            tags = alchemy.get_all_tags()
+            unique_tags = []
+            for tag in tags:
+                if tag.tag not in unique_tags:
+                    unique_tags.append(tag.tag)
+            self.write({'tags': unique_tags})
+        except Exception as e:
+            logger.error("DepartmentHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
 class SpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, url):

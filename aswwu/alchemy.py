@@ -411,6 +411,16 @@ def query_page_tags(url):
     return thing
 
 
+def get_all_tags():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageTag).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_tags(url):
     thing = None
     try:
