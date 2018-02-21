@@ -70,41 +70,6 @@ class DepartmentHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
-class SpecificPageHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self, url):
-        try:
-            user = self.current_user
-            page = alchemy.query_by_url(pages_model.Page, url)
-            editors = []
-            for temp_dict in page[0].serialize()['editors']:
-                temp = temp_dict['name']
-                editors.append(temp)
-            if user.username in editors or user.username == page.author:
-                if not len(page):
-                    page = [pages_model.Page()]
-                elif len(page) > 1:
-                    raise ValueError('Too many pages found')
-                else:
-                    page[0].url = bleach.clean(self.get_argument('url'))
-                    page[0].title = bleach.clean(self.get_argument('title'))
-                    page[0].content = bleach.clean(
-                        self.get_argument('content'))
-                    page[0].author = bleach.clean(self.get_argument('author'))
-                    page[0].editors = bleach.clean(
-                        self.get_argument('editors'))
-                    page[0].is_visible = bleach.clean(
-                        self.get_argument('is_visible'))
-                    page[0].tags = bleach.clean(self.get_argument('tags'))
-                    page[0].category = bleach.clean(
-                        self.get_argument('category'))
-                    page[0].theme_blob = bleach.clean(
-                        self.get_argument('theme_blob'))
-                alchemy.add_or_update_page(page[0])
-        except Exception as e:
-            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
-
-
 class AdminAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -121,55 +86,50 @@ class AdminAllHandler(BaseHandler):
     def post(self):
         try:
             user = self.current_user
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
             if 'pages' not in user.roles and 'administrator' not in user.roles:
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
                 return
-            page = alchemy.query_by_page_url(self.get_argument("url"))
+            page = alchemy.query_by_page_url(body_json['url'])
             if page is not None:
                 self.set_status(409)
                 self.write({'error': 'Page with that url already exists'})
                 return
             page = pages_model.Page()
-            query = self.request.arguments
             new_tags = []
             new_editors = []
-            for key, value in query.items():
+            for key in body_json:
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = json.loads(value[0])['tags']
+                        tags = body_json["tags"]
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = json.loads(value[0])['editors']
+                        editors = body_json["editors"]
                         for editor in editors:
                             new_editors.append(editor)
                     elif key == "category":
                         categories = alchemy.get_categories()
-                        matched = False
-                        for category in categories:
-                            if category.category == value[0]:
-                                setattr(page, key, category.category)
-                                matched = True
-                                break
-                        if not matched:
+                        print(categories)
+                        if any(body_json["category"] == category.category for category in categories):
+                            setattr(page, key, body_json["category"])
+                        else:
                             self.set_status(412)
                             self.write({"status": "category does not exist"})
                             return
                     elif key == "department":
                         departments = alchemy.get_departments()
-                        matched = False
-                        for department in departments:
-                            if department.department == value[0]:
-                                setattr(page, key, department.department)
-                                matched = True
-                                break
-                        if not matched:
+                        print(departments)
+                        if any(body_json["department"] == department.department for department in departments):
+                            setattr(page, key, body_json["department"])
+                        else:
                             self.set_status(412)
                             self.write({"status": "department does not exist"})
                             return
                     else:
-                        setattr(page, key, value[0])
+                        setattr(page, key, body_json[key])
             page.owner = user.username
             page.current = True
             alchemy.add_or_update_page(page)
@@ -215,7 +175,8 @@ class AdminSpecificPageHandler(BaseHandler):
     def post(self, url):
         try:
             user = self.current_user
-            query = self.request.arguments
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
             page = alchemy.admin_query_by_page_url(url)
             today = datetime.datetime.today().date()
             if getattr(page, "updated_at").date() < today:
@@ -229,18 +190,18 @@ class AdminSpecificPageHandler(BaseHandler):
                 return
             new_tags = []
             new_editors = []
-            for key, value in query.items():
+            for key in body_json:
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
-                        tags = json.loads(value[0])['tags']
+                        tags = body_json[key]
                         for tag in tags:
                             new_tags.append(tag)
                     elif key == "editors":
-                        editors = json.loads(value[0])['editors']
+                        editors = body_json[key]
                         for editor in editors:
                             new_editors.append(editor)
                     elif key != "url":
-                        setattr(page, key, value[0])
+                        setattr(page, key, body_json[key])
             page.current = True
             alchemy.add_or_update_page(page)
 
