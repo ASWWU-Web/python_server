@@ -91,14 +91,22 @@ def search_all_profiles():
     return thing
 
 
+def multiple_criteria_generator(key, criteria):
+    for status in criteria.split(","):
+        yield getattr(mask_model.Profile, key).ilike("%" + status + "%")
+
+
 def search_term_generator(search_criteria):
     for key in search_criteria:
         if key == "gender":
             yield mask_model.Profile.gender.ilike(search_criteria["gender"])
-        if key == "username" or key == "full_name":
+        elif key == "username" or key == "full_name":
             yield and_(mask_model.Profile.username.ilike("%" + search_criteria[key] + "%") + mask_model.Profile.full_name.ilike("%" + search_criteria[key] + "%"))
         else:
-            yield getattr(mask_model.Profile, key).ilike("%" + search_criteria[key] + "%")
+            if "," not in search_criteria[key]:
+                yield getattr(mask_model.Profile, key).ilike("%" + search_criteria[key] + "%")
+            else:
+                yield or_(multiple_criteria_generator(key, search_criteria[key]))
 
 
 def search_profiles(search_criteria):
