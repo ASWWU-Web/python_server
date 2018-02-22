@@ -233,12 +233,15 @@ class AdminSpecificPageHandler(BaseHandler):
             query = self.request.arguments
             page = alchemy.admin_query_by_page_url(url)
             today = datetime.datetime.today().date()
+            owner = False
             if getattr(page, "updated_at").date() < today:
                 setattr(page, "current", False)
                 alchemy.add_or_update_page(page)
                 page = pages_model.Page(url=url, owner=user.username)
-            if user.username != page.owner \
-                    and user.username not in page.editors:
+            editors = [editor.username for editor in page.editors]
+            if user.username == page.owner:
+                owner = True
+            elif user.username != page.owner and user.username not in editors:
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
                 return
@@ -250,13 +253,17 @@ class AdminSpecificPageHandler(BaseHandler):
                         tags = json.loads(value[0])['tags']
                         for tag in tags:
                             new_tags.append(tag)
-                    elif key == "editors":
+                    elif key == "editors" and owner:
                         editors = json.loads(value[0])['editors']
                         for editor in editors:
                             new_editors.append(editor)
-                    elif key != "url":
+                    elif key == "title" or key == "description" or key == "content":
+                        setattr(page, key, value[0])
+                    # TODO: verify not allowed variables aren't set
+                    elif key != "url" and owner:
                         setattr(page, key, value[0])
             page.current = True
+            # TODO: set updated time
             alchemy.add_or_update_page(page)
 
             # Manage deletion or addition of editors
@@ -283,7 +290,7 @@ class AdminSpecificPageHandler(BaseHandler):
                     t = pages_model.PageTag(tag=tag, url=page.url)
                     alchemy.add_or_update_page(t)
 
-            self.write({"status": "Page Updated"})
+            self.write({"status": "page updated"})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
