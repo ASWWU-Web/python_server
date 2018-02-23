@@ -306,6 +306,7 @@ class SpecificRevisionHandler(BaseHandler):
                 setattr(page, field, getattr(revision, field))
             page.current = True
             alchemy.add_or_update_page(page)
+            self.write({"status": "Revision Restored"})
         except Exception as e:
             logger.error("GetAllHandler: error.\n" + str(e.message))
             self.set_status(500)
