@@ -251,16 +251,27 @@ class AdminSpecificPageHandler(BaseHandler):
             # update info
             for key in body_json:
                 if hasattr(pages_model.Page, key):
+                    # editor and owner
                     if key == "tags":
                         tags = body_json[key]
                         for tag in tags:
                             new_tags.append(tag)
+                    elif key == "title" or key == "description" or key == "content":
+                        setattr(page, key, body_json[key])
+
+                    # owner only
                     elif key == "editors" and owner:
                         editors = body_json[key]
                         for editor in editors:
                             new_editors.append(editor)
-                    elif key == "title" or key == "description" or key == "content":
-                        setattr(page, key, body_json[key])
+                    elif key == "category" and owner:
+                        categories = [category.category for category in alchemy.get_categories()]
+                        if body_json[key] in categories:
+                            setattr(page, key, body_json[key])
+                    elif key == "department" and owner:
+                        departments = [department.department for department in alchemy.get_departments()]
+                        if body_json[key] in departments:
+                            setattr(page, key, body_json[key])
                     elif key != "url" and key != "id" and owner:
                         setattr(page, key, body_json[key])
             page.current = True
