@@ -229,24 +229,30 @@ class AdminSpecificPageHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, url):
         try:
+            # variables
             user = self.current_user
             query = self.request.arguments
             page = alchemy.admin_query_by_page_url(url)
             today = datetime.datetime.today().date()
-            owner = False
-            if getattr(page, "updated_at").date() < today:
-                setattr(page, "current", False)
-                alchemy.add_or_update_page(page)
-                page = pages_model.Page(url=url, owner=user.username)
+            owner = (user.username == page.owner)
             editors = [editor.username for editor in page.editors]
-            if user.username == page.owner:
-                owner = True
-            elif user.username != page.owner and user.username not in editors:
+            new_tags = []
+            new_editors = []
+
+            # check permissions
+            if not owner and user.username not in editors:
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
                 return
-            new_tags = []
-            new_editors = []
+
+            # create new revision
+            if getattr(page, "updated_at").date() < today:
+                setattr(page, "current", False)
+                alchemy.add_or_update_page(page)
+                page = pages_model.Page(url=url, owner=page.owner, is_visible=page.is_visible, category=page.category,
+                                        department=page.department, author=page.author)
+
+            # update information
             for key, value in query.items():
                 if hasattr(pages_model.Page, key):
                     if key == "tags":
