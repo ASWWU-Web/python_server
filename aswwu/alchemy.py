@@ -497,6 +497,17 @@ def get_all_page_revisions(url):
     return thing
 
 
+def get_specifc_page_revision(url, revision_id):
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(id=revision_id, url=url).one()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 # permanently deletes a given model
 def delete_pages_thing(thing):
     try:

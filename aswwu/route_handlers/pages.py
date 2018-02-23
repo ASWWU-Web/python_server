@@ -180,7 +180,7 @@ class AdminSpecificPageHandler(BaseHandler):
             if getattr(page, "updated_at").date() < today:
                 setattr(page, "current", False)
                 alchemy.add_or_update_page(page)
-                page = pages_model.Page(url=url, owner=user.username, current=True)
+                page = pages_model.Page(url=url, owner=user.username, current=True, created=page.created)
             if user.username != page.owner \
                     and user.username not in page.editors:
                 self.set_status(401)
@@ -272,10 +272,41 @@ class SearchHandler(BaseHandler):
 
 
 class GetAllRevisionsHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, url):
         try:
             pages = alchemy.get_all_page_revisions(url)
             self.write({"results": [p.serialize_revisions_preview() for p in pages]})
+        except Exception as e:
+            logger.error("GetAllHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class SpecificRevisionHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, url, revision_id):
+        try:
+            page = alchemy.get_specifc_page_revision(url, revision_id)
+            self.write(page.serialize())
+        except Exception as e:
+            logger.error("GetAllHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+    @tornado.web.authenticated
+    def post(self, url, revision_id):
+        try:
+            page = alchemy.admin_query_by_page_url(url)
+            revision = alchemy.get_specifc_page_revision(url, revision_id)
+            setattr(page, "current", False)
+            alchemy.add_or_update_page(page)
+            page = pages_model.Page()
+            for field in revision.serialize():
+                setattr(page, field, getattr(revision, field))
+            page.current = True
+            alchemy.add_or_update_page(page)
+            self.write({"status": "Revision Restored"})
         except Exception as e:
             logger.error("GetAllHandler: error.\n" + str(e.message))
             self.set_status(500)
