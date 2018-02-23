@@ -259,26 +259,25 @@ class AdminSpecificPageHandler(BaseHandler):
                             new_editors.append(editor)
                     elif key == "title" or key == "description" or key == "content":
                         setattr(page, key, value[0])
-                    # TODO: verify not allowed variables aren't set
-                    elif key != "url" and owner:
+                    elif key != "url" and key != "id" and owner:
                         setattr(page, key, value[0])
             page.current = True
-            # TODO: set updated time
             alchemy.add_or_update_page(page)
 
             # Manage deletion or addition of editors
-            for editor in alchemy.query_page_editors(url=page.url):
-                if editor.username not in new_editors:
-                    alchemy.delete_pages_thing(editor)
-                else:
-                    new_editors.remove(editor.username)
-            for editor in new_editors:
-                ed = alchemy.query_page_editor(username=editor, url=page.url)
-                if ed is None:
-                    ed = pages_model.PageEditor(username=editor, url=page.url)
-                    alchemy.add_or_update_page(ed)
+            if owner:
+                for editor in alchemy.query_page_editors(url=page.url):
+                    if editor.username not in new_editors:
+                        alchemy.delete_pages_thing(editor)
+                    else:
+                        new_editors.remove(editor.username)
+                for editor in new_editors:
+                    ed = alchemy.query_page_editor(username=editor, url=page.url)
+                    if ed is None:
+                        ed = pages_model.PageEditor(username=editor, url=page.url)
+                        alchemy.add_or_update_page(ed)
 
-            # Manage deletion or addition of editors
+            # Manage deletion or addition of tags
             for tag in alchemy.query_page_tags(url=page.url):
                 if tag.tag not in new_tags:
                     alchemy.delete_pages_thing(tag)
