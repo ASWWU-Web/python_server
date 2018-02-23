@@ -65,6 +65,7 @@ class Page(PagesBase):
 
     def serialize_revisions_preview(self):
         return {
+                'id': self.id,
                 'url': self.url,
                 'title': self.title,
                 'description': self.description,
