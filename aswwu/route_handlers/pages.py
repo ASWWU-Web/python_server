@@ -277,7 +277,7 @@ class AdminSpecificPageHandler(BaseHandler):
             page.current = True
             alchemy.add_or_update_page(page)
 
-            # Manage deletion or addition of editors
+            # manage deletion or addition of editors
             if owner:
                 for editor in alchemy.query_page_editors(url=page.url):
                     if editor.username not in new_editors:
@@ -290,7 +290,7 @@ class AdminSpecificPageHandler(BaseHandler):
                         ed = pages_model.PageEditor(username=editor, url=page.url)
                         alchemy.add_or_update_page(ed)
 
-            # Manage deletion or addition of tags
+            # manage deletion or addition of tags
             for tag in alchemy.query_page_tags(url=page.url):
                 if tag.tag not in new_tags:
                     alchemy.delete_pages_thing(tag)
