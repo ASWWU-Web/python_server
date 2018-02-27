@@ -139,13 +139,13 @@ class AdminAllHandler(BaseHandler):
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             if 'pages' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(401)
-                self.write({'error': 'insufficient permissions'})
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
                 return
             page = alchemy.query_by_page_url(body_json['url'])
             if page is not None:
                 self.set_status(409)
-                self.write({'error': 'Page with that url already exists'})
+                self.write({'status': 'Page with that url already exists'})
                 return
             page = pages_model.Page()
             new_tags = []
@@ -235,8 +235,8 @@ class AdminSpecificPageHandler(BaseHandler):
 
             # check permissions
             if not owner and user.username not in editors:
-                self.set_status(401)
-                self.write({'error': 'insufficient permissions'})
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
                 return
 
             # create new revision
