@@ -78,7 +78,8 @@ class FeaturedsHandler(BaseHandler):
                 'featureds': []
             }
             for featured in featureds:
-                featureds_json['featureds'].append(alchemy.query_by_page_url(featured.url).serialize_preview())
+                if featured.featured:
+                    featureds_json['featureds'].append(alchemy.query_by_page_url(featured.url).serialize_preview())
             self.write(featureds_json)
         except Exception as e:
             logger.error("FeaturedsHandler: error.\n" + str(e.message))
