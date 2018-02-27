@@ -113,8 +113,11 @@ class AdminFeaturedsHandler(BaseHandler):
             user = self.current_user
             if 'pages-admin' in user.roles or 'administrator' in user.roles:
                 featured = alchemy.get_featured(url)
-                featured.featured = False
-                alchemy.add_or_update_page(featured)
+                if not featured:
+                    self.set_status(404)
+                    self.write({'status': 'no featured by that URL'})
+                    return
+                alchemy.delete_thing_pages(featured)
                 self.write({"status": "page un-featured"})
             else:
                 self.set_status(403)
@@ -382,8 +385,8 @@ class AdminSpecificPageHandler(BaseHandler):
                 page.current = False
                 for featured in featureds:
                     if featured.url == url:
-                        featured.featured = False
-                        alchemy.add_or_update_page(featured)
+                        alchemy.delete_thing_pages(featured)
+                        break
                 self.write({'status': 'page deleted'})
             else:
                 self.set_status(403)

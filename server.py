@@ -77,6 +77,7 @@ class Application(tornado.web.Application):
             (r"/pages/categories", pages.CategoryHandler),
             (r"/pages/departments", pages.DepartmentHandler),
             (r"/pages/featureds", pages.FeaturedsHandler),
+            (r"/pages/featureds/(.*)", pages.AdminFeaturedsHandler),
             (r"/pages/tags", pages.TagsHandler),
             (r"/pages/admin", pages.AdminAllHandler),
             (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
