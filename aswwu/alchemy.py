@@ -443,6 +443,16 @@ def query_page_tag(url, tag):
     return thing
 
 
+def get_all_featureds():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Featured).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_featureds(url):
     thing = None
     try:

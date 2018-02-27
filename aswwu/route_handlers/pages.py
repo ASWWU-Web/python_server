@@ -70,6 +70,41 @@ class DepartmentHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
+class FeaturedsHandler(BaseHandler):
+    def get(self):
+        try:
+            featureds = alchemy.get_all_featureds()
+            featureds_json = {
+                'featureds': []
+            }
+            for featured in featureds:
+                featureds_json['featureds'].append(alchemy.query_by_page_url(featured.url).serialize_preview())
+            self.write(featureds_json)
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+    @tornado.web.authenticated
+    def post(self):
+        try:
+            user = self.current_user
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+            if 'pages-admin' in user.roles or 'administrator' in user.roles:
+                featured = pages_model.Featured(url=body_json['url'], featured=True)
+                alchemy.add_or_update_page(featured)
+                self.write({"status": "featured created"})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
+
 class TagsHandler(BaseHandler):
     def get(self):
         try:
@@ -80,7 +115,7 @@ class TagsHandler(BaseHandler):
                     unique_tags.append(tag.tag)
             self.write({'tags': unique_tags})
         except Exception as e:
-            logger.error("DepartmentHandler: error.\n" + str(e.message))
+            logger.error("TagsHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({'status': 'error'})
 
