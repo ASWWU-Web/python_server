@@ -104,6 +104,8 @@ class FeaturedsHandler(BaseHandler):
             self.set_status(500)
             self.write({"status": "error"})
 
+    # TODO: delete featured
+
 
 class TagsHandler(BaseHandler):
     def get(self):
@@ -347,6 +349,7 @@ class AdminSpecificPageHandler(BaseHandler):
     def delete(self, url):
         try:
             page = alchemy.admin_query_by_page_url(url)
+            featureds = alchemy.get_all_featureds()
             if not page:
                 self.set_status(404)
                 self.write({'status': 'no page by that URL'})
@@ -355,6 +358,13 @@ class AdminSpecificPageHandler(BaseHandler):
             if page.owner == user.username:
                 page.current = False
                 alchemy.add_or_update_page(page)
+
+                # un-feature page
+                page.current = False
+                for featured in featureds:
+                    if featured.url == url:
+                        featured.featured = False
+                        alchemy.add_or_update_page(featured)
                 self.write({'status': 'page deleted'})
             else:
                 self.set_status(403)
