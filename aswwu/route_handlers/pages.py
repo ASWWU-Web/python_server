@@ -78,24 +78,26 @@ class FeaturedsHandler(BaseHandler):
                 'featureds': []
             }
             for featured in featureds:
-                if featured.featured:
-                    featureds_json['featureds'].append(alchemy.query_by_page_url(featured.url).serialize_preview())
+                featureds_json['featureds'].append(alchemy.query_by_page_url(featured.url).serialize_preview())
             self.write(featureds_json)
         except Exception as e:
             logger.error("FeaturedsHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({'status': 'error'})
 
+
+class AdminFeaturedsHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self):
+    def post(self, url):
         try:
             user = self.current_user
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
             if 'pages-admin' in user.roles or 'administrator' in user.roles:
-                featured = pages_model.Featured(url=body_json['url'], featured=True)
+                featured = alchemy.get_featured(url)
+                if not featured:
+                    featured = pages_model.Featured(url=url, featured=True)
+                featured.featured = True
                 alchemy.add_or_update_page(featured)
-                self.write({"status": "featured created"})
+                self.write({"status": "page featured"})
             else:
                 self.set_status(403)
                 self.write({'status': 'insufficient permissions'})
@@ -105,7 +107,22 @@ class FeaturedsHandler(BaseHandler):
             self.set_status(500)
             self.write({"status": "error"})
 
-    # TODO: delete featured
+    @tornado.web.authenticated
+    def delete(self, url):
+        try:
+            user = self.current_user
+            if 'pages-admin' in user.roles or 'administrator' in user.roles:
+                featured = alchemy.get_featured(url)
+                featured.featured = False
+                alchemy.add_or_update_page(featured)
+                self.write({"status": "page un-featured"})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
 
 
 class TagsHandler(BaseHandler):
@@ -259,6 +276,7 @@ class AdminSpecificPageHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, url):
+        # TODO: ensure featureds are updated correctly
         try:
             # variables
             user = self.current_user

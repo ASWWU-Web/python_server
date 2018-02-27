@@ -446,18 +446,19 @@ def query_page_tag(url, tag):
 def get_all_featureds():
     thing = None
     try:
-        thing = page_db.query(pages_model.Featured).options(joinedload('*')).all()
+        thing = page_db.query(pages_model.Featured).options(joinedload('*'))\
+            .filter_by(featured=True).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
     return thing
 
 
-def get_featureds(url):
+def get_featured(url):
     thing = None
     try:
         thing = page_db.query(pages_model.Featured).options(joinedload('*'))\
-            .filter_by(url=str(url)).all()
+            .filter_by(url=str(url)).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
