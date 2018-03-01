@@ -92,7 +92,7 @@ class AdminAllHandler(BaseHandler):
                 self.set_status(401)
                 self.write({'error': 'insufficient permissions'})
                 return
-            page = alchemy.query_by_page_url(body_json['url'])
+            page = alchemy.admin_query_by_page_url(body_json['url'])
             if page is not None:
                 self.set_status(409)
                 self.write({'error': 'Page with that url already exists'})
