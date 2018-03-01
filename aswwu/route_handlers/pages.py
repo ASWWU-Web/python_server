@@ -94,11 +94,15 @@ class AdminFeaturedsHandler(BaseHandler):
         try:
             user = self.current_user
             if 'pages-admin' in user.roles or 'administrator' in user.roles:
+                page = alchemy.admin_query_by_page_url(url)
                 featured = alchemy.get_featured(url)
-                if not featured:
+                if page is None:
+                    self.set_status(404)
+                    self.write({'status': 'no page by that URL'})
+                    return
+                elif featured is None:
                     featured = pages_model.Featured(url=url, featured=True)
-                featured.featured = True
-                alchemy.add_or_update_page(featured)
+                    alchemy.add_or_update_page(featured)
                 self.write({"status": "page featured"})
             else:
                 self.set_status(403)

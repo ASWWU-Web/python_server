@@ -115,4 +115,5 @@ class Department(PagesBase):
 
 class Featured(PagesBase):
     url = Column(String(50), ForeignKey('pages.url'))
+    # TODO: unnecessary column
     featured = Column(Boolean)
