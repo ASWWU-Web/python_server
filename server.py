@@ -16,6 +16,8 @@ import aswwu.route_handlers.instagram as instagram
 import aswwu.route_handlers.mask as mask
 import aswwu.route_handlers.saml as saml
 import aswwu.route_handlers.volunteers as volunteers
+import aswwu.route_handlers.pages as pages
+import aswwu.route_handlers.froala_images as froala
 # import our super secret keys
 from settings import keys, testing
 
@@ -71,6 +73,21 @@ class Application(tornado.web.Application):
             (r"/askanything/(.*)/vote", ask_anything.AskAnythingVoteHandler),
             (r"/askanything/authorize", ask_anything.AskAnythingAuthorizeHandler),
             (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
+            (r"/pages", pages.GetAllHandler),
+            (r"/pages/search", pages.SearchHandler),
+            (r"/pages/categories", pages.CategoryHandler),
+            (r"/pages/departments", pages.DepartmentHandler),
+            (r"/pages/featureds", pages.FeaturedsHandler),
+            (r"/pages/featureds/(.*)", pages.AdminFeaturedsHandler),
+            (r"/pages/tags", pages.TagsHandler),
+            (r"/pages/admin", pages.AdminAllHandler),
+            (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
+            (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
+            (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
+            (r"/pages/media/upload_image", froala.UploadHandler),
+            (r"/pages/media/load_images", froala.LoadAllHandler),
+            (r"/pages/media/static/(.*)", froala.LoadImageHandler),
+            (r"/pages/(.*)", pages.GetHandler),
         ]
 
         # a bunch of setup stuff

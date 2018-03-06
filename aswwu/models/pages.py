@@ -4,48 +4,116 @@ from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-import aswwu.models.bases as base
+# import aswwu.models.bases as base
+from aswwu.models.bases import PagesBase
 
-PagesBase = declarative_base(cls=base.PagesBase)
+# PagesBase = declarative_base(cls=base.PagesBase)
 
 
 class Page(PagesBase):
-    url = Column(String(50), unique=True, nullable=False)
-    title = Column(String(50), unique=True, nullable=False)
+    url = Column(String(50), nullable=False)
+    title = Column(String(100), nullable=False)
+    description = Column(String(500))
     content = Column(String(5000))
-    author = Column(String(7), nullable=False)
+    owner = Column(String(50))
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
+    author = Column(String(50))
     is_visible = Column(Boolean, default=False)
-    last_update = Column(DateTime, onupdate=datetime.datetime.now)
-    tags = relationship("PageTag", backref="Pages", lazy="joined")
-    category = Column(String(50), default='Other')
-    theme_blob = Column(String(150))
+    created = Column(DateTime, default=datetime.datetime.now())
+    tags = relationship("PageTag", backref="Page_Tag", lazy="joined")
+    category = Column(String(50), ForeignKey('categories.category'))
+    department = Column(String(100), ForeignKey('departments.department'))
+    current = Column(Boolean)
+    # TODO: Every 24 hours is an editing period for a page.
+    # Past that, the previous one is archived and a new one is created
 
     def serialize(self):
-        taggies = []
+        tag_list = []
         for tag in self.tags:
-            taggies.append(tag.tag)
-        eddies = []
+            tag_list.append(tag.tag)
+        editor_list = []
         for editor in self.editors:
-            eddies.append(editor.serialize())
-        return {'url': self.url, 'title': self.title, 'content': self.content, 'author': self.author,
-                'is_visible': self.is_visible, 'last_update': self.last_update, 'category': self.category,
-                'theme_blob': self.theme_blob, 'editors': eddies, 'tags': taggies}
+            editor_list.append(editor.username)
+        return {'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'content': self.content,
+                'owner': self.owner,
+                'editors': editor_list,
+                'author': self.author,
+                'is_visible': self.is_visible,
+                'created': self.created.isoformat(),
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department,
+                'current': self.current}
+
+    def serialize_preview(self):
+        tag_list = []
+        for tag in self.tags:
+            tag_list.append(tag.tag)
+        return {'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'owner': self.owner,
+                'author': self.author,
+                'created': self.created.isoformat(),
+                'visible': self.is_visible,
+                'tags': tag_list,
+                'category': self.category,
+                'department': self.department}
+
+    def serialize_revisions_preview(self):
+        return {
+                'id': self.id,
+                'url': self.url,
+                'title': self.title,
+                'description': self.description,
+                'created': self.created.isoformat(),
+                'visible': self.is_visible,
+                'current': self.current,
+                'last_updated': self.updated_at.isoformat()
+                }
+
+
+class PageEditor(PagesBase):
+    username = Column(String(50))
+    url = Column(String(50), ForeignKey('pages.url'))
 
 
 class PageTag(PagesBase):
     tag = Column(String(50))
-    pageID = Column(String(50), ForeignKey('pages.id'))
+    url = Column(String(50), ForeignKey('pages.url'))
+
+
+class Category(PagesBase):
+    category = Column(String(50), unique=True)
+    description = Column(String(250))
 
     def serialize(self):
-        return {'tag': self.tag}
+        return {'category': self.category}
+
+    def serialize_full(self):
+        return {
+            'category': self.category,
+            'description': self.description
+        }
 
 
-class PageEditor(PagesBase):
-    editor_name = Column(String(50))
-    editor_username = Column(String(50))
-    editor_wwuid = Column(String(50))
-    pageID = Column(String(50), ForeignKey('pages.id'))
+class Department(PagesBase):
+    department = Column(String(50), unique=True)
+    description = Column(String(250))
 
     def serialize(self):
-        return {'name': self.editor_name, 'username': self.editor_username}
+        return {'department': self.department}
+
+    def serialize_full(self):
+        return {
+            'department': self.department,
+            'description': self.description
+        }
+
+class Featured(PagesBase):
+    url = Column(String(50), ForeignKey('pages.url'))
+    # TODO: unnecessary column
+    featured = Column(Boolean)
