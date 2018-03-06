@@ -21,7 +21,7 @@ class UploadHandler(BaseHandler):
         try:
             fileinfo = self.request.files['file'][0]
             if not testing['dev']:
-                server_url = 'https://aswwu.com/pages/media/static/'
+                server_url = 'https://aswwu.com/server/pages/media/static/'
             else:
                 server_url = 'http://localhost:8888/pages/media/static/'
             new_filename = ''.\
@@ -35,22 +35,23 @@ class UploadHandler(BaseHandler):
                 fh.write(fileinfo['body'])
         except Exception:
             response = {'error': str(sys.exc_info()[1])}
-        self.write({"link": server_url + new_filename})
+        self.write({"link": server_url + new_filename, "media_URI": "cms/" + new_filename})
 
 
 class LoadAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         if not testing['dev']:
-            server_url = 'https://aswwu.com/pages/media/static/'
+            server_url = 'https://aswwu.com/server/pages/media/static/'
         else:
             server_url = 'http://localhost:8888/pages/media/static/'
+        thumbnail_url = 'https://aswwu.com/media/img-sm/cms/'
         image_list = []
         for f in glob.glob("../media/cms/*"):
             filename = os.path.basename(f)
             image_list.append({
                 "url": server_url + filename,
-                "thumb": server_url + filename,
+                "thumb": thumbnail_url + filename,
                 "name": filename})
         self.write(json.dumps(image_list))
 
