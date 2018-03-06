@@ -1,17 +1,13 @@
 import os
 import sys
 import json
-import bleach
-import datetime
 import tornado.web
-import json
 import random
 import string
 import glob
 
 from settings import testing
 
-import aswwu.models.pages as pages_model
 from aswwu.base_handlers import BaseHandler
 
 
@@ -33,9 +29,11 @@ class UploadHandler(BaseHandler):
                     "../media/cms/" + new_filename,
                     'w+')
                 fh.write(fileinfo['body'])
+            response = {"link": server_url + new_filename, "media_URI": "cms/" + new_filename}
         except Exception:
             response = {'error': str(sys.exc_info()[1])}
-        self.write({"link": server_url + new_filename, "media_URI": "cms/" + new_filename})
+            self.set_status(500)
+        self.write(response)
 
 
 class LoadAllHandler(BaseHandler):
