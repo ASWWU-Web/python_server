@@ -411,6 +411,16 @@ def query_page_tags(url):
     return thing
 
 
+def get_all_tags():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.PageTag).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_tags(url):
     thing = None
     try:
@@ -433,11 +443,21 @@ def query_page_tag(url, tag):
     return thing
 
 
-def get_featureds(url):
+def get_all_featureds():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Featured).options(joinedload('*')).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
+def get_featured(url):
     thing = None
     try:
         thing = page_db.query(pages_model.Featured).options(joinedload('*'))\
-            .filter_by(url=str(url)).all()
+            .filter_by(url=str(url)).one()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
@@ -508,6 +528,7 @@ def get_specifc_page_revision(url, revision_id):
     return thing
 
 
+# TODO: duplicate function
 # permanently deletes a given model
 def delete_pages_thing(thing):
     try:

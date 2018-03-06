@@ -17,6 +17,7 @@ class Page(PagesBase):
     content = Column(String(5000))
     owner = Column(String(50))
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
+    author = Column(String(50))
     is_visible = Column(Boolean, default=False)
     created = Column(DateTime, default=datetime.datetime.now())
     tags = relationship("PageTag", backref="Page_Tag", lazy="joined")
@@ -39,6 +40,7 @@ class Page(PagesBase):
                 'content': self.content,
                 'owner': self.owner,
                 'editors': editor_list,
+                'author': self.author,
                 'is_visible': self.is_visible,
                 'created': self.created.isoformat(),
                 'tags': tag_list,
@@ -54,6 +56,7 @@ class Page(PagesBase):
                 'title': self.title,
                 'description': self.description,
                 'owner': self.owner,
+                'author': self.author,
                 'created': self.created.isoformat(),
                 'visible': self.is_visible,
                 'tags': tag_list,
@@ -112,4 +115,5 @@ class Department(PagesBase):
 
 class Featured(PagesBase):
     url = Column(String(50), ForeignKey('pages.url'))
+    # TODO: unnecessary column
     featured = Column(Boolean)
