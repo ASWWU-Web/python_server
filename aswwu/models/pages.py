@@ -15,6 +15,7 @@ class Page(PagesBase):
     title = Column(String(100), nullable=False)
     description = Column(String(500))
     content = Column(String(5000))
+    cover_image = Column(String(250))
     owner = Column(String(50))
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
     author = Column(String(50))
@@ -46,7 +47,8 @@ class Page(PagesBase):
                 'tags': tag_list,
                 'category': self.category,
                 'department': self.department,
-                'current': self.current}
+                'current': self.current,
+                'cover_image': self.cover_image}
 
     def serialize_preview(self):
         tag_list = []
@@ -61,7 +63,8 @@ class Page(PagesBase):
                 'visible': self.is_visible,
                 'tags': tag_list,
                 'category': self.category,
-                'department': self.department}
+                'department': self.department,
+                'cover_image': self.cover_image}
 
     def serialize_revisions_preview(self):
         return {
