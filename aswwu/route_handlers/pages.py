@@ -70,6 +70,85 @@ class DepartmentHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
+class FeaturedsHandler(BaseHandler):
+    def get(self):
+        try:
+            featureds = alchemy.get_all_featureds()
+            featureds_json = {
+                'featureds': []
+            }
+            for featured in featureds:
+                page = alchemy.query_by_page_url(featured.url)
+                if page:
+                    featureds_json['featureds'].append(page.serialize_preview())
+            self.write(featureds_json)
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
+class AdminFeaturedsHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, url):
+        try:
+            user = self.current_user
+            if 'pages-admin' in user.roles or 'administrator' in user.roles:
+                page = alchemy.admin_query_by_page_url(url)
+                featured = alchemy.get_featured(url)
+                if page is None:
+                    self.set_status(404)
+                    self.write({'status': 'no page by that URL'})
+                    return
+                elif featured is None:
+                    featured = pages_model.Featured(url=url, featured=True)
+                    alchemy.add_or_update_page(featured)
+                self.write({"status": "page featured"})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
+    @tornado.web.authenticated
+    def delete(self, url):
+        try:
+            user = self.current_user
+            if 'pages-admin' in user.roles or 'administrator' in user.roles:
+                featured = alchemy.get_featured(url)
+                if not featured:
+                    self.set_status(404)
+                    self.write({'status': 'no featured by that URL'})
+                    return
+                alchemy.delete_thing_pages(featured)
+                self.write({"status": "page un-featured"})
+            else:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+        except Exception as e:
+            logger.error("FeaturedsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
+
+class TagsHandler(BaseHandler):
+    def get(self):
+        try:
+            tags = alchemy.get_all_tags()
+            unique_tags = []
+            for tag in tags:
+                if tag.tag not in unique_tags:
+                    unique_tags.append(tag.tag)
+            self.write({'tags': unique_tags})
+        except Exception as e:
+            logger.error("TagsHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({'status': 'error'})
+
+
 class AdminAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -89,13 +168,13 @@ class AdminAllHandler(BaseHandler):
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             if 'pages' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(401)
-                self.write({'error': 'insufficient permissions'})
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
                 return
-            page = alchemy.query_by_page_url(body_json['url'])
+            page = alchemy.admin_query_by_page_url(body_json['url'])
             if page is not None:
                 self.set_status(409)
-                self.write({'error': 'Page with that url already exists'})
+                self.write({'status': 'Page with that url already exists'})
                 return
             page = pages_model.Page()
             new_tags = []
@@ -171,51 +250,77 @@ class AdminSpecificPageHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, url):
+        # TODO: ensure featureds are updated correctly
         try:
+            # variables
             user = self.current_user
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             page = alchemy.admin_query_by_page_url(url)
             today = datetime.datetime.today().date()
+            owner = (user.username == page.owner)
+            editors = [editor.username for editor in page.editors]
+            new_tags = []
+            new_editors = []
+
+            # check permissions
+            if not owner and user.username not in editors:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
+
+            # create new revision
             if getattr(page, "updated_at").date() < today:
                 setattr(page, "current", False)
                 alchemy.add_or_update_page(page)
-                page = pages_model.Page(url=url, owner=user.username, current=True, created=page.created)
-            if user.username != page.owner \
-                    and user.username not in page.editors:
-                self.set_status(401)
-                self.write({'error': 'insufficient permissions'})
-                return
-            new_tags = []
-            new_editors = []
+                page = pages_model.Page(url=url, title=page.title, description=page.description, content=page.content,
+                                        owner=page.owner, author=page.author, is_visible=page.is_visible,
+                                        created=page.created, category=page.category, department=page.department,
+                                        current=True)
+
+            # update info
             for key in body_json:
                 if hasattr(pages_model.Page, key):
+                    # editor and owner
                     if key == "tags":
                         tags = body_json[key]
                         for tag in tags:
                             new_tags.append(tag)
-                    elif key == "editors":
+                    elif key == "title" or key == "description" or key == "content":
+                        setattr(page, key, body_json[key])
+
+                    # owner only
+                    elif key == "editors" and owner:
                         editors = body_json[key]
                         for editor in editors:
                             new_editors.append(editor)
-                    elif key != "url":
+                    elif key == "category" and owner:
+                        categories = [category.category for category in alchemy.get_categories()]
+                        if body_json[key] in categories:
+                            setattr(page, key, body_json[key])
+                    elif key == "department" and owner:
+                        departments = [department.department for department in alchemy.get_departments()]
+                        if body_json[key] in departments:
+                            setattr(page, key, body_json[key])
+                    elif key != "url" and key != "id" and owner:
                         setattr(page, key, body_json[key])
             page.current = True
             alchemy.add_or_update_page(page)
 
-            # Manage deletion or addition of editors
-            for editor in alchemy.query_page_editors(url=page.url):
-                if editor.username not in new_editors:
-                    alchemy.delete_pages_thing(editor)
-                else:
-                    new_editors.remove(editor.username)
-            for editor in new_editors:
-                ed = alchemy.query_page_editor(username=editor, url=page.url)
-                if ed is None:
-                    ed = pages_model.PageEditor(username=editor, url=page.url)
-                    alchemy.add_or_update_page(ed)
+            # manage deletion or addition of editors
+            if owner:
+                for editor in alchemy.query_page_editors(url=page.url):
+                    if editor.username not in new_editors:
+                        alchemy.delete_pages_thing(editor)
+                    else:
+                        new_editors.remove(editor.username)
+                for editor in new_editors:
+                    ed = alchemy.query_page_editor(username=editor, url=page.url)
+                    if ed is None:
+                        ed = pages_model.PageEditor(username=editor, url=page.url)
+                        alchemy.add_or_update_page(ed)
 
-            # Manage deletion or addition of editors
+            # manage deletion or addition of tags
             for tag in alchemy.query_page_tags(url=page.url):
                 if tag.tag not in new_tags:
                     alchemy.delete_pages_thing(tag)
@@ -227,7 +332,7 @@ class AdminSpecificPageHandler(BaseHandler):
                     t = pages_model.PageTag(tag=tag, url=page.url)
                     alchemy.add_or_update_page(t)
 
-            self.write({"status": "Page Updated"})
+            self.write({"status": "page updated"})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -237,18 +342,25 @@ class AdminSpecificPageHandler(BaseHandler):
     def delete(self, url):
         try:
             page = alchemy.admin_query_by_page_url(url)
-            if not page:
+            featureds = alchemy.get_all_featureds()
+            if page is None:
                 self.set_status(404)
                 self.write({'status': 'no page by that URL'})
                 return
-            user = self.current_user
-            if page.owner == user.username:
-                page.current = False
-                alchemy.add_or_update_page(page)
-                self.write({'status': 'page deleted'})
-            else:
+            if page.owner != self.current_user.username:
                 self.set_status(403)
                 self.write({'status': 'insufficient permissions'})
+                return
+            page.current = False
+            alchemy.add_or_update_page(page)
+
+            # un-feature page
+            page.current = False
+            for featured in featureds:
+                if featured.url == url:
+                    alchemy.delete_thing_pages(featured)
+                    break
+            self.write({'status': 'page deleted'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -275,6 +387,11 @@ class GetAllRevisionsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url):
         try:
+            page = alchemy.admin_query_by_page_url(url)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
             pages = alchemy.get_all_page_revisions(url)
             self.write({"results": [p.serialize_revisions_preview() for p in pages]})
         except Exception as e:
@@ -287,7 +404,11 @@ class SpecificRevisionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url, revision_id):
         try:
-            page = alchemy.get_specifc_page_revision(url, revision_id)
+            page = alchemy.get_specific_page_revision(url, revision_id)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
             self.write(page.serialize())
         except Exception as e:
             logger.error("GetAllHandler: error.\n" + str(e.message))
@@ -298,7 +419,11 @@ class SpecificRevisionHandler(BaseHandler):
     def post(self, url, revision_id):
         try:
             page = alchemy.admin_query_by_page_url(url)
-            revision = alchemy.get_specifc_page_revision(url, revision_id)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
+            revision = alchemy.get_specific_page_revision(url, revision_id)
             setattr(page, "current", False)
             alchemy.add_or_update_page(page)
             page = pages_model.Page()
