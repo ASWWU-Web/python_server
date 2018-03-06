@@ -339,6 +339,9 @@ def pages_specific_search_term_generator(search_criteria):
             else:
                 yield getattr(pages_model.Page, key).\
                     ilike("%" + search_criteria[key] + "%")
+    if not (len(search_criteria) == 1 and "tags" in search_criteria):
+        yield getattr(pages_model.Page, "current").ilike(1)
+        yield getattr(pages_model.Page, "is_visible").ilike(1)
 
 
 def search_pages(search_criteria):
@@ -348,6 +351,11 @@ def search_pages(search_criteria):
         if len(search_criteria) == 1 and "general" in search_criteria:
             search_statement = or_(
                 pages_general_search_term_generator(search_criteria)
+            )
+            search_statement = and_(
+                search_statement,
+                getattr(pages_model.Page, "current").ilike(1),
+                getattr(pages_model.Page, "is_visible").ilike(1)
             )
         else:
             search_statement = and_(
