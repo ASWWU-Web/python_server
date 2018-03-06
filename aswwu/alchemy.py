@@ -517,7 +517,7 @@ def get_all_page_revisions(url):
     return thing
 
 
-def get_specifc_page_revision(url, revision_id):
+def get_specific_page_revision(url, revision_id):
     thing = None
     try:
         thing = page_db.query(pages_model.Page).options(joinedload('*'))\

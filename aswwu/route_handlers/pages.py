@@ -149,41 +149,6 @@ class TagsHandler(BaseHandler):
             self.write({'status': 'error'})
 
 
-class SpecificPageHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self, url):
-        try:
-            user = self.current_user
-            page = alchemy.query_by_url(pages_model.Page, url)
-            editors = []
-            for temp_dict in page[0].serialize()['editors']:
-                temp = temp_dict['name']
-                editors.append(temp)
-            if user.username in editors or user.username == page.author:
-                if not len(page):
-                    page = [pages_model.Page()]
-                elif len(page) > 1:
-                    raise ValueError('Too many pages found')
-                else:
-                    page[0].url = bleach.clean(self.get_argument('url'))
-                    page[0].title = bleach.clean(self.get_argument('title'))
-                    page[0].content = bleach.clean(
-                        self.get_argument('content'))
-                    page[0].author = bleach.clean(self.get_argument('author'))
-                    page[0].editors = bleach.clean(
-                        self.get_argument('editors'))
-                    page[0].is_visible = bleach.clean(
-                        self.get_argument('is_visible'))
-                    page[0].tags = bleach.clean(self.get_argument('tags'))
-                    page[0].category = bleach.clean(
-                        self.get_argument('category'))
-                    page[0].theme_blob = bleach.clean(
-                        self.get_argument('theme_blob'))
-                alchemy.add_or_update_page(page[0])
-        except Exception as e:
-            logger.error("PagesUpdateHandler: error.\n" + str(e.message))
-
-
 class AdminAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -378,25 +343,24 @@ class AdminSpecificPageHandler(BaseHandler):
         try:
             page = alchemy.admin_query_by_page_url(url)
             featureds = alchemy.get_all_featureds()
-            if not page:
+            if page is None:
                 self.set_status(404)
                 self.write({'status': 'no page by that URL'})
                 return
-            user = self.current_user
-            if page.owner == user.username:
-                page.current = False
-                alchemy.add_or_update_page(page)
-
-                # un-feature page
-                page.current = False
-                for featured in featureds:
-                    if featured.url == url:
-                        alchemy.delete_thing_pages(featured)
-                        break
-                self.write({'status': 'page deleted'})
-            else:
+            if page.owner != self.current_user.username:
                 self.set_status(403)
                 self.write({'status': 'insufficient permissions'})
+                return
+            page.current = False
+            alchemy.add_or_update_page(page)
+
+            # un-feature page
+            page.current = False
+            for featured in featureds:
+                if featured.url == url:
+                    alchemy.delete_thing_pages(featured)
+                    break
+            self.write({'status': 'page deleted'})
         except Exception as e:
             logger.error("AdminSpecificPageHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -423,6 +387,11 @@ class GetAllRevisionsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url):
         try:
+            page = alchemy.admin_query_by_page_url(url)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
             pages = alchemy.get_all_page_revisions(url)
             self.write({"results": [p.serialize_revisions_preview() for p in pages]})
         except Exception as e:
@@ -435,7 +404,11 @@ class SpecificRevisionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, url, revision_id):
         try:
-            page = alchemy.get_specifc_page_revision(url, revision_id)
+            page = alchemy.get_specific_page_revision(url, revision_id)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
             self.write(page.serialize())
         except Exception as e:
             logger.error("GetAllHandler: error.\n" + str(e.message))
@@ -446,7 +419,11 @@ class SpecificRevisionHandler(BaseHandler):
     def post(self, url, revision_id):
         try:
             page = alchemy.admin_query_by_page_url(url)
-            revision = alchemy.get_specifc_page_revision(url, revision_id)
+            if page.owner != self.current_user.username:
+                self.set_status(403)
+                self.write({'status': 'insufficient permissions'})
+                return
+            revision = alchemy.get_specific_page_revision(url, revision_id)
             setattr(page, "current", False)
             alchemy.add_or_update_page(page)
             page = pages_model.Page()
