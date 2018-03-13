@@ -20,10 +20,11 @@ class Page(PagesBase):
     editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
     author = Column(String(50))
     is_visible = Column(Boolean, default=False)
-    created = Column(DateTime, default=datetime.datetime.now())
+    created = Column(DateTime, default=datetime.datetime.now)
     tags = relationship("PageTag", backref="Page_Tag", lazy="joined")
     category = Column(String(50), ForeignKey('categories.category'))
     department = Column(String(100), ForeignKey('departments.department'))
+    extra_info = Column(String(500))
     current = Column(Boolean)
     # TODO: Every 24 hours is an editing period for a page.
     # Past that, the previous one is archived and a new one is created
@@ -48,6 +49,7 @@ class Page(PagesBase):
                 'category': self.category,
                 'department': self.department,
                 'current': self.current,
+                'extra_info': self.extra_info,
                 'cover_image': self.cover_image}
 
     def serialize_preview(self):
