@@ -65,6 +65,7 @@ class Application(tornado.web.Application):
             (r"/forms/application/status", forms.ApplicationStatusHandler),
             (r"/forms/resume/upload", forms.ResumeUploadHandler),
             (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
+            (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
             (r"/askanything/add", ask_anything.AskAnythingAddHandler),
             (r"/askanything/view", ask_anything.AskAnythingViewAllHandler),
             (r"/askanything/view/rejected", ask_anything.AskAnythingRejectedHandler),

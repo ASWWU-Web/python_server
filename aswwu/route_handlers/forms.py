@@ -239,3 +239,48 @@ class ViewResumeHandler(BaseHandler):
             logger.error("ViewResumeHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "Error"})
+
+
+class ExportApplicationsHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.gen.coroutine
+    def get(self, job_id):
+        try:
+            user = self.current_user
+            if 'forms' not in user.roles:
+                self.set_status(401)
+                self.write({"error": "Unauthorized"})
+                return
+            generic_questions = alchemy.jobs_db.query(forms_model.JobQuestion).filter_by(jobID=1)
+            specific_questions = alchemy.jobs_db.query(forms_model.JobQuestion).filter_by(jobID=job_id)
+            questions = []
+            for question in generic_questions:
+                questions.append('"' + question.question.replace('"', "'") + '"')
+            for question in specific_questions:
+                questions.append('"' + question.question.replace('"', "'") + '"')
+            questions.append("Submitted Resume")
+            questions.append("Resume Link")
+
+            apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id)
+            applicants = []
+            for app in apps:
+                applicant_answers = []
+                generic_app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=1, username=app.username).one()
+                for answer in generic_app.answers:
+                    applicant_answers.append('"' + answer.answer.replace('"', "'") + '"')
+                for answer in app.answers:
+                    applicant_answers.append('"' + answer.answer.replace('"', "'") + '"')
+                applicant_answers.append("Yes" if len(glob.glob('../databases/resume/' + app.username + "_" + job_id + "*")) > 0 else "No")
+                applicant_answers.append("https://aswwu.com/server/forms/resume/download/" + job_id + "/" + app.username if len(glob.glob('../databases/resume/' + app.username + "_" + job_id + "*")) > 0 else "")
+                applicants.append(applicant_answers)
+
+            self.set_header('Content-Type', 'text/csv')
+            self.set_header('content-Disposition', 'attachment; filename=dump.csv')
+            self.write(','.join(questions)+'\r\n')  # File header
+            for line in range(0, len(applicants)):
+                self.write(','.join(applicants[line])+'\r\n')
+                yield self.flush()
+        except Exception as e:
+            logger.error("ViewApplicationHandler: error.\n" + str(e.message))
+            self.set_status(404)
+            self.write({"status": "You suck at coding"})
