@@ -88,6 +88,41 @@ class DeleteFormHandler(BaseHandler):
             self.write({"status": "Error"})
 
 
+class EditFormHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, jobID):
+        try:
+            user = self.current_user
+            if 'forms-admin' in user.roles:
+                form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=jobID).one()
+                form.job_name = bleach.clean(self.get_argument('job_name'))
+                form.job_description = bleach.clean(self.get_argument('job_description'))
+                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
+                    form.visibility = 1
+                else:
+                    form.visibility = 0
+                form.department = bleach.clean(self.get_argument('department'))
+                form.owner = bleach.clean(self.get_argument('owner'))
+                form.image = bleach.clean(self.get_argument('image'))
+                alchemy.add_or_update_form(form)
+                new_questions = json.loads(self.get_argument('questions'))
+                for question in form.questions:
+                    for q in new_questions:
+                        if question.id == q['id']:
+                            question.question = q['question']
+                            alchemy.add_or_update_form(question)
+                self.set_status(200)
+                self.write({"status": "Form Updated"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
+        except Exception as e:
+            logger.error("DeleteFormHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            alchemy.jobs_db.rollback()
+            self.write({"status": "Error"})
+
+
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
