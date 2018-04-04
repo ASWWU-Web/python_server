@@ -26,7 +26,8 @@ class JobForm(JobsBase):
 
     def min(self):
         return {'job_name': self.job_name, 'job_description': self.job_description,
-                'department': self.department, 'image': self.image, 'jobID': self.id, 'visibility': self.visibility}
+                'department': self.department, 'image': self.image, 'jobID': self.id,
+                'visibility': self.visibility, 'owner': self.owner}
 
 
 class JobQuestion(JobsBase):
