@@ -334,7 +334,7 @@ class ExportApplicationsHandler(BaseHandler):
         except Exception as e:
             logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
-            self.write({"status": "You suck at coding"})
+            self.write({"status": "error"})
 
 def emailNotify(applicant, owner, job_id):
     if job_id == 1:
