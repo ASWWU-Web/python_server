@@ -7,6 +7,7 @@ import bleach
 import tornado.web
 
 from aswwu.base_handlers import BaseHandler
+from settings import email
 import aswwu.models.forms as forms_model
 import aswwu.alchemy as alchemy
 
@@ -126,47 +127,50 @@ class EditFormHandler(BaseHandler):
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        try:
-            temp_var = False
-            user = self.current_user
-            if user.username == self.get_argument("username"):
-                answers = json.loads(self.get_argument('answers'))
-                if len(answers) > 50:
-                    raise ValueError("Too many answers submitted")
+        # try:
+        job_id = self.get_argument("jobID")
+        form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
+        temp_var = False
+        user = self.current_user
+        if user.username == self.get_argument("username"):
+            answers = json.loads(self.get_argument('answers'))
+            if len(answers) > 50:
+                raise ValueError("Too many answers submitted")
+            try:
+                app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
+                                                                                  username=user.username).one()
+            except:
+                temp_var = True
+                app = forms_model.JobApplication()
+                app.status = "new"
+                emailNotify(user.username, form.owner, job_id)
+            app.jobID = bleach.clean(job_id)
+            app.username = user.username
+            alchemy.add_or_update_form(app)
+            if temp_var:
+                app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
+                                                                                  username=user.username).one()
+            for a in answers:
                 try:
-                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
-                                                                                      username=user.username).one()
+                    answer = alchemy.jobs_db.query(forms_model.JobAnswer)\
+                        .filter_by(applicationID=app.id, questionID=a['questionID']).one()
                 except:
-                    temp_var = True
-                    app = forms_model.JobApplication()
-                    app.status = "new"
-                app.jobID = bleach.clean(self.get_argument('jobID'))
-                app.username = user.username
-                alchemy.add_or_update_form(app)
-                if temp_var:
-                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
-                                                                                      username=user.username).one()
-                for a in answers:
-                    try:
-                        answer = alchemy.jobs_db.query(forms_model.JobAnswer)\
-                            .filter_by(applicationID=app.id, questionID=a['questionID']).one()
-                    except:
-                        answer = forms_model.JobAnswer()
-                    if 'questionID' in a:
-                        answer.questionID = bleach.clean(a['questionID'])
-                        answer.answer = bleach.clean(a['answer'])
-                        answer.applicationID = app.id
-                        alchemy.add_or_update_form(answer)
-                self.set_status(201)
-                self.write({"status": "submitted"})
-            else:
-                self.set_status(401)
-                self.write({"status": "Unauthorized"})
-        except Exception as e:
-            logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
-            alchemy.jobs_db.rollback()
-            self.set_status(500)
-            self.write({"status": "Error"})
+                    answer = forms_model.JobAnswer()
+                if 'questionID' in a:
+                    answer.questionID = bleach.clean(str(a['questionID']))
+                    answer.answer = bleach.clean(a['answer'])
+                    answer.applicationID = app.id
+                    alchemy.add_or_update_form(answer)
+            self.set_status(201)
+            self.write({"status": "submitted"})
+        else:
+            self.set_status(401)
+            self.write({"status": "Unauthorized"})
+        # except Exception as e:
+        #     logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
+        #     alchemy.jobs_db.rollback()
+        #     self.set_status(500)
+        #     self.write({"status": "Error"})
 
 
 class ViewApplicationHandler(BaseHandler):
@@ -331,3 +335,29 @@ class ExportApplicationsHandler(BaseHandler):
             logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
             self.write({"status": "You suck at coding"})
+
+def emailNotify(applicant, owner, job_id):
+    if job_id == 1:
+        return
+    import smtplib
+
+    FROM = 'aswwu.webmaster@wallawalla.edu'
+    TO = [owner + "@wallawalla.edu"]
+    SUBJECT = "New Job Application Submitted"
+    TEXT = applicant + " has submitted an application for job ID " + job_id +\
+        ". To view this application click here: https://aswwu.com/jobs/admin/review/" + job_id + "/" + applicant
+
+    # Prepare actual message
+    message = """\
+    From: %s
+    To: %s
+    Subject: %s
+
+    %s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+
+    server = smtplib.SMTP('smtp.office365.com', 587)
+    server.starttls()
+    server.login(email['username'], email['password'])
+    server.sendmail(FROM, TO, message)
+    server.quit()
