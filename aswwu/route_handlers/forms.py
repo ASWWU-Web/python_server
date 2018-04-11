@@ -182,27 +182,27 @@ class ViewApplicationHandler(BaseHandler):
                 if 'forms-admin' in user.roles:
                     apps = alchemy.query_all_forms(forms_model.JobApplication)
                     self.write({'applications': [a.min() for a in apps]})
+                    return
             elif job_id == "all" and username != "all":
                 if 'forms-admin' in user.roles or username == user.username:
                     apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(username=username)
                     self.write({'applications': [a.min() for a in apps]})
+                    return
             elif username == "all" and job_id != "all":
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
                 if 'forms-admin' in user.roles or ('forms' in user.roles and form.owner == user.username):
                     apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id)
                     self.write({'applications': [a.min() for a in apps]})
-                else:
-                    self.set_status(404)
-                    self.write({"status": "Insufficient Permissions"})
+                    return
             else:
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
                 if 'forms-admin' in user.roles or username == user.username or 'forms' in user.roles and (form.owner == user.username or form.id == 1):
                     app = alchemy.jobs_db.query(forms_model.JobApplication)\
                         .filter_by(jobID=str(job_id), username=username).one()
                     self.write({'application': app.serialize()})
-                else:
-                    self.set_status(404)
-                    self.write({"status": "Insufficient Permissions"})
+                    return
+            self.set_status(404)
+            self.write({"status": "Insufficient Permissions"})
         except Exception as e:
             logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
