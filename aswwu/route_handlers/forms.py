@@ -341,23 +341,21 @@ def emailNotify(applicant, owner, job_id):
         return
     import smtplib
 
-    FROM = 'aswwu.webmaster@wallawalla.edu'
-    TO = [owner + "@wallawalla.edu"]
+    FROM = email['username']
+    TO = owner + "@wallawalla.edu"
     SUBJECT = "New Job Application Submitted"
     TEXT = applicant + " has submitted an application for job ID " + job_id +\
         ". To view this application click here: https://aswwu.com/jobs/admin/review/" + job_id + "/" + applicant
 
-    # Prepare actual message
-    message = """\
-    From: %s
-    To: %s
-    Subject: %s
 
-    %s
-    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    smtpsrv = "smtp.office365.com"
+    smtpserver = smtplib.SMTP(smtpsrv, 587)
 
-    server = smtplib.SMTP('smtp.office365.com', 587)
-    server.starttls()
-    server.login(email['username'], email['password'])
-    server.sendmail(FROM, TO, message)
-    server.quit()
+    smtpserver.ehlo()
+    smtpserver.starttls()
+    smtpserver.ehlo
+    smtpserver.login(FROM, email['password'])
+    header = 'To:' + TO + '\n' + 'From: ' + FROM + '\n' + 'Subject:%s \n' % SUBJECT
+    msgbody = header + '\n %s \n\n' % TEXT
+    smtpserver.sendmail(FROM, TO, msgbody)
+    smtpserver.close()
