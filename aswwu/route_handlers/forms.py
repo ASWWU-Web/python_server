@@ -347,13 +347,12 @@ def emailNotify(applicant, owner, job_id):
     TEXT = applicant + " has submitted an application for job ID " + job_id +\
         ". To view this application click here: https://aswwu.com/jobs/admin/review/" + job_id + "/" + applicant
 
-
     smtpsrv = "smtp.office365.com"
     smtpserver = smtplib.SMTP(smtpsrv, 587)
 
     smtpserver.ehlo()
     smtpserver.starttls()
-    smtpserver.ehlo
+    smtpserver.ehlo()
     smtpserver.login(FROM, email['password'])
     header = 'To:' + TO + '\n' + 'From: ' + FROM + '\n' + 'Subject:%s \n' % SUBJECT
     msgbody = header + '\n %s \n\n' % TEXT
