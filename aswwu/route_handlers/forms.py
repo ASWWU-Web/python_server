@@ -127,50 +127,50 @@ class EditFormHandler(BaseHandler):
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        # try:
-        job_id = self.get_argument("jobID")
-        form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
-        temp_var = False
-        user = self.current_user
-        if user.username == self.get_argument("username"):
-            answers = json.loads(self.get_argument('answers'))
-            if len(answers) > 50:
-                raise ValueError("Too many answers submitted")
-            try:
-                app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
-                                                                                  username=user.username).one()
-            except:
-                temp_var = True
-                app = forms_model.JobApplication()
-                app.status = "new"
-                emailNotify(user.username, form.owner, job_id)
-            app.jobID = bleach.clean(job_id)
-            app.username = user.username
-            alchemy.add_or_update_form(app)
-            if temp_var:
-                app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
-                                                                                  username=user.username).one()
-            for a in answers:
+        try:
+            job_id = self.get_argument("jobID")
+            form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
+            temp_var = False
+            user = self.current_user
+            if user.username == self.get_argument("username"):
+                answers = json.loads(self.get_argument('answers'))
+                if len(answers) > 50:
+                    raise ValueError("Too many answers submitted")
                 try:
-                    answer = alchemy.jobs_db.query(forms_model.JobAnswer)\
-                        .filter_by(applicationID=app.id, questionID=a['questionID']).one()
+                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
+                                                                                      username=user.username).one()
                 except:
-                    answer = forms_model.JobAnswer()
-                if 'questionID' in a:
-                    answer.questionID = bleach.clean(str(a['questionID']))
-                    answer.answer = bleach.clean(a['answer'])
-                    answer.applicationID = app.id
-                    alchemy.add_or_update_form(answer)
-            self.set_status(201)
-            self.write({"status": "submitted"})
-        else:
-            self.set_status(401)
-            self.write({"status": "Unauthorized"})
-        # except Exception as e:
-        #     logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
-        #     alchemy.jobs_db.rollback()
-        #     self.set_status(500)
-        #     self.write({"status": "Error"})
+                    temp_var = True
+                    app = forms_model.JobApplication()
+                    app.status = "new"
+                    emailNotify(user.username, form.owner, job_id)
+                app.jobID = bleach.clean(job_id)
+                app.username = user.username
+                alchemy.add_or_update_form(app)
+                if temp_var:
+                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
+                                                                                      username=user.username).one()
+                for a in answers:
+                    try:
+                        answer = alchemy.jobs_db.query(forms_model.JobAnswer)\
+                            .filter_by(applicationID=app.id, questionID=a['questionID']).one()
+                    except:
+                        answer = forms_model.JobAnswer()
+                    if 'questionID' in a:
+                        answer.questionID = bleach.clean(str(a['questionID']))
+                        answer.answer = bleach.clean(a['answer'])
+                        answer.applicationID = app.id
+                        alchemy.add_or_update_form(answer)
+                self.set_status(201)
+                self.write({"status": "submitted"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
+        except Exception as e:
+            logger.error("SubmitApplicationHandler: error.\n" + str(e.message))
+            alchemy.jobs_db.rollback()
+            self.set_status(500)
+            self.write({"status": "Error"})
 
 
 class ViewApplicationHandler(BaseHandler):
