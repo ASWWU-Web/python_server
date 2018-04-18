@@ -7,6 +7,7 @@ import bleach
 import tornado.web
 
 from aswwu.base_handlers import BaseHandler
+from settings import email
 import aswwu.models.forms as forms_model
 import aswwu.alchemy as alchemy
 
@@ -88,10 +89,47 @@ class DeleteFormHandler(BaseHandler):
             self.write({"status": "Error"})
 
 
+class EditFormHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, jobID):
+        try:
+            user = self.current_user
+            if 'forms-admin' in user.roles:
+                form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=jobID).one()
+                form.job_name = bleach.clean(self.get_argument('job_name'))
+                form.job_description = bleach.clean(self.get_argument('job_description'))
+                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
+                    form.visibility = 1
+                else:
+                    form.visibility = 0
+                form.department = bleach.clean(self.get_argument('department'))
+                form.owner = bleach.clean(self.get_argument('owner'))
+                form.image = bleach.clean(self.get_argument('image'))
+                alchemy.add_or_update_form(form)
+                new_questions = json.loads(self.get_argument('questions'))
+                for question in form.questions:
+                    for q in new_questions:
+                        if question.id == q['id']:
+                            question.question = q['question']
+                            alchemy.add_or_update_form(question)
+                self.set_status(200)
+                self.write({"status": "Form Updated"})
+            else:
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
+        except Exception as e:
+            logger.error("DeleteFormHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            alchemy.jobs_db.rollback()
+            self.write({"status": "Error"})
+
+
 class SubmitApplicationHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
+            job_id = self.get_argument("jobID")
+            form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
             temp_var = False
             user = self.current_user
             if user.username == self.get_argument("username"):
@@ -99,17 +137,18 @@ class SubmitApplicationHandler(BaseHandler):
                 if len(answers) > 50:
                     raise ValueError("Too many answers submitted")
                 try:
-                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
+                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
                                                                                       username=user.username).one()
                 except:
                     temp_var = True
                     app = forms_model.JobApplication()
                     app.status = "new"
-                app.jobID = bleach.clean(self.get_argument('jobID'))
+                    emailNotify(user.username, form.owner, job_id)
+                app.jobID = bleach.clean(job_id)
                 app.username = user.username
                 alchemy.add_or_update_form(app)
                 if temp_var:
-                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=self.get_argument("jobID"),
+                    app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
                                                                                       username=user.username).one()
                 for a in answers:
                     try:
@@ -118,7 +157,7 @@ class SubmitApplicationHandler(BaseHandler):
                     except:
                         answer = forms_model.JobAnswer()
                     if 'questionID' in a:
-                        answer.questionID = bleach.clean(a['questionID'])
+                        answer.questionID = bleach.clean(str(a['questionID']))
                         answer.answer = bleach.clean(a['answer'])
                         answer.applicationID = app.id
                         alchemy.add_or_update_form(answer)
@@ -143,20 +182,27 @@ class ViewApplicationHandler(BaseHandler):
                 if 'forms-admin' in user.roles:
                     apps = alchemy.query_all_forms(forms_model.JobApplication)
                     self.write({'applications': [a.min() for a in apps]})
+                    return
             elif job_id == "all" and username != "all":
                 if 'forms-admin' in user.roles or username == user.username:
                     apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(username=username)
                     self.write({'applications': [a.min() for a in apps]})
+                    return
             elif username == "all" and job_id != "all":
-                if 'forms-admin' in user.roles:
+                form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
+                if 'forms-admin' in user.roles or ('forms' in user.roles and form.owner == user.username):
                     apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id)
                     self.write({'applications': [a.min() for a in apps]})
+                    return
             else:
-                if 'forms-admin' in user.roles or username == user.username:
+                form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
+                if 'forms-admin' in user.roles or username == user.username or 'forms' in user.roles and (form.owner == user.username or form.id == 1):
                     app = alchemy.jobs_db.query(forms_model.JobApplication)\
                         .filter_by(jobID=str(job_id), username=username).one()
                     self.write({'application': app.serialize()})
-        #             TODO: Exception Handle
+                    return
+            self.set_status(404)
+            self.write({"status": "Insufficient Permissions"})
         except Exception as e:
             logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
@@ -167,10 +213,12 @@ class ApplicationStatusHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
+            job_id = str(self.get_argument("jobID"))
+            uname = self.get_argument("username")
             user = self.current_user
-            if 'forms' in user.roles:
-                app = alchemy.jobs_db.query(forms_model.JobApplication)\
-                    .filter_by(jobID=str(self.get_argument("jobID")), username=self.get_argument("username")).one()
+            form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=job_id).one()
+            if 'forms' in user.roles or ('forms' in user.roles and form.owner == user.username):
+                app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id, username=uname).one()
                 app.status = bleach.clean(self.get_argument("status"))
                 alchemy.add_or_update_form(app)
                 self.set_status(200)
@@ -221,10 +269,13 @@ class ViewResumeHandler(BaseHandler):
     def get(self, job_id, username):
         user = self.current_user
         try:
-            if 'forms' in user.roles:
+            form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=job_id).one()
+            if 'forms-admin' in user.roles or ('forms' in user.roles and form.owner == user.username):
                 uname = username.replace("/", "")
             else:
-                uname = user.username
+                self.set_status(401)
+                self.write({"status": "Unauthorized"})
+                return
             try:
                 resume = open(glob.glob("../databases/resume/" + uname + "_" + job_id + "*")[0], "r")
                 self.set_status(200)
@@ -283,4 +334,27 @@ class ExportApplicationsHandler(BaseHandler):
         except Exception as e:
             logger.error("ViewApplicationHandler: error.\n" + str(e.message))
             self.set_status(404)
-            self.write({"status": "You suck at coding"})
+            self.write({"status": "error"})
+
+def emailNotify(applicant, owner, job_id):
+    if job_id == 1:
+        return
+    import smtplib
+
+    FROM = email['username']
+    TO = owner + "@wallawalla.edu"
+    SUBJECT = "New Job Application Submitted"
+    TEXT = applicant + " has submitted an application for job ID " + job_id +\
+        ". To view this application click here: https://aswwu.com/jobs/admin/review/" + job_id + "/" + applicant
+
+    smtpsrv = "smtp.office365.com"
+    smtpserver = smtplib.SMTP(smtpsrv, 587)
+
+    smtpserver.ehlo()
+    smtpserver.starttls()
+    smtpserver.ehlo()
+    smtpserver.login(FROM, email['password'])
+    header = 'To:' + TO + '\n' + 'From: ' + FROM + '\n' + 'Subject:%s \n' % SUBJECT
+    msgbody = header + '\n %s \n\n' % TEXT
+    smtpserver.sendmail(FROM, TO, msgbody)
+    smtpserver.close()
