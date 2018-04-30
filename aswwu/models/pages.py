@@ -108,6 +108,7 @@ class Category(PagesBase):
 class Department(PagesBase):
     department = Column(String(50), unique=True)
     description = Column(String(250))
+    color = Column(String(50))
 
     def serialize(self):
         return {'department': self.department}
@@ -115,7 +116,8 @@ class Department(PagesBase):
     def serialize_full(self):
         return {
             'department': self.department,
-            'description': self.description
+            'description': self.description,
+            'color': self.color
         }
 
 class Featured(PagesBase):
