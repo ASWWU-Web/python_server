@@ -57,4 +57,5 @@ class LoadAllHandler(BaseHandler):
 class LoadImageHandler(BaseHandler):
     def get(self, filename):
         image = open(glob.glob("../media/cms/" + filename)[0], "r")
+        self.set_header("Content-Type", "image/*")
         self.write(image.read())
