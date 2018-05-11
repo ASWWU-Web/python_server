@@ -94,8 +94,8 @@ class EditFormHandler(BaseHandler):
     def post(self, jobID):
         try:
             user = self.current_user
-            if 'forms-admin' in user.roles:
-                form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=jobID).one()
+            form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=jobID).one()
+            if 'forms-admin' in user.roles or user.username == form.owner:
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
                 if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
