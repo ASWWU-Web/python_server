@@ -388,6 +388,17 @@ def get_all_visible_current_pages():
     return thing
 
 
+def get_all_current_pages():
+    thing = None
+    try:
+        thing = page_db.query(pages_model.Page).options(joinedload('*')) \
+            .filter_by(current=True).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return thing
+
+
 def get_admin_pages(user):
     thing = None
     try:
