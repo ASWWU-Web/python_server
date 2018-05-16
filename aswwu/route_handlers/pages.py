@@ -57,12 +57,9 @@ class CategoryHandler(BaseHandler):
 class DepartmentHandler(BaseHandler):
     def get(self):
         try:
-            departments = alchemy.get_departments()
             departments_json = {
-                'departments': []
+                'departments': [department.serialize_full() for department in alchemy.get_departments()]
             }
-            for department in departments:
-                departments_json['departments'].append(department.serialize_full())
             self.write(departments_json)
         except Exception as e:
             logger.error("DepartmentHandler: error.\n" + str(e.message))
@@ -73,14 +70,9 @@ class DepartmentHandler(BaseHandler):
 class FeaturedsHandler(BaseHandler):
     def get(self):
         try:
-            featureds = alchemy.get_all_featureds()
             featureds_json = {
-                'featureds': []
+                'featureds': [alchemy.query_by_page_url(page.url).serialize_preview() or None for page in alchemy.get_all_featureds()]
             }
-            for featured in featureds:
-                page = alchemy.query_by_page_url(featured.url)
-                if page:
-                    featureds_json['featureds'].append(page.serialize_preview())
             self.write(featureds_json)
         except Exception as e:
             logger.error("FeaturedsHandler: error.\n" + str(e.message))
@@ -154,7 +146,12 @@ class AdminAllHandler(BaseHandler):
     def get(self):
         try:
             user = self.current_user
-            pages = alchemy.get_admin_pages(user.username)
+            if 'administrator' in user.roles:
+                pages = alchemy.get_all_current_pages()
+            elif any(role in user.roles for role in ['pages', 'pages-admin']):
+                pages = alchemy.get_admin_pages(user.username)
+            else:
+                pages = []
             self.write({"results": [p.serialize_preview() for p in pages]})
         except Exception as e:
             logger.error("AdminAllHandler: error.\n" + str(e.message))

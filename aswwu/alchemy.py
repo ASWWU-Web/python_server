@@ -388,21 +388,34 @@ def get_all_visible_current_pages():
     return thing
 
 
-def get_admin_pages(user):
+def get_all_current_pages():
     thing = None
     try:
-        owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
-            .filter_by(owner=user, current=True).all()
-        editables = page_db.query(pages_model.PageEditor)\
-            .options(joinedload('*')).filter_by(username=user).all()
-        editable_pages = []
-        for editable in editables:
-            editable_pages.append(admin_query_by_page_url(editable.url))
-        thing = owned_pages + editable_pages
+        thing = page_db.query(pages_model.Page).options(joinedload('*')) \
+            .filter_by(current=True).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
     return thing
+
+
+def get_admin_pages(user):
+    thing = None
+    try:
+        pages = page_db.query(pages_model.Page).outerjoin(pages_model.Page.editors)\
+                    .filter(
+            and_(
+                pages_model.Page.current.ilike(1),
+                or_(
+                    pages_model.Page.owner.ilike(user),
+                    pages_model.PageEditor.username.ilike(user)
+                )
+            )
+        ).all()
+    except Exception as e:
+        logger.info(e)
+        page_db.rollback()
+    return pages
 
 
 def get_editors(url):
