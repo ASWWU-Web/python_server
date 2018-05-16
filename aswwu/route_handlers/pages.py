@@ -148,9 +148,7 @@ class AdminAllHandler(BaseHandler):
             user = self.current_user
             if 'administrator' in user.roles:
                 pages = alchemy.get_all_current_pages()
-            elif 'pages-admin' in user.roles:
-                pages = alchemy.get_all_visible_current_pages()
-            elif 'pages' in user.roles:
+            elif any(role in user.roles for role in ['pages', 'pages-admin']):
                 pages = alchemy.get_admin_pages(user.username)
             else:
                 pages = []

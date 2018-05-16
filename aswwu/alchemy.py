@@ -402,21 +402,15 @@ def get_all_current_pages():
 def get_admin_pages(user):
     thing = None
     try:
-        # owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
-        #     .filter_by(owner=user, current=True).all()
-        # editables = page_db.query(pages_model.PageEditor)\
-        #     .options(joinedload('*')).filter_by(username=user).all()
-        # editable_pages = []
-        # for editable in editables:
-        #     editable_pages.append(admin_query_by_page_url(editable.url))
-        # thing = owned_pages + editable_pages
-
-        pages = page_db.query(or_(getattr(pages_model.Page, "current").ilike(user), getattr(pages_model.Page, "")))
-
+        owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
+            .filter_by(owner=user, current=True).all()
+        editables = page_db.query(pages_model.PageEditor)\
+            .options(joinedload('*')).filter_by(username=user).all()
+        pages = set(owned_pages).union(set(editables))
     except Exception as e:
         logger.info(e)
         page_db.rollback()
-    return thing
+    return pages
 
 
 def get_editors(url):
