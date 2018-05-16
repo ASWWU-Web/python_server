@@ -402,11 +402,16 @@ def get_all_current_pages():
 def get_admin_pages(user):
     thing = None
     try:
-        owned_pages = page_db.query(pages_model.Page).options(joinedload('*'))\
-            .filter_by(owner=user, current=True).all()
-        editables = page_db.query(pages_model.PageEditor)\
-            .options(joinedload('*')).filter_by(username=user).all()
-        pages = set(owned_pages).union(set(editables))
+        pages = page_db.query(pages_model.Page).outerjoin(pages_model.Page.editors)\
+                    .filter(
+            and_(
+                pages_model.Page.current.ilike(1),
+                or_(
+                    pages_model.Page.owner.ilike(user),
+                    pages_model.PageEditor.username.ilike(user)
+                )
+            )
+        ).all()
     except Exception as e:
         logger.info(e)
         page_db.rollback()
