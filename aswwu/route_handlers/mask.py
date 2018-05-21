@@ -130,8 +130,8 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            update_views(user, profile, year)
-            # self.write(profile.to_json())
+            if "mask" in self.request.headers.get('Referer'):
+                update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
