@@ -230,7 +230,7 @@ class AdminSpecificPageHandler(BaseHandler):
                 self.set_status(404)
                 self.write({'status': 'no page by that URL'})
                 return
-            if page.owner == user.username:
+            if 'administrator' in user.roles or page.owner == user.username or any(user.username == editor.username for editor in page.editors):
                 self.write(page.serialize())
                 return
             editors = alchemy.get_editors(url)
@@ -255,13 +255,12 @@ class AdminSpecificPageHandler(BaseHandler):
             body_json = json.loads(body)
             page = alchemy.admin_query_by_page_url(url)
             today = datetime.datetime.today().date()
-            owner = (user.username == page.owner)
-            editors = [editor.username for editor in page.editors]
+            owner = (user.username == page.owner or 'administrator' in user.roles)
             new_tags = []
             new_editors = []
 
             # check permissions
-            if not owner and user.username not in editors:
+            if not owner and all(user.username != editor.username for editor in page.editors):
                 self.set_status(403)
                 self.write({'status': 'insufficient permissions'})
                 return
