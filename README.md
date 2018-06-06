@@ -7,7 +7,7 @@ pip install -r requirements.txt
 
 Then you need to get a copy of the settings file. To do this, run the following command:
 ```
-scp ./ user@aswwu.com:/data/python_server/settings.py
+scp user@aswwu.com:/data/python_server/settings.py ./
 ```
 Once you've done this, change the `dev` parameter to `True`, and the `developer` parameter to your WWU ID.
 
