@@ -9,6 +9,7 @@ Then you need to get a copy of the settings file. To do this, run the following 
 ```
 scp ./ user@aswwu.com:/data/python_server/settings.py
 ```
+Once you've done this, change the `dev` parameter to `True`, and the `developer` parameter to your WWU ID.
 
 Then you need to get a copy of the database file. Run the following command from the directory one level up from the python server.
 ```
