@@ -1,17 +1,22 @@
-# Le python backend
+# The ASWWU Server
 ## Installation
 The following python packages need to be installed and they can be installed with the following command.
 ```
 pip install -r requirements.txt
 ```
 
-Then you need to get a copy of the database file. In your git projects folder run the following command
+Then you need to get a copy of the settings file. To do this, run the following command:
+```
+scp ./ user@aswwu.com:/data/python_server/settings.py
+```
+
+Then you need to get a copy of the database file. Run the following command from the directory one level up from the python server.
 ```
 git clone user@aswwu.com:/data/databases
 ```
 The python library looks for the database file in `../databases` so make sure you clone the database repository into the correct place.
 
-**Note:** This git repo is also used for daily backups to the actual database.
+## Running
 
 Now run the server by calling.
 ```
