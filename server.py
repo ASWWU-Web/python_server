@@ -27,7 +27,7 @@ from settings import keys, testing
 # e.g. `python server.py --port=8881` would run the server on port 8881
 define("port", default=8888, help="run on the given port", type=int)
 define("log_name", default="aswwu", help="name of the logfile")
-define("current_year", default="1718")
+define("current_year", default="1819")
 
 
 # the main class that wraps everything up nice and neat
