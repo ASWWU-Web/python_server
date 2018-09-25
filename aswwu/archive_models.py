@@ -102,6 +102,10 @@ def set_archive_columns(self):
     self.office_hours = Column(String(250))
 
 
+class Archive1718(ArchiveBase):
+    __tablename__ = 'profiles1718'
+    id = Column(String(50), primary_key=True)
+
 class Archive1617(ArchiveBase):
     __tablename__ = 'profiles1617'
     id = Column(String(50), primary_key=True)
