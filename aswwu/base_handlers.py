@@ -184,6 +184,8 @@ class BaseVerifyLoginHandler(BaseHandler):
             token = self.generate_token(user.wwuid)
             self.write({'user': user.to_json(), 'token': token})
             self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+            # initial view
+            add_null_view('null.user', user.username)
         else:
             self.set_status(401)
             self.write({'error': 'not logged in'})
@@ -192,3 +194,15 @@ class BaseVerifyLoginHandler(BaseHandler):
 def get_last_year():
     year = tornado.options.options.current_year
     return str(int(year[:2]) - 1) + str(int(year[2:4]) - 1)
+
+
+def add_null_view(user, profile):
+    views = alchemy.people_db.query(mask_model.ProfileView)\
+        .filter_by(viewer=user, viewed=profile).all()
+    if len(views) == 0:
+        view = mask_model.ProfileView()
+        view.viewer = user
+        view.viewed = profile
+        view.last_viewed = datetime.datetime.now()
+        view.num_views = 0
+        alchemy.add_or_update(view)
