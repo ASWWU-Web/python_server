@@ -1,11 +1,8 @@
 import datetime
 
-from sqlalchemy import Column, ForeignKey, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, ForeignKey, String, DateTime, Integer
 
-import aswwu.models.bases as base
-
-ElectionBase = declarative_base(cls=base.ElectionBase)
+from aswwu.models.bases import ElectionBase
 
 
 class User(ElectionBase):
@@ -36,3 +33,9 @@ class Election(ElectionBase):
     def info(self):
         return self.to_json(limitList=['wwuid', 'candidate_one', 'candidate_two', 'sm_one', 'sm_two',
                                        'new_department', 'updated_at'])
+
+
+class Candidate(ElectionBase):
+    username = Column(String(250), nullable=False)
+    full_name = Column(String(250))
+    district = Column(Integer)
