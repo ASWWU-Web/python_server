@@ -213,10 +213,20 @@ def add_or_update_election(thing):
         election_db.rollback()
 
 
-def query_candidate_district_election(district):
+def query_district_election(district):
     thing = None
     try:
         thing = election_db.query(election_model.Candidate).filter_by(district=str(district)).all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
+
+
+def query_candidate_election(username):
+    thing = None
+    try:
+        thing = election_db.query(election_model.Candidate).filter_by(username=str(username)).all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()

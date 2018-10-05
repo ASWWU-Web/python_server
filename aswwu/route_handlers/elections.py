@@ -1,6 +1,7 @@
 import logging
 
 import tornado.web
+import json
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.alchemy as alchemy
@@ -49,3 +50,34 @@ class ElectionLiveFeedHandler(BaseHandler):
     def get(self):
         votes = alchemy.query_all_election(election_model.Election)
         self.write({'size': len(votes)})
+
+
+class ElectionCandidateHandler(BaseHandler):
+    def get(self, district):
+        candidates = alchemy.query_district_election(district)
+        self.write({
+            'candidates': [c.to_json for c in candidates]
+        })
+
+    @tornado.web.authenticated
+    def post(self, district):
+        # variables
+        user = self.current_user
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+        # check authorization
+        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+            self.set_status(403)
+            self.write({'status': 'insufficient permissions'})
+        candidate = alchemy.query_candidate_election(str(body_json['username']))
+        # Fix this to be more efficient
+        if len(candidate) == 0:
+            new_candidate = election_model.Candidate(username=str(body_json['username']))
+        else:
+            new_candidate = alchemy.query_candidate_election(username=str(body_json['username']))
+
+        new_candidate.full_name = str(body_json['full_name'])
+        new_candidate.district = str(district)
+
+        alchemy.add_or_update_election(new_candidate)
+

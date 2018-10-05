@@ -57,6 +57,7 @@ class Application(tornado.web.Application):
             (r"/senate_election/showall", elections.AllElectionVoteHandler),
             (r"/senate_election/vote/(.*)", elections.ElectionVoteHandler),
             (r"/senate_election/livefeed", elections.ElectionLiveFeedHandler),
+            (r"/senate_election/candidate/(.*)", elections.ElectionCandidateHandler),
             (r"/saml/account/", saml.SamlHandler),
             (r"/matcher", mask.MatcherHandler),
             (r"/forms/job/new", forms.NewFormHandler),
