@@ -234,10 +234,10 @@ def query_candidate_election(username):
 
 
 # finds all rows for a given model matching the given WWUID
-def query_by_wwuid_election(model, wwuid):
+def query_vote_election(wwuid):
     thing = None
     try:
-        thing = election_db.query(model).filter_by(wwuid=str(wwuid)).all()
+        thing = election_db.query(election_model.Vote).filter_by(wwuid=str(wwuid)).all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()
