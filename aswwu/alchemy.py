@@ -11,6 +11,7 @@ from sqlalchemy.sql import label
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
 import aswwu.models.pages as pages_model
+import aswwu.models.elections as election_model
 from aswwu.archive_models import ArchiveBase
 
 Base = base.Base
@@ -210,6 +211,16 @@ def add_or_update_election(thing):
     except Exception as e:
         logger.info(e)
         election_db.rollback()
+
+
+def query_candidate_district_election(district):
+    thing = None
+    try:
+        thing = election_db.query(election_model.Candidate).filter_by(district=str(district)).all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
 
 
 # finds all rows for a given model matching the given WWUID
