@@ -9,7 +9,7 @@ from sqlalchemy import or_
 from aswwu.base_handlers import BaseHandler
 import aswwu.models.mask as mask_model
 import aswwu.archive_models as archives
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.mask as alchemy
 
 logger = logging.getLogger("aswwu")
 
