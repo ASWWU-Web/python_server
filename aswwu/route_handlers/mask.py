@@ -8,8 +8,9 @@ from sqlalchemy import or_
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.models.mask as mask_model
-import aswwu.archive_models as archives
-import aswwu.alchemy_new.mask as alchemy
+import aswwu.archive_models as archive_model
+import aswwu.alchemy_new.mask as mask
+import aswwu.alchemy_new.archive as archive
 
 logger = logging.getLogger("aswwu")
 
@@ -30,7 +31,7 @@ class AdministratorRoleHandler(BaseHandler):
             # sharing is caring
             if cmd == 'set_role':
                 username = self.get_argument('username', '').replace(' ', '.').lower()
-                fuser = alchemy.people_db.query(mask_model.User).filter_by(username=username).all()
+                fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
@@ -43,7 +44,7 @@ class AdministratorRoleHandler(BaseHandler):
                     roles.append(self.get_argument('newRole', None))
                     roles = set(roles)
                     fuser.roles = ', '.join(roles)
-                    alchemy.add_or_update(fuser)
+                    mask.add_or_update(fuser)
                     self.write({'response': 'success'})
 
 
@@ -60,8 +61,8 @@ class SearchHandler(BaseHandler):
             # results = {r[0] for r in profiles}
         # otherwise we're going old school with the Archives
         else:
-            model = archives.get_archive_model(year)
-            results = alchemy.archive_db.query(model)
+            model = archive_model.get_archive_model(year)
+            results = archive.archive_db.query(model)
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]
             for f in fields:
@@ -91,16 +92,16 @@ class SearchHandler(BaseHandler):
             temp_query = query.rstrip(";")
             for q in temp_query.split(";"):
                 search_criteria[q.split("=")[0]] = q.split("=")[1]
-            results = alchemy.search_profiles(search_criteria)
+            results = mask.search_profiles(search_criteria)
         except:
             search_criteria = query
             # If there's no search parameters
             if len(search_criteria) == 0:
-                results = alchemy.search_all_profiles()
+                results = mask.search_all_profiles()
             # If only a username is being passed into the search parameters
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
-                results = alchemy.search_profiles(search_criteria)
+                results = mask.search_profiles(search_criteria)
         keys = ['username', 'full_name', 'photo', 'email', 'views']
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
 
@@ -108,7 +109,7 @@ class SearchHandler(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        profiles = alchemy.search_all_profiles()
+        profiles = mask.search_all_profiles()
         keys = ['username', 'full_name', 'photo', 'email', 'views']
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in profiles]})
 
@@ -117,9 +118,9 @@ class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
-            profile = alchemy.archive_db.query(archives.get_archive_model(year)).filter_by(username=str(username)).all()
+            profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
         # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -146,7 +147,7 @@ class ProfileHandler(BaseHandler):
 
 def update_views(user, profile, year):
     if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
-        views = alchemy.people_db.query(mask_model.ProfileView)\
+        views = mask.people_db.query(mask_model.ProfileView)\
             .filter_by(viewer=user.username, viewed=profile.username).all()
         if len(views) == 0:
             view = mask_model.ProfileView()
@@ -154,13 +155,13 @@ def update_views(user, profile, year):
             view.viewed = profile.username
             view.last_viewed = datetime.datetime.now()
             view.num_views = 1
-            alchemy.add_or_update(view)
+            mask.add_or_update(view)
         else:
             for view in views:
                 if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
                     view.num_views += 1
                     view.last_viewed = datetime.datetime.now()
-                    alchemy.add_or_update(view)
+                    mask.add_or_update(view)
 
 
 # queries the server for a user's photos
@@ -175,14 +176,14 @@ class ProfilePhotoHandler(BaseHandler):
         # check if we're looking at current photos or not
         if year == self.application.options.current_year:
             if wwuid:
-                profile = alchemy.query_by_wwuid(mask_model.Profile, wwuid)
+                profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
             else:
-                profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
         else:
             if wwuid:
-                profile = alchemy.archive_db.query(archives.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
+                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
             else:
-                profile = alchemy.archive_db.query(archives.get_archive_model(year))\
+                profile = archive.archive_db.query(archive_model.get_archive_model(year))\
                     .filter_by(username=str(username)).all()
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -204,7 +205,7 @@ class ProfileUpdateHandler(BaseHandler):
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = alchemy.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
             profile.full_name = bleach.clean(self.get_argument('full_name'))
             profile.photo = bleach.clean(self.get_argument('photo', ''))
             profile.gender = bleach.clean(self.get_argument('gender', ''))
@@ -237,7 +238,7 @@ class ProfileUpdateHandler(BaseHandler):
                 profile.office = bleach.clean(self.get_argument('office', ''))
                 profile.office_hours = bleach.clean(self.get_argument('office_hours', ''))
 
-            alchemy.add_or_update(profile)
+            mask.add_or_update(profile)
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
@@ -249,7 +250,7 @@ class MatcherHandler(BaseHandler):
         user = self.current_user
 
         if 'matcher' in user.roles:
-            profiles = alchemy.query_all(mask_model.Profile)
+            profiles = mask.query_all(mask_model.Profile)
             self.write({'database': [p.view_other() for p in profiles]})
         else:
             self.write("{'error': 'Insufficient Permissions :('}")
