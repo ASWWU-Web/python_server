@@ -4,7 +4,7 @@ import tornado.web
 import json
 
 from aswwu.base_handlers import BaseHandler
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.elections as alchemy
 import aswwu.models.elections as election_model
 
 logger = logging.getLogger("aswwu")
@@ -13,7 +13,7 @@ election_db = alchemy.election_db
 
 
 # update user's vote
-class ElectionVoteHandler(BaseHandler):
+class ElectionSenateVoteHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, username):
         user = self.current_user
@@ -37,7 +37,7 @@ class ElectionVoteHandler(BaseHandler):
         self.write({'vote': 'successfully voted'})
 
 
-class ElectionCandidateHandler(BaseHandler):
+class ElectionSenateCandidateHandler(BaseHandler):
     def get(self, district):
         candidates = alchemy.query_district_election(district)
         self.write({
@@ -67,4 +67,3 @@ class ElectionCandidateHandler(BaseHandler):
         alchemy.add_or_update_election(new_candidate)
 
         self.write({'candidate': 'successfully modified/created'})
-

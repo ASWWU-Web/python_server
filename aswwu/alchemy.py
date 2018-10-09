@@ -193,57 +193,6 @@ def delete_thing(thing):
         people_db.rollback()
 
 
-def query_all_election(model):
-    thing = None
-    try:
-        thing = election_db.query(model).all()
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-    return thing
-
-
-def add_or_update_election(thing):
-    try:
-        election_db.add(thing)
-        election_db.commit()
-        return thing
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-
-
-def query_district_election(district):
-    thing = None
-    try:
-        thing = election_db.query(election_model.Candidate).filter_by(district=str(district)).all()
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-    return thing
-
-
-def query_candidate_election(username):
-    thing = None
-    try:
-        thing = election_db.query(election_model.Candidate).filter_by(username=str(username)).all()
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-    return thing
-
-
-# finds all rows for a given model matching the given WWUID
-def query_vote_election(wwuid):
-    thing = None
-    try:
-        thing = election_db.query(election_model.Vote).filter_by(wwuid=str(wwuid)).all()
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-    return thing
-
-
 # updates a model, or creates it if it doesn't exist
 def add_or_update_form(thing):
     try:
