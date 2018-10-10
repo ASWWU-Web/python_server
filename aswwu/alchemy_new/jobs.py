@@ -1,22 +1,23 @@
 # jobs.py
 
 # import and set up the logging
-import ast
+# import ast
 import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-from sqlalchemy.sql import label
+# from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
 
-from aswwu.alchemy_new.elections import election_engine
+# from aswwu.alchemy_new.elections import election_engine
 
 JobsBase = base.JobsBase
 
 logger = logging.getLogger("aswwu")
 
 jobs_engine = create_engine("sqlite:///../databases/jobs.db")
+election_engine = create_engine("sqlite:///../databases/senate_elections.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 
@@ -24,6 +25,7 @@ JobsBase.metadata.create_all(jobs_engine)
 JobsBase.metadata.bind = election_engine
 jobs_dbs = sessionmaker(bind=jobs_engine)
 jobs_db = jobs_dbs()
+
 
 # updates a model, or creates it if it doesn't exist
 def add_or_update_form(thing):
