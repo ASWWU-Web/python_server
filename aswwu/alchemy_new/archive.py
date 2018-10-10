@@ -1,12 +1,9 @@
 # archive.py
 
-# import and set up the logging
-import ast
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
-from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-from sqlalchemy.sql import label
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from aswwu.archive_models import ArchiveBase
 
@@ -19,4 +16,3 @@ archive_engine = create_engine("sqlite:///../../databases/archives.db")
 ArchiveBase.metadata.bind = archive_engine
 archive_dbs = sessionmaker(bind=archive_engine)
 archive_db = archive_dbs()
-

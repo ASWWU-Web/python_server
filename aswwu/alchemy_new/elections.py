@@ -1,12 +1,9 @@
 # elections.py
 
-# import and set up the logging
-import ast
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
-from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-from sqlalchemy.sql import label
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import aswwu.models.bases as base
 import aswwu.models.elections as election_model
