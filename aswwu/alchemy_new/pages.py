@@ -6,10 +6,10 @@ import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-from sqlalchemy.sql import label
+# from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
-import aswwu.models.mask as mask_model
+# import aswwu.models.mask as mask_model
 import aswwu.models.pages as pages_model
 
 PagesBase = base.PagesBase
@@ -29,6 +29,7 @@ page_db = pages_dbs()
 
 # Section for ASWWU Pages Functions
 
+
 # updates a model, or creates it if it doesn't exist
 def add_or_update_page(thing):
     try:
@@ -47,7 +48,7 @@ def delete_thing_pages(thing):
         page_db.commit()
     except Exception as e:
         logger.info(e)
-        jobs_db.rollback()
+        page_db.rollback()
 
 
 def query_by_page_url(url):
@@ -163,6 +164,7 @@ def get_all_current_pages():
 
 
 def get_admin_pages(user):
+    # TODO: remove this
     thing = None
     try:
         pages = page_db.query(pages_model.Page).outerjoin(pages_model.Page.editors)\
