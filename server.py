@@ -18,6 +18,7 @@ import aswwu.route_handlers.saml as saml
 import aswwu.route_handlers.volunteers as volunteers
 import aswwu.route_handlers.pages as pages
 import aswwu.route_handlers.froala_images as froala
+import aswwu.route_handlers.homepage as homepage
 # import our super secret keys
 from settings import keys, testing
 
@@ -90,6 +91,7 @@ class Application(tornado.web.Application):
             (r"/pages/media/load_images", froala.LoadAllHandler),
             (r"/pages/media/static/(.*)", froala.LoadImageHandler),
             (r"/pages/(.*)", pages.GetHandler),
+            (r"/homepage/open_forum", homepage.OpenForumHandler),
         ]
 
         # a bunch of setup stuff
