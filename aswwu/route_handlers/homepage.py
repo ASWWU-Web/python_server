@@ -12,13 +12,13 @@ logger = logging.getLogger("aswwu")
 
 
 class OpenForumHandler(BaseHandler):
-    @tornado.web.authenticated
+    # @tornado.web.authenticated
     def post(self):
         try:
             json_data = json.loads(self.request.body.decode('utf-8'))
             for key in json_data:
                 if key == "to":
-                    to = json_data[key]
+                    to = adminUsernameExpander(json_data[key])
                 elif key == "subject":
                     subject = json_data[key]
                 elif key == "body":
@@ -30,15 +30,13 @@ class OpenForumHandler(BaseHandler):
                     self.write({'status': 'invalid json parameters'})
                     return
 
-                to = adminUsernameExpander(to)
+            emailAdministration(to, subject, body, reply_to)
 
-                emailAdministration(to, subject, body, reply_to)
-
-                self.write({"status": "success"})
+            self.write({"status": "success"})
 
         except Exception as e:
             self.set_status(500)
-            self.write({"status": "Error"})
+            self.write({"status": "Error: in open forum handler exception. --> " + e.message})
         
 
 def adminUsernameExpander(recipient):
@@ -82,29 +80,36 @@ def emailAdministration(TO, SUBJECT, BODY, REPLY_TO):
         BODY {string} -- body text of the email
         REPLY_TO {string} -- username of message author
     """
-    import smtplib
+    try:
+        import smtplib
+        
+        domain = "wallawalla.edu"
+        SEND_USING = email['username']  # Webmaster account, contains @wallawalla.edu
+        SEND_TO = TO + "@" + domain # admin recipient 
+        REPLY_TO = REPLY_TO + "@" + domain # user who sent the message
+        SUBJECT = "Open Forum Submission: " + SUBJECT
+        TEXT = BODY
 
-    domain = "wallawalla.edu"
-    SEND_USING = email['username']  # Webmaster account, contains @wallawalla.edu
-    SEND_TO = TO + "@" + domain # admin recipient 
-    REPLY_TO = REPLY_TO + "@" + domain # user who sent the message
-    SUBJECT = "Open Forum Submission: " + SUBJECT
-    TEXT = BODY
+        smtpsrv = "smtp.office365.com"
+        smtpserver = smtplib.SMTP(smtpsrv)
+        smtpserver.set_debuglevel(1)
+        smtpserver.ehlo()
+        smtpserver.starttls()
+        smtpserver.ehlo()
+        smtpserver.login(SEND_USING, email['password'])
 
-    smtpsrv = "smtp.office365.com"
-    smtpserver = smtplib.SMTP(smtpsrv, 587)
-    smtpserver.ehlo()
-    smtpserver.starttls()
-    smtpserver.ehlo()
-    smtpserver.login(SEND_USING, email['password'])
+        header = (
+            'To:' + SEND_TO + '\n' 
+            + 'From:' + SEND_USING + '\n' 
+            + 'Reply-To:' + REPLY_TO + '\n'
+            + 'Subject:%s \n' % SUBJECT
+        )
+        msgbody = header + '\n %s \n\n' % TEXT
 
-    header = (
-          'To:' + SEND_TO + '\n' 
-        + 'From: ' + SEND_USING + '\n' 
-        + 'Reply-To:' + REPLY_TO + '\n'
-        + 'Subject:%s \n' % SUBJECT
-    )
-    msgbody = header + '\n %s \n\n' % TEXT
+        smtpserver.sendmail(SEND_USING, SEND_TO, msgbody)
+        smtpserver.close()
+    except Exception as e:
+        print(e.message)
+        raise ValueError('emailfunction --> ' + e.message)
+        
 
-    smtpserver.sendmail(SEND_USING, TO, msgbody)
-    smtpserver.close()
