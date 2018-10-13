@@ -27,7 +27,7 @@ class OpenForumHandler(BaseHandler):
                     reply_to = json_data[key]
                 else:
                     self.set_status(500)
-                    self.write({'status': 'invalid json parameters'})
+                    self.write({'status': 'invalid parameters'})
                     return
 
             emailAdministration(to, subject, body, reply_to)
@@ -36,7 +36,7 @@ class OpenForumHandler(BaseHandler):
 
         except Exception as e:
             self.set_status(500)
-            self.write({"status": "Error: in open forum handler exception. --> " + e.message})
+            self.write({"status": "Error"})
         
 
 def adminUsernameExpander(recipient):
@@ -51,23 +51,18 @@ def adminUsernameExpander(recipient):
     Returns:
         string -- the username of the aswwu position
     """
-    # adminEmails =	{
-    #     "president": "aswwu.pres",
-    #     "executive_vp": "aswwu.evp",
-    #     "financial_vp": "aswwu.fvp",
-    #     "spiritual_vp": "aswwu.spiritual",
-    #     "social_vp": "aswwu.social"
-    # }
-    se = "stephen.ermshar"
-    adminEmails = {
-        "president": se,
-        "executive_vp": se,
-        "financial_vp": se,
-        "spiritual_vp": se,
-        "social_vp": se
+
+    adminEmails =	{
+        "president": "aswwu.pres",
+        "executive_vp": "aswwu.evp",
+        "financial_vp": "aswwu.fvp",
+        "spiritual_vp": "aswwu.spiritual",
+        "social_vp": "aswwu.social"
     }
+    se = "stephen.ermshar"
     if recipient in adminEmails:
-        return adminEmails[recipient]
+        # return adminEmails[recipient]
+        return se
     else:
         raise ValueError('The selected recipient is not a valid ASWWU Open Forum Recipient.')
 
@@ -80,36 +75,32 @@ def emailAdministration(TO, SUBJECT, BODY, REPLY_TO):
         BODY {string} -- body text of the email
         REPLY_TO {string} -- username of message author
     """
-    try:
-        import smtplib
-        
-        domain = "wallawalla.edu"
-        SEND_USING = email['username']  # Webmaster account, contains @wallawalla.edu
-        SEND_TO = TO + "@" + domain # admin recipient 
-        REPLY_TO = REPLY_TO + "@" + domain # user who sent the message
-        SUBJECT = "Open Forum Submission: " + SUBJECT
-        TEXT = BODY
+    import smtplib
+    
+    domain = "wallawalla.edu"
+    SEND_USING = email['username']  # Webmaster account, contains @wallawalla.edu
+    SEND_TO = TO + "@" + domain # admin recipient 
+    REPLY_TO = REPLY_TO + "@" + domain # user who sent the message
+    SUBJECT = "Open Forum Submission: " + SUBJECT
+    TEXT = BODY
 
-        smtpsrv = "smtp.office365.com"
-        smtpserver = smtplib.SMTP(smtpsrv)
-        smtpserver.set_debuglevel(1)
-        smtpserver.ehlo()
-        smtpserver.starttls()
-        smtpserver.ehlo()
-        smtpserver.login(SEND_USING, email['password'])
+    smtpsrv = "smtp.office365.com"
+    smtpserver = smtplib.SMTP(smtpsrv)
+    # smtpserver.set_debuglevel(1)
+    smtpserver.ehlo()
+    smtpserver.starttls()
+    smtpserver.ehlo()
+    smtpserver.login(SEND_USING, email['password'])
 
-        header = (
-            'To:' + SEND_TO + '\n' 
-            + 'From:' + SEND_USING + '\n' 
-            + 'Reply-To:' + REPLY_TO + '\n'
-            + 'Subject:%s \n' % SUBJECT
-        )
-        msgbody = header + '\n %s \n\n' % TEXT
+    header = (
+        'To:' + SEND_TO + '\n' 
+        + 'From:' + SEND_USING + '\n' 
+        + 'Reply-To:' + REPLY_TO + '\n'
+        + 'Subject:%s \n' % SUBJECT
+    )
+    msgbody = header + '\n %s \n\n' % TEXT
 
-        smtpserver.sendmail(SEND_USING, SEND_TO, msgbody)
-        smtpserver.close()
-    except Exception as e:
-        print(e.message)
-        raise ValueError('emailfunction --> ' + e.message)
+    smtpserver.sendmail(SEND_USING, SEND_TO, msgbody)
+    smtpserver.close()
         
 
