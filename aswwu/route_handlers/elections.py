@@ -15,7 +15,7 @@ election_db = alchemy.election_db
 # update user's vote
 class ElectionSenateVoteHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self, username):
+    def post(self, district):
         user = self.current_user
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -26,7 +26,7 @@ class ElectionSenateVoteHandler(BaseHandler):
         else:
             new_vote = election_db.query(election_model.Vote).filter_by(username=str(user.username)).one()
 
-        new_vote.district = str(body_json['district'])
+        new_vote.district = str(district)
         new_vote.vote_1 = str(body_json['vote_1'])
         new_vote.vote_2 = str(body_json['vote_2'])
         new_vote.write_in_1 = str(body_json['write_in_1'])
