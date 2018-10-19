@@ -22,7 +22,7 @@ class ElectionSenateVoteHandler(BaseHandler):
         vote = alchemy.query_vote_election(str(user.wwuid))
         # Fix this to be more efficient
         if len(vote) == 0:
-            new_vote = election_model.Vote(wwuid=str(user.wwuid))
+            new_vote = election_model.Vote(username=str(user.username))
         else:
             new_vote = election_db.query(election_model.Vote).filter_by(wwuid=str(user.wwuid)).one()
 

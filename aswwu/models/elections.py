@@ -6,7 +6,7 @@ from aswwu.models.bases import ElectionBase
 
 
 class Vote(ElectionBase):
-    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
+    username = Column(String(100), nullable=False)
     district = Column(String(50))
     vote_1 = Column(String(50))
     vote_2 = Column(String(50))
@@ -16,10 +16,10 @@ class Vote(ElectionBase):
 
     # return those who have voted
     def voters(self):
-        return self.to_json(limitList=['wwuid'])
+        return self.to_json(limitList=['username'])
 
     def base_info(self):
-        return self.to_json(limitList=['wwuid', 'updated_at'])
+        return self.to_json(limitList=['username', 'updated_at'])
 
 
 class Candidate(ElectionBase):
