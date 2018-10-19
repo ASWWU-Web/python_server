@@ -64,11 +64,12 @@ def query_candidate_election(username):
 
 
 # finds all rows for a given model matching the given WWUID
-def query_vote_election(wwuid):
+def query_vote_election(username):
     thing = None
     try:
-        thing = election_db.query(election_model.Vote).filter_by(wwuid=str(wwuid)).all()
+        thing = election_db.query(election_model.Vote).filter_by(username=str(username)).all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()
     return thing
+
