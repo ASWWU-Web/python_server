@@ -26,3 +26,10 @@ class Candidate(ElectionBase):
     username = Column(String(250), nullable=False)
     full_name = Column(String(250))
     district = Column(Integer)
+
+    def serialize(self):
+        return {
+            'username': self.username,
+            'full_name': self.full_name,
+            'district': self.district,
+        }

@@ -41,7 +41,7 @@ class ElectionSenateCandidateHandler(BaseHandler):
     def get(self, district):
         candidates = alchemy.query_district_election(district)
         self.write({
-            'candidates': [c.to_json for c in candidates]
+            'candidates': [c.serialize() for c in candidates]
         })
 
     @tornado.web.authenticated
