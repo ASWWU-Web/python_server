@@ -32,7 +32,7 @@ class ElectionSenateVoteHandler(BaseHandler):
         new_vote.write_in_1 = str(body_json['write_in_1'])
         new_vote.write_in_2 = str(body_json['write_in_2'])
 
-        alchemy.add_or_update_election(vote)
+        alchemy.add_or_update_election(new_vote)
 
         self.write({'vote': 'successfully voted'})
 
