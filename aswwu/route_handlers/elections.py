@@ -19,12 +19,12 @@ class ElectionSenateVoteHandler(BaseHandler):
         user = self.current_user
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
-        vote = alchemy.query_vote_election(str(user.wwuid))
+        vote = alchemy.query_vote_election(str(user.username))
         # Fix this to be more efficient
         if len(vote) == 0:
             new_vote = election_model.Vote(username=str(user.username))
         else:
-            new_vote = election_db.query(election_model.Vote).filter_by(wwuid=str(user.wwuid)).one()
+            new_vote = election_db.query(election_model.Vote).filter_by(username=str(user.username)).one()
 
         new_vote.district = str(body_json['district'])
         new_vote.vote_1 = str(body_json['vote_1'])
