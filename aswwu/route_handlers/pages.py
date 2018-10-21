@@ -5,7 +5,7 @@ import datetime
 import tornado.web
 import json
 
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.pages as alchemy
 import aswwu.models.pages as pages_model
 from aswwu.base_handlers import BaseHandler
 
