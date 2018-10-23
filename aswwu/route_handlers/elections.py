@@ -52,16 +52,18 @@ class ElectionSenateCandidateHandler(BaseHandler):
         user = self.current_user
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
+        username = bleach.clean(str(body_json['username']))
         # check authorization
-        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+        if 'elections-admin' not in user.roles and 'administrator' not in user.roles:
             self.set_status(403)
             self.write({'status': 'insufficient permissions'})
-        candidate = alchemy.query_candidate_election(bleach.clean(str(body_json['username'])))
+            return
+        candidate = alchemy.query_candidate_election(username)
         # Fix this to be more efficient
         if len(candidate) == 0:
-            new_candidate = election_model.Candidate(username=str(body_json['username']))
+            new_candidate = election_model.Candidate(username=username)
         else:
-            new_candidate = alchemy.query_candidate_election(username=str(body_json['username']))
+            new_candidate = alchemy.query_candidate_election(username=username)
 
         new_candidate.full_name = bleach.clean(str(body_json['full_name']))
         new_candidate.district = bleach.clean(str(district))
