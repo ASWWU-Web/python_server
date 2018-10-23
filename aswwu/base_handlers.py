@@ -14,7 +14,8 @@ from settings import testing
 
 # import models and alchemy functions as needed
 import aswwu.models.mask as mask_model
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.mask as mask
+import aswwu.alchemy_new.archive as archive
 import aswwu.archive_models as archives
 
 logger = logging.getLogger("aswwu")
@@ -31,15 +32,15 @@ def import_profile(profile, exported_json):
 class LoggedInUser:
     def __init__(self, wwuid):
         self.wwuid = wwuid
-        profile = alchemy.query_by_wwuid(mask_model.Profile, wwuid)
-        user = alchemy.query_user(wwuid)
+        profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
+        user = mask.query_user(wwuid)
         if len(profile) == 0:
-            old_profile = alchemy.archive_db.query(archives.get_archive_model(get_last_year())).\
+            old_profile = archive.archive_db.query(archives.get_archive_model(get_last_year())).\
                 filter_by(wwuid=str(wwuid)).all()
             new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
                 import_profile(new_profile, old_profile[0].export_info())
-            profile = alchemy.add_or_update(new_profile)
+            profile = mask.add_or_update(new_profile)
         else:
             profile = profile[0]
         self.username = user.username
@@ -197,7 +198,7 @@ def get_last_year():
 
 
 def add_null_view(user, profile):
-    views = alchemy.people_db.query(mask_model.ProfileView)\
+    views = mask.people_db.query(mask_model.ProfileView)\
         .filter_by(viewer=user, viewed=profile).all()
     if len(views) == 0:
         view = mask_model.ProfileView()
@@ -205,4 +206,4 @@ def add_null_view(user, profile):
         view.viewed = profile
         view.last_viewed = datetime.datetime.now()
         view.num_views = 0
-        alchemy.add_or_update(view)
+        mask.add_or_update(view)

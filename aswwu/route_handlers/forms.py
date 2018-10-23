@@ -9,7 +9,7 @@ import tornado.web
 from aswwu.base_handlers import BaseHandler
 from settings import email
 import aswwu.models.forms as forms_model
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.jobs as alchemy
 
 logger = logging.getLogger("aswwu")
 

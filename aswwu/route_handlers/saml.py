@@ -4,7 +4,7 @@ from aswwu.base_handlers import BaseHandler
 from settings import keys
 
 import aswwu.models.mask as mask_model
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.mask as alchemy
 
 logger = logging.getLogger("aswwu")
 

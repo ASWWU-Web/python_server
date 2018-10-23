@@ -6,7 +6,7 @@ import tornado.web
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.models.ask_anything as ask_anything_model
-import aswwu.alchemy as alchemy
+import aswwu.alchemy_new.mask as alchemy
 
 logger = logging.getLogger("aswwu")
 
