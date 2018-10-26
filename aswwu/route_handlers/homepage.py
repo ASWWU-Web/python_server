@@ -17,11 +17,9 @@ class OpenForumHandler(BaseHandler):
         try:
             json_data = json.loads(self.request.body.decode('utf-8'))
             for key in json_data:
-                if key == "to":
+                if key == "recipient":
                     to = adminUsernameExpander(json_data[key])
-                elif key == "subject":
-                    subject = json_data[key]
-                elif key == "body":
+                elif key == "message_body":
                     body = json_data[key]
                 elif key == "reply-to":
                     reply_to = json_data[key]
@@ -29,14 +27,16 @@ class OpenForumHandler(BaseHandler):
                     self.set_status(500)
                     self.write({'status': 'invalid parameters'})
                     return
+            subject = "Open Forum Message from " + reply_to
 
             emailAdministration(to, subject, body, reply_to)
-
+            self.set_status(200)
             self.write({"status": "success"})
 
         except Exception as e:
             self.set_status(500)
             self.write({"status": "Error"})
+            print(e.message)
         
 
 def adminUsernameExpander(recipient):
@@ -53,11 +53,12 @@ def adminUsernameExpander(recipient):
     """
 
     adminEmails =	{
-        "president": "aswwu.pres",
-        "executive_vp": "aswwu.evp",
-        "financial_vp": "aswwu.fvp",
-        "spiritual_vp": "aswwu.spiritual",
-        "social_vp": "aswwu.social"
+        "President": "aswwu.pres",
+        "Vice President": "aswwu.evp",
+        "Financial VP": "aswwu.fvp",
+        "Social VP": "aswwu.spiritual",
+        "Spiritual VP": "aswwu.social",
+        "Other Questions": "aswwu"
     }
     se = "stephen.ermshar"
     if recipient in adminEmails:
