@@ -12,17 +12,18 @@ logger = logging.getLogger("aswwu")
 
 
 class OpenForumHandler(BaseHandler):
-    # @tornado.web.authenticated
+    @tornado.web.authenticated
     def post(self):
+        reply_to = self.current_user.username
         try:
             json_data = json.loads(self.request.body.decode('utf-8'))
             for key in json_data:
                 if key == "recipient":
-                    to = adminUsernameExpander(json_data[key])
+                    to = bleach.clean(adminUsernameExpander(json_data[key]))
                 elif key == "message_body":
-                    body = json_data[key]
+                    body = bleach.clean(json_data[key])
                 elif key == "reply-to":
-                    reply_to = json_data[key]
+                    reply_to = bleach.clean(json_data[key])
                 else:
                     self.set_status(500)
                     self.write({'status': 'invalid parameters'})
