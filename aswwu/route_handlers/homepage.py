@@ -14,21 +14,25 @@ logger = logging.getLogger("aswwu")
 class OpenForumHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
+        maxChars = 1000
         reply_to = self.current_user.username
         try:
             json_data = json.loads(self.request.body.decode('utf-8'))
             for key in json_data:
                 if key == "recipient":
-                    to = bleach.clean(adminUsernameExpander(json_data[key]))
+                    to = adminUsernameExpander(bleach.clean(json_data[key]))
                 elif key == "message_body":
-                    body = bleach.clean(json_data[key])
+                    body = json_data[key]
+                    if len(body) > maxChars:
+                        body = body[0:maxChars]
+                    body = bleach.clean(body)
                 elif key == "reply-to":
                     reply_to = bleach.clean(json_data[key])
                 else:
                     self.set_status(500)
                     self.write({'status': 'invalid parameters'})
                     return
-            subject = "Open Forum Message from " + reply_to
+            subject = "Message from " + reply_to
 
             emailAdministration(to, subject, body, reply_to)
             self.set_status(200)
@@ -61,10 +65,8 @@ def adminUsernameExpander(recipient):
         "Spiritual VP": "aswwu.social",
         "Other Questions": "aswwu"
     }
-    se = "stephen.ermshar"
     if recipient in adminEmails:
-        # return adminEmails[recipient]
-        return se
+        return adminEmails[recipient]
     else:
         raise ValueError('The selected recipient is not a valid ASWWU Open Forum Recipient.')
 
