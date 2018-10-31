@@ -90,7 +90,7 @@ def emailAdministration(TO, SUBJECT, BODY, REPLY_TO):
 
     smtpsrv = "smtp.office365.com"
     smtpserver = smtplib.SMTP(smtpsrv)
-    smtpserver.set_debuglevel(1)
+    # smtpserver.set_debuglevel(1)
     smtpserver.ehlo()
     smtpserver.starttls()
     smtpserver.ehlo()
