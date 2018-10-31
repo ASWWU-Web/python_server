@@ -63,10 +63,14 @@ def adminUsernameExpander(recipient):
         "Financial VP": "aswwu.fvp",
         "Social VP": "aswwu.spiritual",
         "Spiritual VP": "aswwu.social",
-        "Other Questions": "aswwu"
+        "Marketing VP": "aswwu.marketing"
     }
+    # if recipient in adminEmails:
+    #     return adminEmails[recipient]
+    se = "stephen.ermshar"
     if recipient in adminEmails:
-        return adminEmails[recipient]
+        # return adminEmails[recipient]
+        return se
     else:
         raise ValueError('The selected recipient is not a valid ASWWU Open Forum Recipient.')
 
@@ -86,11 +90,11 @@ def emailAdministration(TO, SUBJECT, BODY, REPLY_TO):
     SEND_TO = TO + "@" + domain # admin recipient 
     REPLY_TO = REPLY_TO + "@" + domain # user who sent the message
     SUBJECT = "Open Forum Submission: " + SUBJECT
-    TEXT = BODY
+    TEXT = ("---- Message from " + REPLY_TO + ", Sent at " + str(datetime.datetime.now()) + " ----\n\n" + BODY + "\n\n---- End Message ----")
 
     smtpsrv = "smtp.office365.com"
     smtpserver = smtplib.SMTP(smtpsrv)
-    # smtpserver.set_debuglevel(1)
+    smtpserver.set_debuglevel(1)
     smtpserver.ehlo()
     smtpserver.starttls()
     smtpserver.ehlo()
