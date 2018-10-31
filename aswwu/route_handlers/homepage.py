@@ -65,12 +65,8 @@ def adminUsernameExpander(recipient):
         "Spiritual VP": "aswwu.social",
         "Marketing VP": "aswwu.marketing"
     }
-    # if recipient in adminEmails:
-    #     return adminEmails[recipient]
-    se = "stephen.ermshar"
     if recipient in adminEmails:
-        # return adminEmails[recipient]
-        return se
+        return adminEmails[recipient]
     else:
         raise ValueError('The selected recipient is not a valid ASWWU Open Forum Recipient.')
 
