@@ -1,0 +1,549 @@
+openapi: 3.0.2
+servers:
+  - url: 'https://aswwu.com/server/elections'
+  - url: 'http://localhost:8888/elections'
+info:
+  version: "1.0"
+  title: Elections API
+  description: The API for the elections project. This includes endpoints to vote along with managing elections.
+paths:
+  '/current':
+    get:
+      summary: Retrieve the current or upcoming election
+      description: Retrieve the current or upcoming election.
+      tags:
+        - election
+      responses:
+        '200':
+          description: The election was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  '/election':
+    get:
+      summary: List elections
+      description: List elections.
+      tags:
+        - election
+      parameters:
+        - $ref: '#/components/parameters/election_type_query'
+        - name: start
+          in: query
+          description: The start date and time to filter by.
+          required: false
+          schema:
+            type: string
+        - name: end
+          in: query
+          description: The end date and time to filter by.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The elections were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  elections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Election'
+    post:
+      summary: Create an election
+      description: Create an election. Will not work if there is an election setup for the future.
+      tags:
+        - election
+      responses:
+        '201':
+          description: The election was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+      requestBody:
+        $ref: '#/components/requestBodies/ElectionBody'
+  '/election/{election_id}':
+    get:
+      summary: Retrieve an election
+      description: Retrieve an election.
+      tags:
+        - election
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+      responses:
+        '200':
+          description: The election was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update an election
+      description: Update an election.
+      tags:
+        - election
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+      responses:
+        '200':
+          description: The election was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Election'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/ElectionBody'
+  '/election/{election_id}/candidate':
+    get:
+      summary: List candidates in an election
+      description: List candidates in an election.
+      tags:
+        - candidate
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+        - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/username_query'
+        - name: display_name
+          in: query
+          description: The display_name to filter by.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The candidates were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Candidate'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    post:
+      summary: Create a candidate in an election
+      description: Create a candidate in an election. Only works if the election is still open.
+      tags:
+        - candidate
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+      responses:
+        '201':
+          description: The candidate was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/CandidateBody'
+  '/election/{election_id}/candidate/{candidate_id}':
+    get:
+      summary: Retrieve a candidate
+      description: Retrieve a candidate.
+      tags:
+        - candidate
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+        - $ref: '#/components/parameters/candidate_id'
+      responses:
+        '200':
+          description: The candidate was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update a candidate
+      description: Update a candidate. Only works if the election is still open.
+      tags:
+        - candidate
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+        - $ref: '#/components/parameters/candidate_id'
+      responses:
+        '200':
+          description: The candidate was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/CandidateBody'
+    delete:
+      summary: Destroy a candidate
+      description: Destroy a candidate. Only works if the election is still open.
+      tags:
+        - candidate
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+        - $ref: '#/components/parameters/candidate_id'
+      responses:
+        '204':
+          $ref: '#/components/responses/204NoContent'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  '/election/vote':
+    get:
+      summary: Retrieve the user's vote in the current election
+      description: Retrieve the user's vote in the current election.
+      tags:
+        - vote
+      responses:
+        '200':
+          description: The votes were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  votes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Vote'
+        '401':
+          $ref: '#/components/responses/401NotAuthenticated'
+    post:
+      summary: Create a vote for the current election
+      description: Create a vote for the current election. 
+      tags:
+        - vote
+      responses:
+        '201':
+          description: The vote was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthenticated'
+      requestBody:
+        $ref: '#/components/requestBodies/VoteBody'
+  '/position':
+    get:
+      summary: List all positions
+      description: List all positions.
+      tags:
+        - position
+      parameters:
+        - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/election_type_query'
+        - name: active_only
+          in: query
+          description: Show active positions only.
+          required: false
+          schema:
+            type: boolean
+        - name: inactive_only
+          in: query
+          description: Show inactive positions only.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The positions were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Position'
+    post:
+      summary: Create a position
+      description: Create a position.
+      tags:
+        - position
+      responses:
+        '201':
+          description: The position was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/PositionBody'
+  '/position/{position_id}':
+    get:
+      summary: Retrieve a position
+      description: Retrieve a position.
+      tags:
+        - position
+      parameters:
+        - $ref: '#/components/parameters/position_id'
+      responses:
+        '200':
+          description: The position was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update a position
+      description: Update a position.
+      tags:
+        - position
+      parameters:
+        - $ref: '#/components/parameters/position_id'
+      responses:
+        '200':
+          description: The position was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/PositionBody'
+components:
+  parameters:
+    election_id:
+      name: election_id
+      in: path
+      description: The ID of the election to work with.
+      required: true
+      schema:
+        type: string
+    candidate_id:
+      name: candidate_id
+      in: path
+      description: The ID of the candidate to work with.
+      required: true
+      schema:
+        type: string
+    position_id:
+      name: position_id
+      in: path
+      description: The ID of the position to work with.
+      required: true
+      schema:
+        type: string
+    election_type_query:
+      name: election_type
+      in: query
+      description: The election type to filter by.
+      required: false
+      schema:
+        type: string
+    position_query:
+      name: position
+      in: query
+      description: The position to filter by.
+      required: false
+      schema:
+        type: string
+    username_query:
+      name: username
+      in: query
+      description: The username to filter by.
+      required: false
+      schema:
+        type: string
+  schemas:
+    Election:
+      type: object
+      properties:
+        id:
+          type: string
+        election_type:
+          type: string
+        start:
+          type: string
+        end:
+          type: string
+    Candidate:
+      type: object
+      properties:
+        id:
+          type: string
+        election:
+          type: string
+        position:
+          type: string
+        username:
+          type: string
+        display_name:
+          type: string
+    Position:
+      type: object
+      properties:
+        id:
+          type: string
+        position:
+          type: string
+        election_type:
+          type: string
+        active:
+          type: boolean
+    Vote:
+      type: object
+      properties:
+        id:
+          type: string
+        election:
+          type: string
+        vote:
+          type: string
+        vote_num:
+          type: integer
+        username:
+          type: string
+  requestBodies:
+    ElectionBody:
+      description: A JSON object containing election information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              election_type:
+                description: The type of election, either senate or aswwu.
+                type: string
+              start:
+                description: The opening date and time of the election.
+                type: string
+              end:
+                description: The closing date and time of the election.
+                type: string
+            required:
+              - election_type
+              - start
+              - end
+    CandidateBody:
+      description: A JSON object containing candidate information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              election:
+                description: The FK of the election the candidate is participating in.
+                type: string
+              position:
+                description: The FK of the position the candidate is running for.
+                type: string
+              username:
+                description: The candidate's username.
+                type: string
+              display_name:
+                description: The candidate's display name.
+                type: string
+            required:
+              - election
+              - position
+              - username
+              - display_name
+    PositionBody:
+      description: A JSON object containing position information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              position:
+                description: The name of the position.
+                type: string
+              election_type:
+                description: The type of election, either senate or aswwu.
+                type: string
+              active:
+                description: The availability of the position.
+                type: boolean
+            required:
+              - position
+              - election_type
+              - active
+    VoteBody:
+      description: A JSON object containing vote information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              vote:
+                description: The username of the candidate being voted for.
+                type: string
+              vote_num:
+                description: The vote number. Will be 0 unless there are multiple votes for the election.
+                type: integer
+              username:
+                description: The user's username.
+                type: string
+            required:
+              - election
+              - vote
+              - vote_num
+              - username
+  responses:
+    204NoContent:
+      description: The request completed successfully and has no response body.
+    400BadRequest:
+      description: The request could not be understood by the server.
+    401NotAuthenticated:
+      description: This action requires authentication.
+    403NotAuthorized:
+      description: This action requires authorization.
+    404NotFound:
+      description: The resource could not be found.
+
