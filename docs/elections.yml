@@ -59,6 +59,8 @@ paths:
       description: Create an election. Will not work if there is an election setup for the future.
       tags:
         - election
+      security:
+        - cookieAuthentication: []
       responses:
         '201':
           description: The election was created successfully.
@@ -94,6 +96,8 @@ paths:
       description: Update an election.
       tags:
         - election
+      security:
+        - cookieAuthentication: []
       parameters:
         - $ref: '#/components/parameters/election_id'
       responses:
@@ -146,6 +150,8 @@ paths:
       description: Create a candidate in an election. Only works if the election is still open.
       tags:
         - candidate
+      security:
+        - cookieAuthentication: []
       parameters:
         - $ref: '#/components/parameters/election_id'
       responses:
@@ -186,6 +192,8 @@ paths:
       description: Update a candidate. Only works if the election is still open.
       tags:
         - candidate
+      security:
+        - cookieAuthentication: []
       parameters:
         - $ref: '#/components/parameters/election_id'
         - $ref: '#/components/parameters/candidate_id'
@@ -209,6 +217,8 @@ paths:
       description: Destroy a candidate. Only works if the election is still open.
       tags:
         - candidate
+      security:
+        - cookieAuthentication: []
       parameters:
         - $ref: '#/components/parameters/election_id'
         - $ref: '#/components/parameters/candidate_id'
@@ -225,6 +235,8 @@ paths:
       description: Retrieve the user's vote in the current election.
       tags:
         - vote
+      security:
+        - cookieAuthentication: []
       responses:
         '200':
           description: The votes were retrieved successfully.
@@ -241,9 +253,11 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
     post:
       summary: Create a vote for the current election
-      description: Create a vote for the current election. 
+      description: Create a vote for the current election.
       tags:
         - vote
+      security:
+        - cookieAuthentication: []
       responses:
         '201':
           description: The vote was created successfully.
@@ -295,6 +309,8 @@ paths:
       description: Create a position.
       tags:
         - position
+      security:
+        - cookieAuthentication: []
       responses:
         '201':
           description: The position was created successfully.
@@ -332,6 +348,8 @@ paths:
       description: Update a position.
       tags:
         - position
+      security:
+        - cookieAuthentication: []
       parameters:
         - $ref: '#/components/parameters/position_id'
       responses:
@@ -442,6 +460,11 @@ components:
           type: integer
         username:
           type: string
+  securitySchemes:
+    cookieAuthentication:
+      type: apiKey
+      in: cookie
+      name: token
   requestBodies:
     ElectionBody:
       description: A JSON object containing election information.
@@ -546,4 +569,3 @@ components:
       description: This action requires authorization.
     404NotFound:
       description: The resource could not be found.
-
