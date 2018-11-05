@@ -397,6 +397,7 @@ components:
       required: false
       schema:
         type: string
+        enum: [senate, aswwu]
     position_query:
       name: position
       in: query
@@ -423,6 +424,11 @@ components:
           type: string
         end:
           type: string
+      example:
+        id: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
+        election_type: 'aswwu'
+        start: '2018-11-05 08:00:00.000000'
+        end: '2018-11-05 20:00:00.000000'
     Candidate:
       type: object
       properties:
@@ -436,6 +442,12 @@ components:
           type: string
         display_name:
           type: string
+      example:
+        id: '0c3fa8c5-d580-4c47-8598-a4bfd7657711'
+        election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
+        position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
+        username: 'sheldon.woodward'
+        display_name: 'Sheldon Woodward'
     Position:
       type: object
       properties:
@@ -447,6 +459,11 @@ components:
           type: string
         active:
           type: boolean
+      example:
+        id: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
+        position: 'Financial VP'
+        election_type: 'aswwu'
+        active: true
     Vote:
       type: object
       properties:
@@ -460,6 +477,12 @@ components:
           type: integer
         username:
           type: string
+      example:
+        id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
+        election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
+        vote: 'sheldon.woodward'
+        note_num: 0
+        username: 'stephen.ermshar'
   securitySchemes:
     cookieAuthentication:
       type: apiKey
@@ -548,7 +571,7 @@ components:
                 description: The username of the candidate being voted for.
                 type: string
               vote_num:
-                description: The vote number. Will be 0 unless there are multiple votes for the election.
+                description: The vote number. Used to deliniate between votes.
                 type: integer
               username:
                 description: The user's username.
