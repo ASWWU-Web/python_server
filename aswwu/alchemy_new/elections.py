@@ -41,3 +41,21 @@ def query_vote(username):
         logger.info(e)
         election_db.rollback()
     return thing
+
+
+def query_election(election_type=None, start=None, end=None):
+    thing = None
+    try:
+        thing = election_db.query(election_model.Election).all()
+        if election_type is not None:
+            thing = thing.filter_by(election_type=str(election_type)).all()
+        if election_type is not None:
+            thing = thing.filter_by(start=str(start)).all()
+        if election_type is not None:
+            thing = thing.filter_by(end=str(end)).all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
+
+
