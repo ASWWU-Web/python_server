@@ -55,8 +55,6 @@ class Application(tornado.web.Application):
             (r"/feed", instagram.FeedHandler),
             (r"/verify", base.BaseVerifyLoginHandler),
             (r"/", base.BaseIndexHandler),
-            (r"/senate_election/vote/(.*)", elections.ElectionSenateVoteHandler),
-            (r"/senate_election/candidate/(.*)", elections.ElectionSenateCandidateHandler),
             (r"/saml/account/", saml.SamlHandler),
             (r"/matcher", mask.MatcherHandler),
             (r"/forms/job/new", forms.NewFormHandler),
@@ -91,6 +89,7 @@ class Application(tornado.web.Application):
             (r"/pages/media/static/(.*)", froala.LoadImageHandler),
             (r"/pages/(.*)", pages.GetHandler),
             (r"/homepage/open_forum", homepage.OpenForumHandler),
+            (r"/elections/vote", elections.VoteHandler),
         ]
 
         # a bunch of setup stuff

@@ -14,60 +14,9 @@ logger = logging.getLogger("aswwu")
 election_db = alchemy.election_db
 
 
-# update user's vote
-class ElectionSenateVoteHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self, district):
+class VoteHandler(BaseHandler):
+    # @tornado.web.authenticated
+    def get(self):
         user = self.current_user
-        body = self.request.body.decode('utf-8')
-        body_json = json.loads(body)
-        vote = alchemy.query_vote_election(str(user.username))
-        # Fix this to be more efficient
-        if len(vote) == 0:
-            new_vote = election_model.Vote(username=str(user.username))
-        else:
-            new_vote = election_db.query(election_model.Vote).filter_by(username=str(user.username)).one()
-
-        new_vote.district = bleach.clean(str(district))
-        new_vote.vote_1 = bleach.clean(str(body_json['vote_1']))
-        new_vote.vote_2 = bleach.clean(str(body_json['vote_2']))
-        new_vote.write_in_1 = bleach.clean(str(body_json['write_in_1']))
-        new_vote.write_in_2 = bleach.clean(str(body_json['write_in_2']))
-
-        alchemy.add_or_update_election(new_vote)
-
-        self.write({'vote': 'successfully voted'})
-
-
-class ElectionSenateCandidateHandler(BaseHandler):
-    def get(self, district):
-        candidates = alchemy.query_district_election(district)
-        self.write({
-            'candidates': [c.serialize() for c in candidates]
-        })
-
-    @tornado.web.authenticated
-    def post(self, district):
-        # variables
-        user = self.current_user
-        body = self.request.body.decode('utf-8')
-        body_json = json.loads(body)
-        username = bleach.clean(str(body_json['username']))
-        # check authorization
-        if 'elections-admin' not in user.roles and 'administrator' not in user.roles:
-            self.set_status(403)
-            self.write({'status': 'insufficient permissions'})
-            return
-        candidate = alchemy.query_candidate_election(username)
-        # Fix this to be more efficient
-        if len(candidate) == 0:
-            new_candidate = election_model.Candidate(username=username)
-        else:
-            new_candidate = alchemy.query_candidate_election(username=username)
-
-        new_candidate.full_name = bleach.clean(str(body_json['full_name']))
-        new_candidate.district = bleach.clean(str(district))
-
-        alchemy.add_or_update_election(new_candidate)
-
-        self.write({'candidate': 'successfully modified/created'})
+        votes = alchemy.query_vote(user.username)
+        self.write({'votes': [v.serialize() for v in votes]})
