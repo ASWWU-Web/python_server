@@ -5,7 +5,7 @@ servers:
 info:
   version: "1.0"
   title: Elections API
-  description: The API for the elections project. This includes endpoints to vote along with managing elections.
+  description: The API for the elections project. This includes endpoints to vote along with managing elections. The ORM is split into four objects Election, Position, Candidate, and Vote. Election represents an election that will take place and can be setup by admins. Position is a generic position that candidates can run for. Candidate is an oficial candidate and what tells what position that person is running for. Vote represents a single voter candidate pair, users will cast multiples of these for each election but never for the same candidate.
 paths:
   '/current':
     get:
@@ -25,7 +25,8 @@ paths:
   '/election':
     get:
       summary: List elections
-      description: List elections.
+      description: List elections. They can be filtered by query paramtetsers 
+        to narrow the list.
       tags:
         - election
       parameters:
@@ -56,7 +57,7 @@ paths:
                       $ref: '#/components/schemas/Election'
     post:
       summary: Create an election
-      description: Create an election. Will not work if there is an election setup for the future.
+      description: Create an election.
       tags:
         - election
       security:
@@ -71,7 +72,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
       requestBody:
         $ref: '#/components/requestBodies/ElectionBody'
   '/election/{election_id}':
@@ -110,7 +111,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
@@ -118,7 +119,7 @@ paths:
   '/election/{election_id}/candidate':
     get:
       summary: List candidates in an election
-      description: List candidates in an election.
+      description: List candidates in an election. They can be filtered by query paramtetsers to narrow the list.
       tags:
         - candidate
       parameters:
@@ -164,7 +165,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
@@ -207,7 +208,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
@@ -226,12 +227,12 @@ paths:
         '204':
           $ref: '#/components/responses/204NoContent'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
   '/election/vote':
     get:
-      summary: Retrieve the user's vote in the current election
+      summary: Retrieve the user's votes in the current election
       description: Retrieve the user's vote in the current election.
       tags:
         - vote
@@ -253,7 +254,7 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
     post:
       summary: Create a vote for the current election
-      description: Create a vote for the current election.
+      description: Create a vote for the current election. This will override any existing vote with the same vote_num.
       tags:
         - vote
       security:
@@ -269,29 +270,26 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '401':
           $ref: '#/components/responses/401NotAuthenticated'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
       requestBody:
         $ref: '#/components/requestBodies/VoteBody'
   '/position':
     get:
       summary: List all positions
-      description: List all positions.
+      description: List all positions. They can be filtered by query paramtetsers to narrow the list.
       tags:
         - position
       parameters:
         - $ref: '#/components/parameters/position_query'
         - $ref: '#/components/parameters/election_type_query'
-        - name: active_only
+        - name: active
           in: query
-          description: Show active positions only.
+          description: Filter positions by their active status.
           required: false
           schema:
-            type: boolean
-        - name: inactive_only
-          in: query
-          description: Show inactive positions only.
-          required: false
-          schema:
-            type: boolean
+            type: string
+            enum: ['all', 'active', 'inactive']
       responses:
         '200':
           description: The positions were retrieved successfully.
@@ -321,7 +319,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
@@ -362,7 +360,7 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '403':
-          $ref: '#/components/responses/403NotAuthorized'
+          $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
@@ -401,7 +399,7 @@ components:
     position_query:
       name: position
       in: query
-      description: The position to filter by.
+      description: The position UUID to filter by.
       required: false
       schema:
         type: string
@@ -481,7 +479,7 @@ components:
         id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
         election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
         vote: 'sheldon.woodward'
-        note_num: 0
+        vote_num: 0
         username: 'stephen.ermshar'
   securitySchemes:
     cookieAuthentication:
@@ -568,7 +566,7 @@ components:
                 description: The FK of the election the vote is for.
                 type: string
               vote:
-                description: The username of the candidate being voted for.
+                description: The username of the candidate being voted for. This must be a valid username.
                 type: string
               vote_num:
                 description: The vote number. Used to deliniate between votes.
@@ -588,7 +586,7 @@ components:
       description: The request could not be understood by the server.
     401NotAuthenticated:
       description: This action requires authentication.
-    403NotAuthorized:
-      description: This action requires authorization.
+    403Forbidden:
+      description: This action requires authorization or is not allowed.
     404NotFound:
       description: The resource could not be found.
