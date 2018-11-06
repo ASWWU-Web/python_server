@@ -16,6 +16,13 @@ class Position(ElectionBase):
     election_type = Column(String(10))
     active = Column(Boolean)
 
+    def serialize(self):
+        return {
+            'position': self.position,
+            'election_type': self.election_type,
+            'active': self.active,
+        }
+
 
 class Vote(ElectionBase):
     election = Column(String(100), ForeignKey('elections.id'))
@@ -25,6 +32,7 @@ class Vote(ElectionBase):
 
     def serialize(self):
         return {
+            'id': self.id,
             'election': self.election,
             'position': self.position,
             'vote': self.vote,

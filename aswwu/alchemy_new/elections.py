@@ -3,7 +3,7 @@
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload
 
 import aswwu.models.bases as base
 import aswwu.models.elections as election_model
@@ -40,4 +40,24 @@ def query_vote(username):
     except Exception as e:
         logger.info(e)
         election_db.rollback()
+    return thing
+
+
+def query_position(position=None, election_type=None, active=None):
+    thing = None
+    try:
+        thing = election_db.query(election_model.Position).all()
+        if position is not None:
+            thing = thing.filter_by(position=str(position))
+        if election_type is not None:
+            thing = thing.filter_by(election_type=str(election_type))
+        if active == 'true':
+            thing = thing.filter_by(active=True)
+        elif active == 'false':
+            thing = thing.filter_by(active=False)
+
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+
     return thing
