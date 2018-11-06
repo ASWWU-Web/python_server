@@ -230,7 +230,7 @@ paths:
           $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
-  '/election/vote':
+  '/vote':
     get:
       summary: Retrieve the user's votes in the current election
       description: Retrieve the user's vote in the current election.
