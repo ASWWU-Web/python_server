@@ -7,7 +7,7 @@ import bleach
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.alchemy_new.elections as alchemy
-import aswwu.models.elections as election_model
+import aswwu.models.elections as elections_model
 
 logger = logging.getLogger("aswwu")
 
@@ -22,7 +22,6 @@ class VoteHandler(BaseHandler):
         self.write({'votes': [v.serialize() for v in votes]})
 
 class PositionHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         try:
             search_criteria = {}
@@ -37,10 +36,40 @@ class PositionHandler(BaseHandler):
             self.set_status(500)
             self.write({"status": "error"})
 
-    # @tornado.web.authenticated
-    # def post(self):
-    #     try:
-    #         #post_criteria
+    #@tornado.web.authenticated
+    def post(self):
+        try:
+            required_parameters = ('position', 'election_type', 'active')
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+            # Checking for required parameters
+            try:
+                if len(required_parameters) != len(list(body_json.keys())):
+                    raise Exception
+                for parameter in required_parameters:
+                    if not body_json.has_key(parameter):
+                        raise Exception
+                if body_json['election_type'] not in ('aswwu', 'senate'):
+                    raise Exception
+            except Exception:
+                self.set_status(400)
+                self.write({"status": "error"})
+                return
+
+            # create new position
+            position = elections_model.Position()
+            for parameter in required_parameters:
+                setattr(position, parameter, body_json[parameter])
+
+            alchemy.add_or_update(position)
+            self.set_status(201)
+            self.write(position.serialize())
+
+        except Exception as e:
+            logger.error("PositionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
 
 
 
