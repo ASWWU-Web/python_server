@@ -7,7 +7,7 @@ import bleach
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.alchemy_new.elections as alchemy
-import aswwu.models.elections as election_model
+import aswwu.models.elections as elections_model
 
 logger = logging.getLogger("aswwu")
 
@@ -35,3 +35,35 @@ class ElectionHandler(BaseHandler):
 
         self.write({'elections': [e.serialize() for e in elections]})
 
+    def post(self):
+        # checking for required parameters
+        try:
+            required_parameters = ('election_type','start','end')
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+            try:
+                if len(required_parameters) != len(list(body_json.keys())):
+                    raise Exception
+                for parameter in required_parameters:
+                    if not body_json.has_key(parameter):
+                        raise Exception
+                if body_json['election_type'] not in ('aswwu', 'senate'):
+                    raise Exception
+            except Exception:
+                self.set_status(400)
+                self.write({"status": "error"})
+                return
+
+            # create new election object
+            election = elections_model.Election()
+            for parameter in required_parameters:
+                setattr(election, parameter, body_json[parameter])
+
+            alchemy.add_or_update(election)
+            self.set_status(201)
+            self.write(election.serialize())
+
+        except Exception as e:
+            logger.error("ElectionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})

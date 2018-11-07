@@ -90,6 +90,7 @@ class Application(tornado.web.Application):
             (r"/pages/(.*)", pages.GetHandler),
             (r"/homepage/open_forum", homepage.OpenForumHandler),
             (r"/elections/vote", elections.VoteHandler),
+            (r"/elections/election", elections.ElectionHandler),
         ]
 
         # a bunch of setup stuff
