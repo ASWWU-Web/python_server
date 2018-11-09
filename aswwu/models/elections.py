@@ -10,14 +10,6 @@ class Election(ElectionBase):
     start = Column(DateTime)
     end = Column(DateTime)
 
-    def serialize(self):
-        return {
-            'id': self.id,
-            'election_type': self.election_type,
-            'start': self.start,
-            'end': self.end,
-        }
-
 
 class Position(ElectionBase):
     position = Column(String(100))
@@ -38,3 +30,4 @@ class Vote(ElectionBase):
             'vote': self.vote,
             'username': self.username,
         }
+
