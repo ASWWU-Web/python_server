@@ -45,7 +45,7 @@ def query_vote(username):
     return thing
 
 
-def query_election(election_type=None, start=None, end=None):
+def query_election(election_id=None, election_type=None, start=None, end=None):
     thing = None
     try:
         thing = election_db.query(election_model.Election)
@@ -55,6 +55,8 @@ def query_election(election_type=None, start=None, end=None):
             thing = thing.filter(election_model.Election.start >= start)
         if end is not None:
             thing = thing.filter(election_model.Election.end <= end)
+        if election_id is not None:
+            thing = thing.filter_by(id=election_id)
         thing = thing.all()
     except Exception as e:
         logger.info(e)
@@ -74,3 +76,35 @@ def query_current():
         logger.info(i)
         election_db.rollback()
     return thing
+
+
+def detect_election_overlap(start, end):
+    try:
+        thing = election_db.query(election_model.Election)
+        thing = thing.filter(election_model.Election.start >= start)
+        thing = thing.filter(election_model.Election.start <= end)
+        if len(thing.all()) > 0:
+            return True
+
+        thing = election_db.query(election_model.Election)
+        thing = thing.filter(election_model.Election.end >= start)
+        thing = thing.filter(election_model.Election.end <= end)
+        if len(thing.all()) > 0:
+            return True
+
+        thing = election_db.query(election_model.Election)
+        thing = thing.filter(election_model.Election.start <= start)
+        thing = thing.filter(election_model.Election.end >= end)
+        if len(thing.all()) > 0:
+            return True
+
+        thing = election_db.query(election_model.Election)
+        thing = thing.filter(election_model.Election.start >= start)
+        thing = thing.filter(election_model.Election.end <= end)
+        if len(thing.all()) > 0:
+            return True
+
+    except Exception as j:
+        logger.info(j)
+        election_db.rollback()
+    return False
