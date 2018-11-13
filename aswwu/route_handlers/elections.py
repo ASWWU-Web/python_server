@@ -24,6 +24,9 @@ def checkParameters(given_parameters, required_parameters):
     if given_parameters.has_key('election_type'):
         if given_parameters['election_type'] not in ('aswwu', 'senate'):
             raise Exception
+    if given_parameters.has_key('active'):
+        if given_parameters['active'] not in (True, False):
+            raise Exception
 
 
 class VoteHandler(BaseHandler):
@@ -41,14 +44,14 @@ class PositionHandler(BaseHandler):
             query = self.request.arguments
             for key, value in query.items():
                 search_criteria[key] = value[0]
-            positions = alchemy.query_position(position = search_criteria.get('position', None), election_type = search_criteria.get('election_type', None), active = search_criteria.get('active', None))
+            positions = alchemy.query_position(id = search_criteria.get('id', None), position = search_criteria.get('position', None), election_type = search_criteria.get('election_type', None), active = search_criteria.get('active', None))
             self.write({'positions': [p.serialize() for p in positions]})
         except Exception as e:
             logger.error("PositionHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "error"})
 
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def post(self):
         try:
             required_parameters = ('position', 'election_type', 'active')
@@ -88,7 +91,7 @@ class SpecifiedPositionHandler(BaseHandler):
             self.set_status(404)
             self.write({"status": "error"})
 
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def put(self, position_id):
         try:
             required_parameters = ('position', 'election_type', 'active')
