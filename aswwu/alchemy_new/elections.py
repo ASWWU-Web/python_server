@@ -108,3 +108,24 @@ def detect_election_overlap(start, end):
         logger.info(j)
         election_db.rollback()
     return False
+
+
+def query_candidates(election_id=None, candidate_id=None, position=None, username=None, display_name=None):
+    thing = None
+    try:
+        thing = election_db.query(election_model.Candidate)
+        if election_id is not None:
+            thing = thing.filter_by(id=election_id)
+        if candidate_id is not None:
+            thing = thing.filter_by(candidate_id=str(candidate_id))
+        if position is not None:
+            thing = thing.filter_by(position=str(position))
+        if username is not None:
+            thing = thing.filter_by(username=str(username))
+        if display_name is not None:
+            thing = thing.filter_by(display_name=str(display_name))
+        thing = thing.all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
