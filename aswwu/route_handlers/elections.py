@@ -5,8 +5,6 @@ import json
 
 from datetime import datetime
 
-import bleach
-
 from aswwu.base_handlers import BaseHandler
 import aswwu.alchemy_new.elections as alchemy
 import aswwu.models.elections as elections_model
@@ -57,14 +55,9 @@ class ElectionHandler(BaseHandler):
             self.write({"status": "error"})
 
     def post(self):
-        user = self.current_user
+        # TODO: dont create new elections during another election
         # checking for required parameters
         try:
-            # permission checking
-            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(403)
-                self.write({"status": "This action requires authorization or is not allowed."})
-                return
             required_parameters = ('election_type', 'start', 'end')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
@@ -112,13 +105,6 @@ class SpecifiedElectionHandler(BaseHandler):
     @tornado.web.authenticated
     def put(self, election_id):
         try:
-            # permission checking
-            user = self.current_user
-            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(403)
-                self.write({"status": "This action requires authorization or is not allowed."})
-                return
-
             required_parameters = ('election_type', 'start', 'end')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
@@ -172,6 +158,100 @@ class CurrentHandler(BaseHandler):
             self.write({'status': 'The resource could not be found.'})
             return
         self.write(election.serialize())
+
+
+class PositionHandler(BaseHandler):
+    def get(self):
+        try:
+            search_criteria = {}
+            # Put query into JSON form
+            query = self.request.arguments
+            for key, value in query.items():
+                search_criteria[key] = value[0]
+            positions = alchemy.query_position(position_id= search_criteria.get('id', None), position = search_criteria.get('position', None), election_type = search_criteria.get('election_type', None), active = search_criteria.get('active', None))
+            self.write({'positions': [p.serialize() for p in positions]})
+        except Exception as e:
+            logger.error("PositionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
+    @tornado.web.authenticated
+    def post(self):
+        try:
+            required_parameters = ('position', 'election_type', 'active')
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+
+            # Checking for required parameters
+            try:
+                checkParameters(body_json, required_parameters)
+            except Exception:
+                self.set_status(400)
+                self.write({"status": "error"})
+                return
+
+            # create new position
+            position = elections_model.Position()
+            for parameter in required_parameters:
+                setattr(position, parameter, body_json[parameter])
+
+            alchemy.add_or_update(position)
+            self.set_status(201)
+            self.write(position.serialize())
+
+        except Exception as e:
+            logger.error("PositionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
+
+
+class SpecifiedPositionHandler(BaseHandler):
+    def get(self, position_id):
+        try:
+            position = alchemy.query_position(position_id=str(position_id))
+            self.write(position[0].serialize())
+
+        except Exception:
+            self.set_status(404)
+            self.write({"status": "error"})
+
+    @tornado.web.authenticated
+    def put(self, position_id):
+        try:
+            required_parameters = ('position', 'election_type', 'active')
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+
+            # Checking for required parameters
+            try:
+                checkParameters(body_json, required_parameters)
+            except Exception:
+                self.set_status(400)
+                self.write({"status": "error"})
+                return
+
+            # fetch position
+            try:
+                position = alchemy.query_position(position_id=str(position_id))
+
+            except Exception:
+                self.set_status(404)
+                self.write({"status": "error"})
+                return
+
+            position = position[0]
+
+            for parameter in required_parameters:
+                setattr(position, parameter, body_json[parameter])
+
+            alchemy.add_or_update(position)
+            self.set_status(200)
+            self.write(position.serialize())
+
+        except Exception as e:
+            logger.error("PositionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
 
 
 class CandidateHandler(BaseHandler):
@@ -285,4 +365,3 @@ class SpecifiedCandidateHandler(BaseHandler):
             logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "error"})
-

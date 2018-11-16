@@ -254,7 +254,7 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
     post:
       summary: Create a vote for the current election
-      description: Create a vote for the current election. This will override any existing vote with the same vote_num.
+      description: Create a vote for the current election.
       tags:
         - vote
       security:
@@ -289,7 +289,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: ['all', 'active', 'inactive']
+            enum: ['true', 'false']
       responses:
         '200':
           description: The positions were retrieved successfully.
@@ -320,8 +320,6 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '404':
-          $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/PositionBody'
   '/position/{position_id}':
@@ -471,15 +469,15 @@ components:
           type: string
         vote:
           type: string
-        vote_num:
-          type: integer
+        position:
+          type: string
         username:
           type: string
       example:
         id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
         election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
         vote: 'sheldon.woodward'
-        vote_num: 0
+        position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         username: 'stephen.ermshar'
   securitySchemes:
     cookieAuthentication:
@@ -568,8 +566,8 @@ components:
               vote:
                 description: The username of the candidate being voted for. This must be a valid username.
                 type: string
-              vote_num:
-                description: The vote number. Used to deliniate between votes.
+              position:
+                description: The position of the person being voted for.
                 type: integer
               username:
                 description: The user's username.
@@ -577,7 +575,7 @@ components:
             required:
               - election
               - vote
-              - vote_num
+              - position
               - username
   responses:
     204NoContent:
