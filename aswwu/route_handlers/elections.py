@@ -57,8 +57,14 @@ class ElectionHandler(BaseHandler):
             self.write({"status": "error"})
 
     def post(self):
+        user = self.current_user
         # checking for required parameters
         try:
+            # permission checking
+            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+                self.set_status(403)
+                self.write({"status": "This action requires authorization or is not allowed."})
+                return
             required_parameters = ('election_type', 'start', 'end')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
@@ -106,6 +112,13 @@ class SpecifiedElectionHandler(BaseHandler):
     @tornado.web.authenticated
     def put(self, election_id):
         try:
+            # permission checking
+            user = self.current_user
+            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+                self.set_status(403)
+                self.write({"status": "This action requires authorization or is not allowed."})
+                return
+
             required_parameters = ('election_type', 'start', 'end')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
@@ -172,7 +185,8 @@ class CandidateHandler(BaseHandler):
             # query candidates from database
             candidates = alchemy.query_candidates(position=search_criteria.get('position', None),
                                                   username=search_criteria.get('username', None),
-                                                  display_name=search_criteria.get('display_name', None))
+                                                  display_name=search_criteria.get('display_name', None),
+                                                  election_id=str(election_id))
 
             self.write({'candidates': [c.serialize() for c in candidates]})
         except Exception:
@@ -181,8 +195,8 @@ class CandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, election_id):
-        user = self.current_user
         try:
+            user = self.current_user
             # permission checking
             if 'election-admin' not in user.roles and 'administrator' not in user.roles:
                 self.set_status(403)
@@ -200,6 +214,7 @@ class CandidateHandler(BaseHandler):
                 return
             # TODO: validate election and position Foreign Keys & candidates can't be added to elections that have ended
 
+
             # create new candidate object
             candidate = elections_model.Candidate()
             for parameter in required_parameters:
@@ -215,6 +230,59 @@ class CandidateHandler(BaseHandler):
             self.write({"status": "error"})
 
 
+class SpecifiedCandidateHandler(BaseHandler):
+    def get(self, election_id, candidate_id):
+        try:
+            candidate = alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
+            self.write(candidate[0].serialize())
 
+        except Exception:
+            self.set_status(404)
+            self.write({"status": "error"})
 
+    @tornado.web.authenticated
+    def put(self, election_id, candidate_id):
+        try:
+            user = self.current_user
+            # permission checking
+            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+                self.set_status(403)
+                self.write({"status": "This action requires authorization or is not allowed."})
+                return
+
+            required_parameters = ('election', 'position', 'username', 'display_name', 'id')
+            body = self.request.body.decode('utf-8')
+            body_json = json.loads(body)
+
+            # Checking for required parameters
+            try:
+                checkParameters(body_json, required_parameters)
+            except Exception:
+                self.set_status(400)
+                self.write({"status": "error"})
+                return
+
+            # fetch position
+            try:
+                candidate = alchemy.query_candidates(election_id=str(election_id),
+                                                     candidate_id=str(candidate_id))
+
+            except Exception:
+                self.set_status(404)
+                self.write({"status": "error"})
+                return
+
+            candidate = candidate[0]
+
+            for parameter in required_parameters:
+                setattr(candidate, parameter, body_json[parameter])
+            alchemy.add_or_update(candidate)
+
+            self.set_status(200)
+            self.write(candidate.serialize())
+
+        except Exception as e:
+            logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
 

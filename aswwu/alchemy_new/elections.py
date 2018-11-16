@@ -114,10 +114,10 @@ def query_candidates(election_id=None, candidate_id=None, position=None, usernam
     thing = None
     try:
         thing = election_db.query(election_model.Candidate)
-        if election_id is not None:
-            thing = thing.filter_by(id=election_id)
         if candidate_id is not None:
-            thing = thing.filter_by(candidate_id=str(candidate_id))
+            thing = thing.filter_by(id=str(candidate_id))
+        if election_id is not None:
+            thing = thing.filter_by(election=str(election_id))
         if position is not None:
             thing = thing.filter_by(position=str(position))
         if username is not None:

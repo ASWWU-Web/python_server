@@ -91,7 +91,7 @@ class Application(tornado.web.Application):
             (r"/homepage/open_forum", homepage.OpenForumHandler),
             (r"/elections/vote", elections.VoteHandler),
             (r"/elections/election/(.*)/candidate", elections.CandidateHandler),
-            (r"/elections/election/(.*)/candidate/(.*)", elections.CandidateHandler),
+            (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler),
             (r"/elections/election", elections.ElectionHandler),
             (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
             (r"/elections/current", elections.CurrentHandler),
