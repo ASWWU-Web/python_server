@@ -3,7 +3,7 @@
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.orm import sessionmaker
 
 import aswwu.models.bases as base
 import aswwu.models.elections as elections_model
