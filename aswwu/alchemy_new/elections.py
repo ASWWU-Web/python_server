@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import aswwu.models.bases as base
-import aswwu.models.elections as election_model
+import aswwu.models.elections as elections_model
 from datetime import datetime
 
 ElectionBase = base.ElectionBase
@@ -38,7 +38,27 @@ def add_or_update(thing):
 def query_vote(username):
     thing = None
     try:
-        thing = election_db.query(election_model.Vote).filter_by(username=str(username)).all()
+        thing = election_db.query(elections_model.Vote).filter_by(username=str(username)).all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
+
+
+def query_position(position_id=None, position=None, election_type=None, active=None):
+    thing = None
+    try:
+        thing = election_db.query(elections_model.Position)
+        if position_id is not None:
+            thing = thing.filter_by(id=str(position_id))
+        if position is not None:
+            thing = thing.filter_by(position=str(position))
+        if election_type is not None:
+            thing = thing.filter_by(election_type=str(election_type))
+        if active == 'true':
+            thing = thing.filter_by(active=True)
+        elif active == 'false':
+            thing = thing.filter_by(active=False)
     except Exception as e:
         logger.info(e)
         election_db.rollback()
@@ -48,13 +68,13 @@ def query_vote(username):
 def query_election(election_id=None, election_type=None, start=None, end=None):
     thing = None
     try:
-        thing = election_db.query(election_model.Election)
+        thing = election_db.query(elections_model.Election)
         if election_type is not None:
             thing = thing.filter_by(election_type=str(election_type))
         if start is not None:
-            thing = thing.filter(election_model.Election.start >= start)
+            thing = thing.filter(elections_model.Election.start >= start)
         if end is not None:
-            thing = thing.filter(election_model.Election.end <= end)
+            thing = thing.filter(elections_model.Election.end <= end)
         if election_id is not None:
             thing = thing.filter_by(id=election_id)
         thing = thing.all()
@@ -67,9 +87,9 @@ def query_election(election_id=None, election_type=None, start=None, end=None):
 def query_current():
     thing = None
     try:
-        thing = election_db.query(election_model.Election) \
-            .filter(election_model.Election.end >= datetime.now()) \
-            .order_by(election_model.Election.start.asc()) \
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.end >= datetime.now()) \
+            .order_by(elections_model.Election.start.asc()) \
             .first()
 
     except Exception as i:
@@ -80,27 +100,27 @@ def query_current():
 
 def detect_election_overlap(start, end):
     try:
-        thing = election_db.query(election_model.Election)
-        thing = thing.filter(election_model.Election.start >= start)
-        thing = thing.filter(election_model.Election.start <= end)
+        thing = election_db.query(elections_model.Election)
+        thing = thing.filter(elections_model.Election.start >= start)
+        thing = thing.filter(elections_model.Election.start <= end)
         if len(thing.all()) > 0:
             return True
 
-        thing = election_db.query(election_model.Election)
-        thing = thing.filter(election_model.Election.end >= start)
-        thing = thing.filter(election_model.Election.end <= end)
+        thing = election_db.query(elections_model.Election)
+        thing = thing.filter(elections_model.Election.end >= start)
+        thing = thing.filter(elections_model.Election.end <= end)
         if len(thing.all()) > 0:
             return True
 
-        thing = election_db.query(election_model.Election)
-        thing = thing.filter(election_model.Election.start <= start)
-        thing = thing.filter(election_model.Election.end >= end)
+        thing = election_db.query(elections_model.Election)
+        thing = thing.filter(elections_model.Election.start <= start)
+        thing = thing.filter(elections_model.Election.end >= end)
         if len(thing.all()) > 0:
             return True
 
-        thing = election_db.query(election_model.Election)
-        thing = thing.filter(election_model.Election.start >= start)
-        thing = thing.filter(election_model.Election.end <= end)
+        thing = election_db.query(elections_model.Election)
+        thing = thing.filter(elections_model.Election.start >= start)
+        thing = thing.filter(elections_model.Election.end <= end)
         if len(thing.all()) > 0:
             return True
 

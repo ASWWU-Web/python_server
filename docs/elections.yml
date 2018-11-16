@@ -289,7 +289,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: ['all', 'active', 'inactive']
+            enum: ['true', 'false']
       responses:
         '200':
           description: The positions were retrieved successfully.
@@ -320,8 +320,6 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '404':
-          $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/PositionBody'
   '/position/{position_id}':
