@@ -275,6 +275,22 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/VoteBody'
   '/vote/{vote_id}':
+    get:
+        summary: Retrieve a vote
+        description: Retrieve a vote.
+        tags:
+          - vote
+        parameters:
+          - $ref: '#/components/parameters/vote_id'
+        responses:
+          '200':
+            description: The vote was retrieved successfully.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Vote'
+          '404':
+            $ref: '#/components/responses/404NotFound'
     put:
       summary: Update a vote
       description: Update a vote. Only works if the election is still open.
@@ -299,7 +315,6 @@ paths:
           $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/VoteBody'
-    
   '/position':
     get:
       summary: List all positions
