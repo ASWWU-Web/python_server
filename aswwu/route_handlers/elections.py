@@ -292,8 +292,18 @@ class CandidateHandler(BaseHandler):
                 self.set_status(400)
                 self.write({"status": "error"})
                 return
-            # TODO: validate election and position Foreign Keys & candidates can't be added to elections that have ended
 
+            try:
+                election = alchemy.query_election(election_id=str(election_id))
+                if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):
+                    self.set_status(403)
+                    self.write({"status": "Candidate not in current election"})
+                    return
+
+            except Exception:
+                self.set_status(404)
+                self.write({"status": "error"})
+                return
 
             # create new candidate object
             candidate = elections_model.Candidate()
@@ -346,6 +356,18 @@ class SpecifiedCandidateHandler(BaseHandler):
             try:
                 candidate = alchemy.query_candidates(election_id=str(election_id),
                                                      candidate_id=str(candidate_id))
+
+            except Exception:
+                self.set_status(404)
+                self.write({"status": "error"})
+                return
+
+            try:
+                election = alchemy.query_election(election_id=str(election_id))
+                if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):
+                    self.set_status(403)
+                    self.write({"status": "Candidate not in current election"})
+                    return
 
             except Exception:
                 self.set_status(404)
