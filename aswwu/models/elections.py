@@ -1,5 +1,3 @@
-import datetime
-
 from sqlalchemy import Column, ForeignKey, String, DateTime, Integer, Boolean
 
 from aswwu.models.bases import ElectionBase
@@ -10,11 +8,27 @@ class Election(ElectionBase):
     start = Column(DateTime)
     end = Column(DateTime)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'election_type': self.election_type,
+            'start': str(self.start),
+            'end': str(self.end),
+        }
+
 
 class Position(ElectionBase):
     position = Column(String(100))
     election_type = Column(String(10))
     active = Column(Boolean)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'position': self.position,
+            'election_type': self.election_type,
+            'active': self.active,
+        }
 
 
 class Vote(ElectionBase):
@@ -30,3 +44,4 @@ class Vote(ElectionBase):
             'vote': self.vote,
             'username': self.username,
         }
+
