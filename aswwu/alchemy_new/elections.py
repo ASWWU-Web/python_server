@@ -35,6 +35,15 @@ def add_or_update(thing):
         raise Exception(e)
 
 
+def delete_thing_elections(thing):
+    try:
+        election_db.delete(thing)
+        election_db.commit()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+
+
 def query_vote(username):
     thing = None
     try:
@@ -149,3 +158,4 @@ def query_candidates(election_id=None, candidate_id=None, position=None, usernam
         logger.info(e)
         election_db.rollback()
     return thing
+
