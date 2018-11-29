@@ -35,7 +35,7 @@ def add_or_update(thing):
         raise Exception(e)
 
 
-def delete_thing_elections(thing):
+def delete(thing):
     try:
         election_db.delete(thing)
         election_db.commit()

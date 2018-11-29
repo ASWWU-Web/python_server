@@ -55,6 +55,7 @@ class ElectionHandler(BaseHandler):
             self.write({"status": "error"})
 
     def post(self):
+        # TODO: check for creating election starting in the past
         # checking for required parameters
         try:
             required_parameters = ('election_type', 'start', 'end')
@@ -255,6 +256,7 @@ class SpecifiedPositionHandler(BaseHandler):
 
 class CandidateHandler(BaseHandler):
     def get(self, election_id):
+        # TODO: validate election_id in URI is valid and return 404 if not found
         try:
             search_criteria = {}
             # Put query into JSON form
@@ -274,6 +276,7 @@ class CandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, election_id):
+        # TODO: use election attribute in url and not request body
         try:
             user = self.current_user
             # permission checking
@@ -331,6 +334,7 @@ class SpecifiedCandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, election_id, candidate_id):
+        # TODO: dont allow id key in request body
         try:
             user = self.current_user
             # permission checking
@@ -396,29 +400,31 @@ class SpecifiedCandidateHandler(BaseHandler):
                 self.set_status(403)
                 self.write({"status": "This action requires authorization or is not allowed."})
                 return
-
-            try:
-                candidate = alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
-                self.write(candidate[0].serialize())
-            except Exception:
-                self.set_status(404)
-                self.write({"status": "error"})
-
-            try:
-                election = alchemy.query_election(election_id=str(election_id))[0]
-                if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):
-                    self.set_status(403)
-                    self.write({"status": "Candidate not in current election"})
-                    return
-
-            except Exception:
+            # get the candidate from the database
+            candidate = alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
+            if len(candidate) == 0:
                 self.set_status(404)
                 self.write({"status": "error"})
                 return
-
-            for c in candidate:
-                alchemy.delete_thing_elections(c)
-                self.set_status(200)
+            if len(candidate) != 1:
+                raise Exception('more than one candidate found with same ID')
+            candidate = candidate[0]
+            # dont allow deleting past candidates
+            election = alchemy.query_election(election_id=str(election_id))
+            if len(election) == 0:
+                self.set_status(404)
+                self.write({"status": "error"})
+                return
+            if len(election) != 1:
+                raise Exception('more than one election found with same ID')
+            if election[0] != alchemy.query_current() and election[0] not in alchemy.query_election(start=datetime.now()):
+                self.set_status(403)
+                self.write({"status": "Candidate not in current election"})
+                return
+            # delete the candidate
+            alchemy.delete(candidate)
+            # self.write(candidate.serialize())
+            self.set_status(204)
 
         except Exception as e:
             logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
