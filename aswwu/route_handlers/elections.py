@@ -55,7 +55,6 @@ class ElectionHandler(BaseHandler):
             self.write({"status": "error"})
 
     def post(self):
-        # TODO: check for creating election starting in the past
         # checking for required parameters
         try:
             required_parameters = ('election_type', 'start', 'end')
@@ -68,8 +67,21 @@ class ElectionHandler(BaseHandler):
                 self.write({"status": "error"})
                 return
 
+            # checking to make sure new election doesn't overlap with current or upcoming elections
             if alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
                 self.set_status(403)
+                self.write({"status": "error"})
+                return
+
+            # checking to make sure new election doesn't start time in the past
+            if alchemy.detect_election_start(body_json["start"], body_json["end"]):
+                self.set_status(403)
+                self.write({"status": "error"})
+                return
+
+            # checking to make sure end time isn't less than start time
+            if alchemy.detect_bad_end(body_json["start"], body_json["end"]):
+                self.set_status(400)
                 self.write({"status": "error"})
                 return
 
@@ -256,13 +268,16 @@ class SpecifiedPositionHandler(BaseHandler):
 
 class CandidateHandler(BaseHandler):
     def get(self, election_id):
-        # TODO: validate election_id in URI is valid and return 404 if not found
         try:
             search_criteria = {}
             # Put query into JSON form
             query = self.request.arguments
             for key, value in query.items():
                 search_criteria[key] = value[0]
+            if not alchemy.query_election(election_id=str(election_id)):
+                self.set_status(404)
+                self.write({"status": "election doesn't exist"})
+                return
             # query candidates from database
             candidates = alchemy.query_candidates(position=search_criteria.get('position', None),
                                                   username=search_criteria.get('username', None),
@@ -276,7 +291,6 @@ class CandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, election_id):
-        # TODO: use election attribute in url and not request body
         try:
             user = self.current_user
             # permission checking
@@ -285,7 +299,7 @@ class CandidateHandler(BaseHandler):
                 self.write({"status": "This action requires authorization or is not allowed."})
                 return
 
-            required_parameters = ('election', 'position', 'username', 'display_name')
+            required_parameters = ('position', 'username', 'display_name')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             try:
@@ -307,10 +321,23 @@ class CandidateHandler(BaseHandler):
                 self.write({"status": "error"})
                 return
 
+            # checks to makes sure position exists
+            if not alchemy.query_position(position_id=str(body_json["position"])):
+                self.set_status(404)
+                self.write({"status": "position doesn't exist"})
+                return
+
+            # checks to make sure election exists
+            if not alchemy.query_election(election_id=str(election_id)):
+                self.set_status(404)
+                self.write({"status": "election doesn't exist"})
+                return
+
             # create new candidate object
             candidate = elections_model.Candidate()
             for parameter in required_parameters:
                 setattr(candidate, parameter, body_json[parameter])
+            candidate.election = str(election_id)
             alchemy.add_or_update(candidate)
 
             self.set_status(201)
@@ -334,7 +361,6 @@ class SpecifiedCandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, election_id, candidate_id):
-        # TODO: dont allow id key in request body
         try:
             user = self.current_user
             # permission checking
@@ -343,7 +369,7 @@ class SpecifiedCandidateHandler(BaseHandler):
                 self.write({"status": "This action requires authorization or is not allowed."})
                 return
 
-            required_parameters = ('election', 'position', 'username', 'display_name', 'id')
+            required_parameters = ('election', 'position', 'username', 'display_name')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
 
@@ -353,6 +379,19 @@ class SpecifiedCandidateHandler(BaseHandler):
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
+                return
+
+            # checks to makes sure position exists
+            print(alchemy.query_position(position_id=str(body_json["position"])))
+            if not alchemy.query_position(position_id=str(body_json["position"])):
+                self.set_status(404)
+                self.write({"status": "position doesn't exist"})
+                return
+
+            # checks to make sure election exists
+            if not alchemy.query_election(election_id=str(election_id)):
+                self.set_status(404)
+                self.write({"status": "election doesn't exist"})
                 return
 
             # fetch position
@@ -365,6 +404,7 @@ class SpecifiedCandidateHandler(BaseHandler):
                 self.write({"status": "error"})
                 return
 
+            # checks to see if candidate is in current election
             try:
                 election = alchemy.query_election(election_id=str(election_id))[0]
                 if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):

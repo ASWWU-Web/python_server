@@ -68,6 +68,7 @@ def query_position(position_id=None, position=None, election_type=None, active=N
             thing = thing.filter_by(active=True)
         elif active == 'false':
             thing = thing.filter_by(active=False)
+        thing = thing.all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()
@@ -159,3 +160,25 @@ def query_candidates(election_id=None, candidate_id=None, position=None, usernam
         election_db.rollback()
     return thing
 
+
+# Checks to see if election start time is in the past
+def detect_election_start(start, end):
+    try:
+        if start < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') or \
+           end < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'):
+            return True
+    except Exception as j:
+        logger.info(j)
+        election_db.rollback()
+    return False
+
+
+# detects if the end time is less than start time
+def detect_bad_end(start, end):
+    try:
+        if end < start:
+            return True
+    except Exception as i:
+        logger.info(i)
+        election_db.rollback()
+    return False
