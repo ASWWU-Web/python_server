@@ -316,7 +316,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/VoteBody'
+        $ref: '#/components/requestBodies/VotePOSTBody'
   '/position':
     get:
       summary: List all positions
