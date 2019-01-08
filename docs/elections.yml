@@ -25,7 +25,7 @@ paths:
   '/election':
     get:
       summary: List elections
-      description: List elections. They can be filtered by query paramtetsers 
+      description: List elections. They can be filtered by query parameters
         to narrow the list.
       tags:
         - election
@@ -119,7 +119,7 @@ paths:
   '/election/{election_id}/candidate':
     get:
       summary: List candidates in an election
-      description: List candidates in an election. They can be filtered by query paramtetsers to narrow the list.
+      description: List candidates in an election. They can be filtered by query parameters to narrow the list.
       tags:
         - candidate
       parameters:
@@ -272,12 +272,55 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
         '403':
           $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/VoteBody'
+        $ref: '#/components/requestBodies/VotePOSTBody'
+  '/vote/{vote_id}':
+    get:
+        summary: Retrieve a vote
+        description: Retrieve a vote.
+        tags:
+          - vote
+        parameters:
+          - $ref: '#/components/parameters/vote_id'
+        responses:
+          '200':
+            description: The vote was retrieved successfully.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Vote'
+          '404':
+            $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update a vote
+      description: Update a vote. Only works if the election is still open.
+      tags:
+        - vote
+      security:
+        - cookieAuthentication: []
+      parameters:
+        - $ref: '#/components/parameters/vote_id'
+      responses:
+        '200':
+          description: The vote was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/VotePOSTBody'
   '/position':
     get:
       summary: List all positions
-      description: List all positions. They can be filtered by query paramtetsers to narrow the list.
+      description: List all positions. They can be filtered by query parameters to narrow the list.
       tags:
         - position
       parameters:
@@ -386,6 +429,13 @@ components:
       required: true
       schema:
         type: string
+    vote_id:
+      name: vote_id
+      in: path
+      description: The ID of the vote to work with.
+      required: true
+      schema:
+        type: string
     election_type_query:
       name: election_type
       in: query
@@ -476,8 +526,8 @@ components:
       example:
         id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
         election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
-        vote: 'sheldon.woodward'
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
+        vote: 'sheldon.woodward'
         username: 'stephen.ermshar'
   securitySchemes:
     cookieAuthentication:
@@ -563,20 +613,41 @@ components:
               election:
                 description: The FK of the election the vote is for.
                 type: string
-              vote:
-                description: The username of the candidate being voted for. This must be a valid username.
-                type: string
               position:
                 description: The position of the person being voted for.
                 type: integer
+              vote:
+                description: The username of the candidate being voted for. This must be a valid username.
+                type: string
               username:
                 description: The user's username.
                 type: string
             required:
               - election
-              - vote
               - position
+              - vote
               - username
+    VotePOSTBody:
+      description: A JSON object containing vote information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              position:
+                description: The position of the person being voted for.
+                type: integer
+              vote:
+                description: The username of the candidate being voted for. This must be a valid username.
+                type: string
+            required:
+              - election
+              - position
+              - vote
   responses:
     204NoContent:
       description: The request completed successfully and has no response body.
