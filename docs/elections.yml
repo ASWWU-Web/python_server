@@ -273,7 +273,7 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
         '404':
-          $ref: '#/components/responses/403Forbidden'
+          $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/VotePOSTBody'
   '/vote/{vote_id}':
