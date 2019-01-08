@@ -30,12 +30,19 @@ def checkParameters(given_parameters, required_parameters):
 class VoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        # TODO: try except
-        # TODO: stringify
-        user = self.current_user
-        # TODO: add election ID to query
-        votes = alchemy.query_vote(username=user.username)
-        self.write({'votes': [v.serialize() for v in votes]})
+        try:
+            user = self.current_user
+            current_election = alchemy.query_current()
+            if current_election is None:
+                self.set_status(404)
+                self.write({"status": "there is currently no open election"})
+                return
+            votes = alchemy.query_vote(election=current_election.id, username=str(user.username))
+            self.write({'votes': [v.serialize() for v in votes]})
+        except Exception as e:
+            logger.error("VoteHandler: error.\n" + str(e.message))
+            self.set_status(500)
+            self.write({"status": "error"})
 
     @tornado.web.authenticated
     def post(self):
@@ -96,7 +103,7 @@ class VoteHandler(BaseHandler):
             setattr(vote, 'username', str(user.username))
             alchemy.add_or_update(vote)
         except Exception as e:
-            logger.error("ElectionHandler: error.\n" + str(e.message))
+            logger.error("VoteHandler: error.\n" + str(e.message))
             self.set_status(500)
             self.write({"status": "error"})
 
