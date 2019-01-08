@@ -35,10 +35,21 @@ def add_or_update(thing):
         raise Exception(e)
 
 
-def query_vote(username):
+def query_vote(vote_id=None, election=None, position=None, vote=None, username=None):
     thing = None
     try:
-        thing = election_db.query(elections_model.Vote).filter_by(username=str(username)).all()
+        thing = election_db.query(elections_model.Vote)
+        if vote_id is not None:
+            thing = thing.filter_by(id=str(vote_id))
+        if election is not None:
+            thing = thing.filter_by(election=str(election))
+        if position is not None:
+            thing = thing.filter_by(position=str(position))
+        if vote is not None:
+            thing = thing.filter_by(vote=str(vote))
+        if username is not None:
+            thing = thing.filter_by(username=str(username))
+        thing = thing.all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()
@@ -59,6 +70,7 @@ def query_position(position_id=None, position=None, election_type=None, active=N
             thing = thing.filter_by(active=True)
         elif active == 'false':
             thing = thing.filter_by(active=False)
+        thing = thing.all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()
@@ -85,6 +97,21 @@ def query_election(election_id=None, election_type=None, start=None, end=None):
 
 
 def query_current():
+    thing = None
+    try:
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.end >= datetime.now()) \
+            .filter(elections_model.Election.start <= datetime.now()) \
+            .order_by(elections_model.Election.start.asc()) \
+            .first()
+
+    except Exception as i:
+        logger.info(i)
+        election_db.rollback()
+    return thing
+
+
+def query_current_or_upcoming():
     thing = None
     try:
         thing = election_db.query(elections_model.Election) \
