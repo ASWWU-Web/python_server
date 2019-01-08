@@ -108,6 +108,22 @@ class VoteHandler(BaseHandler):
             self.write({"status": "error"})
 
 
+class SpecificVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, vote_id):
+        user = self.current_user
+        vote = alchemy.query_vote(vote_id=str(vote_id), username=str(user.username))
+        if vote == list():
+            self.set_status(404)
+            self.write({"status": "vote with specified ID not found"})
+            return
+        self.write(vote[0].serialize())
+
+    @tornado.web.authenticated
+    def put(self):
+        pass
+
+
 class ElectionHandler(BaseHandler):
     def get(self):
         try:
