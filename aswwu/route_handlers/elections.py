@@ -197,9 +197,9 @@ class SpecificVoteHandler(BaseHandler):
                 return
             # update vote
             for parameter in required_parameters:
-                setattr(vote, parameter, body_json[parameter])
-            setattr(vote, 'username', str(user.username))
-            alchemy.add_or_update(vote)
+                setattr(vote[0], parameter, body_json[parameter])
+            setattr(vote[0], 'username', str(user.username))
+            alchemy.add_or_update(vote[0])
         except Exception as e:
             logger.error("VoteHandler: error.\n" + str(e.message))
             self.set_status(500)
