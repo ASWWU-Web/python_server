@@ -41,7 +41,23 @@ class Vote(ElectionBase):
         return {
             'election': self.election,
             'position': self.position,
-            'vote': self.vote,
+            'vote':     self.vote,
             'username': self.username,
         }
 
+
+class Candidate(ElectionBase):
+    election = Column(String(100), ForeignKey('elections.id'))
+    position = Column(String(100), ForeignKey('positions.id'))
+    username = Column(String(100))
+    display_name = Column(String(100))
+
+    def serialize(self):
+        return{
+            'id':           self.id,
+            'election':     self.election,
+            'position':     self.position,
+            'username':     self.username,
+            'display_name': self.display_name
+
+        }
