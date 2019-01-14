@@ -39,6 +39,7 @@ class Vote(ElectionBase):
 
     def serialize(self):
         return {
+            'id': self.id,
             'election': self.election,
             'position': self.position,
             'vote':     self.vote,
