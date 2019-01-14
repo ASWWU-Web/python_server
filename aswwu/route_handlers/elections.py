@@ -31,13 +31,22 @@ class VoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         try:
+            # Put query into JSON form
+            search_criteria = {}
+            query = self.request.arguments
+            for key, value in query.items():
+                search_criteria[key] = value[0]
+            # request
             user = self.current_user
             current_election = alchemy.query_current()
             if current_election is None:
                 self.set_status(404)
                 self.write({"status": "there is currently no open election"})
                 return
-            votes = alchemy.query_vote(election=current_election.id, username=str(user.username))
+            votes = alchemy.query_vote(election=current_election.id,
+                                       username=str(user.username),
+                                       position=search_criteria.get('position', None),
+                                       vote=search_criteria.get('vote', None))
             self.write({'votes': [v.serialize() for v in votes]})
         except Exception as e:
             logger.error("VoteHandler: error.\n" + str(e.message))
