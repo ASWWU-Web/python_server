@@ -93,7 +93,7 @@ class VoteHandler(BaseHandler):
                 self.write({"status": "you are voting for a position in a different election type"})
                 return
             # check if vote for position in current election already exists
-            if alchemy.query_vote(election=specified_election[0].id,
+            if specified_election[0].election_type == 'aswwu' and alchemy.query_vote(election=specified_election[0].id,
                                   position=specified_position[0].id,
                                   vote=body_json['vote'],
                                   username=str(user.username)) != list():
@@ -101,8 +101,17 @@ class VoteHandler(BaseHandler):
                 self.write({"status": "you have already voted for this position"})
                 return
             # check if user has already voted in senate election
-            if specified_election[0].election_type == 'senate' and \
-                    alchemy.query_vote(election=specified_election[0].id, username=str(user.username)) != list():
+            if specified_election[0].election_type == 'aswwu' and len(alchemy.query_vote(election=specified_election[
+                0].id,
+                                  position=specified_position[0].id,
+                                  username=str(user.username))) >= 1:
+                self.set_status(403)
+                self.write({"status": "you have already voted for this position"})
+                return
+            elif specified_election[0].election_type == 'senate' and len(alchemy.query_vote(election=specified_election[
+                0].id,
+                                  position=specified_position[0].id,
+                                  username=str(user.username))) >= 2:
                 self.set_status(403)
                 self.write({"status": "you can only vote for one senator"})
                 return
