@@ -95,6 +95,7 @@ class VoteHandler(BaseHandler):
             # check if vote for position in current election already exists
             if alchemy.query_vote(election=specified_election[0].id,
                                   position=specified_position[0].id,
+                                  vote=body_json['vote'],
                                   username=str(user.username)) != list():
                 self.set_status(403)
                 self.write({"status": "you have already voted for this position"})
@@ -194,6 +195,7 @@ class SpecificVoteHandler(BaseHandler):
             # check if vote for position in current election already exists
             if alchemy.query_vote(election=specified_election[0].id,
                                   position=specified_position[0].id,
+                                  vote=body_json['vote'],
                                   username=str(user.username)) != list():
                 self.set_status(403)
                 self.write({"status": "you have already voted for this position"})
