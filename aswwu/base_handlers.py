@@ -129,6 +129,9 @@ class BaseHandler(tornado.web.RequestHandler):
             except:
                 pass
 
+    def write_error(self, status_code, **kwargs):
+        self.write({'status': str(kwargs['exc_info'][1])})
+
 
 # effectively useless, but at least provides an endpoint for people accessing "/" by accident
 class BaseIndexHandler(BaseHandler):
