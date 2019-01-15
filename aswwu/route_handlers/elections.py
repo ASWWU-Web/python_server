@@ -18,7 +18,7 @@ election_db = elections_alchemy.election_db
 
 # Parameters: parameters (dict), required_parameters (tuple of strings)
 # Checks that the required parameters are in the json dict
-def checkParameters(given_parameters, required_parameters):
+def validate_parameters(given_parameters, required_parameters):
     if len(required_parameters) != len(list(given_parameters.keys())):
         raise Exception
     for parameter in required_parameters:
@@ -106,7 +106,7 @@ class VoteHandler(BaseHandler):
             # check body parameters
             required_parameters = ('election', 'position', 'vote')
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -185,7 +185,7 @@ class SpecificVoteHandler(BaseHandler):
             # check body parameters
             required_parameters = ('id', 'election', 'position', 'vote', 'username')
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -241,7 +241,7 @@ class ElectionHandler(BaseHandler):
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -303,7 +303,7 @@ class SpecifiedElectionHandler(BaseHandler):
 
             # Checking for required parameters
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -379,7 +379,7 @@ class PositionHandler(BaseHandler):
 
             # Checking for required parameters
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -419,7 +419,7 @@ class SpecifiedPositionHandler(BaseHandler):
 
             # Checking for required parameters
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -486,7 +486,7 @@ class CandidateHandler(BaseHandler):
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
@@ -564,7 +564,7 @@ class SpecifiedCandidateHandler(BaseHandler):
 
             # Checking for required parameters
             try:
-                checkParameters(body_json, required_parameters)
+                validate_parameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
