@@ -236,6 +236,8 @@ paths:
       description: Retrieve the user's vote in the current election.
       tags:
         - vote
+      parameters:
+        - $ref: '#/components/parameters/position_query'
       security:
         - cookieAuthentication: []
       responses:
