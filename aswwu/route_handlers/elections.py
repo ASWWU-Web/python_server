@@ -163,332 +163,219 @@ class SpecificVoteHandler(BaseHandler):
 
 class ElectionHandler(BaseHandler):
     def get(self):
-        try:
-            search_criteria = {}
-            # Put query into JSON form
-            query = self.request.arguments
-            for key, value in query.items():
-                search_criteria[key] = value[0]
-                if key in ('start', 'end'):
-                    search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
-            elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
-                                                         start=search_criteria.get('start', None),
-                                                         end=search_criteria.get('end', None))
-
-            self.write({'elections': [e.serialize() for e in elections]})
-        except Exception:
-            self.set_status(400)
-            self.write({"status": "error"})
+        search_criteria = {}
+        # Put query into JSON form
+        query = self.request.arguments
+        for key, value in query.items():
+            search_criteria[key] = value[0]
+            if key in ('start', 'end'):
+                search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
+        elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
+                                                     start=search_criteria.get('start', None),
+                                                     end=search_criteria.get('end', None))
+        self.write({'elections': [e.serialize() for e in elections]})
 
     def post(self):
         # checking for required parameters
-        try:
-            required_parameters = ('election_type', 'start', 'end')
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+        required_parameters = ('election_type', 'start', 'end')
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
 
-            # checking to make sure new election doesn't overlap with current or upcoming elections
-            if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
-                self.set_status(403)
-                self.write({"status": "error"})
-                return
+        # validate parameters
+        validate_parameters(body_json, required_parameters)
+        # checking to make sure new election doesn't overlap with current or upcoming elections
+        if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
+            raise exceptions.Forbidden403Exception('election takes place during another election')
+        # checking to make sure new election doesn't start time in the past
+        if elections_alchemy.detect_election_start(body_json["start"], body_json["end"]):
+            raise exceptions.Forbidden403Exception('election takes place during the past')
+        # checking to make sure end time isn't less than start time
+        if elections_alchemy.detect_bad_end(body_json["start"], body_json["end"]):
+            raise exceptions.Forbidden403Exception('start time is after end time')
 
-            # checking to make sure new election doesn't start time in the past
-            if elections_alchemy.detect_election_start(body_json["start"], body_json["end"]):
-                self.set_status(403)
-                self.write({"status": "error"})
-                return
+        # create new election object
+        election = elections_model.Election()
+        for parameter in required_parameters:
+            if parameter in ("start", "end"):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(election, parameter, d)
+            else:
+                setattr(election, parameter, body_json[parameter])
+        elections_alchemy.add_or_update(election)
 
-            # checking to make sure end time isn't less than start time
-            if elections_alchemy.detect_bad_end(body_json["start"], body_json["end"]):
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
-
-            # create new election object
-            election = elections_model.Election()
-            for parameter in required_parameters:
-                if parameter in ("start", "end"):
-                    d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
-                    setattr(election, parameter, d)
-                else:
-                    setattr(election, parameter, body_json[parameter])
-            elections_alchemy.add_or_update(election)
-
-            self.set_status(201)
-            self.write(election.serialize())
-
-        except Exception as e:
-            logger.error("ElectionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        self.set_status(201)
+        self.write(election.serialize())
 
 
 class SpecifiedElectionHandler(BaseHandler):
     def get(self, election_id):
-        try:
-            position = elections_alchemy.query_election(election_id=str(election_id))
-            self.write(position[0].serialize())
-
-        except Exception:
-            self.set_status(404)
-            self.write({"status": "error"})
+        position = elections_alchemy.query_election(election_id=str(election_id))
+        if position == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        self.write(position[0].serialize())
 
     @tornado.web.authenticated
     def put(self, election_id):
-        try:
-            required_parameters = ('election_type', 'start', 'end')
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
+        required_parameters = ('election_type', 'start', 'end')
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
 
-            # Checking for required parameters
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+        # Checking for required parameters
+        validate_parameters(body_json, required_parameters)
 
-            if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
-                self.set_status(403)
-                self.write({"status": "error"})
-                return
+        if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
+            raise exceptions.Forbidden403Exception('')
 
-            # fetch position
-            try:
-                election = elections_alchemy.query_election(election_id=str(election_id))
+        # fetch election
+        election = elections_alchemy.query_election(election_id=str(election_id))
+        if election == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        election = election[0]
 
-            except Exception:
-                self.set_status(404)
-                self.write({"status": "error"})
-                return
+        # set new values
+        for parameter in required_parameters:
+            if parameter in ("start", "end"):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(election, parameter, d)
+            else:
+                setattr(election, parameter, body_json[parameter])
+        elections_alchemy.add_or_update(election)
 
-            election = election[0]
-
-            for parameter in required_parameters:
-                if parameter in ("start", "end"):
-                    d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
-                    setattr(election, parameter, d)
-                else:
-                    setattr(election, parameter, body_json[parameter])
-            elections_alchemy.add_or_update(election)
-
-            self.set_status(200)
-            self.write(election.serialize())
-
-        except Exception as e:
-            logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        self.write(election.serialize())
 
 
 class CurrentHandler(BaseHandler):
     def get(self):
         election = elections_alchemy.query_current_or_upcoming()
         if election is None:
-            self.set_status(404)
-            self.write({'status': 'The resource could not be found.'})
-            return
+            raise exceptions.NotFound404Exception('there is no current or upcoming election')
         self.write(election.serialize())
 
 
 class PositionHandler(BaseHandler):
     def get(self):
-        try:
-            search_criteria = {}
-            # Put query into JSON form
-            query = self.request.arguments
-            for key, value in query.items():
-                search_criteria[key] = value[0]
-            positions = elections_alchemy.query_position(position_id=search_criteria.get('id', None),
-                                                         position=search_criteria.get('position', None),
-                                                         election_type=search_criteria.get('election_type', None),
-                                                         active=search_criteria.get('active', None))
-            self.write({'positions': [p.serialize() for p in positions]})
-        except Exception as e:
-            logger.error("PositionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        search_criteria = {}
+        # Put query into JSON form
+        query = self.request.arguments
+        for key, value in query.items():
+            search_criteria[key] = value[0]
+        positions = elections_alchemy.query_position(position_id=search_criteria.get('id', None),
+                                                     position=search_criteria.get('position', None),
+                                                     election_type=search_criteria.get('election_type', None),
+                                                     active=search_criteria.get('active', None))
+        self.write({'positions': [p.serialize() for p in positions]})
 
     @tornado.web.authenticated
     def post(self):
-        try:
-            required_parameters = ('position', 'election_type', 'active')
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
+        required_parameters = ('position', 'election_type', 'active')
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
 
-            # Checking for required parameters
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+        # Checking for required parameters
+        validate_parameters(body_json, required_parameters)
 
-            # create new position
-            position = elections_model.Position()
-            for parameter in required_parameters:
-                setattr(position, parameter, body_json[parameter])
+        # create new position
+        position = elections_model.Position()
+        for parameter in required_parameters:
+            setattr(position, parameter, body_json[parameter])
 
-            elections_alchemy.add_or_update(position)
-            self.set_status(201)
-            self.write(position.serialize())
-
-        except Exception as e:
-            logger.error("PositionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        elections_alchemy.add_or_update(position)
+        self.set_status(201)
+        self.write(position.serialize())
 
 
 class SpecifiedPositionHandler(BaseHandler):
     def get(self, position_id):
-        try:
-            position = elections_alchemy.query_position(position_id=str(position_id))
-            self.write(position[0].serialize())
-
-        except Exception:
-            self.set_status(404)
-            self.write({"status": "error"})
+        position = elections_alchemy.query_position(position_id=str(position_id))
+        if position == list():
+            raise exceptions.NotFound404Exception('position with specified ID not found')
+        self.write(position[0].serialize())
 
     @tornado.web.authenticated
     def put(self, position_id):
-        try:
-            required_parameters = ('position', 'election_type', 'active')
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
+        required_parameters = ('position', 'election_type', 'active')
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
 
-            # Checking for required parameters
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+        # Checking for required parameters
+        validate_parameters(body_json, required_parameters)
 
-            # fetch position
-            try:
-                position = elections_alchemy.query_position(position_id=str(position_id))
+        # fetch position
+        position = elections_alchemy.query_position(position_id=str(position_id))
+        if position == list():
+            raise exceptions.NotFound404Exception('position with specified ID not found')
 
-            except Exception:
-                self.set_status(404)
-                self.write({"status": "error"})
-                return
+        position = position[0]
+        for parameter in required_parameters:
+            setattr(position, parameter, body_json[parameter])
 
-            position = position[0]
-
-            for parameter in required_parameters:
-                setattr(position, parameter, body_json[parameter])
-
-            elections_alchemy.add_or_update(position)
-            self.set_status(200)
-            self.write(position.serialize())
-
-        except Exception as e:
-            logger.error("PositionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        elections_alchemy.add_or_update(position)
+        self.write(position.serialize())
 
 
 class CandidateHandler(BaseHandler):
     def get(self, election_id):
-        try:
-            search_criteria = {}
-            # Put query into JSON form
-            query = self.request.arguments
-            for key, value in query.items():
-                search_criteria[key] = value[0]
-            if not elections_alchemy.query_election(election_id=str(election_id)):
-                self.set_status(404)
-                self.write({"status": "election doesn't exist"})
-                return
-            # query candidates from database
-            candidates = elections_alchemy.query_candidates(position=search_criteria.get('position', None),
-                                                            username=search_criteria.get('username', None),
-                                                            display_name=search_criteria.get('display_name', None),
-                                                            election_id=str(election_id))
-
-            self.write({'candidates': [c.serialize() for c in candidates]})
-        except Exception:
-            self.set_status(400)
-            self.write({"status": "error"})
+        search_criteria = {}
+        # Put query into JSON form
+        query = self.request.arguments
+        for key, value in query.items():
+            search_criteria[key] = value[0]
+        if elections_alchemy.query_election(election_id=str(election_id)) == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        # query candidates from database
+        candidates = elections_alchemy.query_candidates(position=search_criteria.get('position', None),
+                                                        username=search_criteria.get('username', None),
+                                                        display_name=search_criteria.get('display_name', None),
+                                                        election_id=str(election_id))
+        self.write({'candidates': [c.serialize() for c in candidates]})
 
     @tornado.web.authenticated
     def post(self, election_id):
-        try:
-            user = self.current_user
-            # permission checking
-            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(403)
-                self.write({"status": "This action requires authorization or is not allowed."})
-                return
+        user = self.current_user
+        # permission checking
+        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+            raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
-            required_parameters = ('position', 'username', 'display_name')
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+        required_parameters = ('position', 'username', 'display_name')
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+        validate_parameters(body_json, required_parameters)
 
-            # checks to make sure there is an election to push candidates to
-            if len(elections_alchemy.query_election(election_id=str(election_id))) is 0:
-                self.set_status(404)
-                self.write({"status": "election doesn't exist"})
-                return
+        # checks to make sure there is an election to push candidates to
+        election = elections_alchemy.query_election(election_id=str(election_id))
+        if election == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        election = election[0]
 
-            election = elections_alchemy.query_election(election_id=str(election_id))[0]
+        # checks to make sure election is either current of up and coming
+        if election != elections_alchemy.query_current() and \
+                election not in elections_alchemy.query_election(start=datetime.now()):
+            raise exceptions.Forbidden403Exception('candidate not in current election')
 
-            # checks to make sure election is either current of up and coming
-            if election != elections_alchemy.query_current() and election not in elections_alchemy.query_election(
-                    start=datetime.now()):
-                self.set_status(403)
-                self.write({"status": "Candidate not in current election"})
-                return
+        # checks to makes sure position exists
+        if not elections_alchemy.query_position(position_id=str(body_json["position"])):
+            raise exceptions.NotFound404Exception('position with specified ID not found')
 
-            # checks to makes sure position exists
-            if not elections_alchemy.query_position(position_id=str(body_json["position"])):
-                self.set_status(404)
-                self.write({"status": "position doesn't exist"})
-                return
+        # checks to make sure election exists
+        if not elections_alchemy.query_election(election_id=str(election_id)):
+            raise exceptions.NotFound404Exception('election with specified ID not found')
 
-            # checks to make sure election exists
-            if not elections_alchemy.query_election(election_id=str(election_id)):
-                self.set_status(404)
-                self.write({"status": "election doesn't exist"})
-                return
+        # create new candidate object
+        candidate = elections_model.Candidate()
+        for parameter in required_parameters:
+            setattr(candidate, parameter, body_json[parameter])
+        candidate.election = str(election_id)
+        elections_alchemy.add_or_update(candidate)
 
-            # create new candidate object
-            candidate = elections_model.Candidate()
-            for parameter in required_parameters:
-                setattr(candidate, parameter, body_json[parameter])
-            candidate.election = str(election_id)
-            elections_alchemy.add_or_update(candidate)
-
-            self.set_status(201)
-            self.write(candidate.serialize())
-
-        except Exception as e:
-            logger.error("ElectionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        self.set_status(201)
+        self.write(candidate.serialize())
 
 
 class SpecifiedCandidateHandler(BaseHandler):
     def get(self, election_id, candidate_id):
-
         # checks to make sure there is a candidate to query
-        if len(elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))) is 0:
-            self.set_status(404)
-            self.write({"status": "candidate doesn't exist"})
-            return
+        if elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id)) == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
 
         # queries candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
@@ -496,116 +383,67 @@ class SpecifiedCandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, election_id, candidate_id):
-        try:
             user = self.current_user
             # permission checking
             if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(403)
-                self.write({"status": "This action requires authorization or is not allowed."})
-                return
+                raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
             required_parameters = ('election', 'position', 'username', 'display_name')
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
 
             # Checking for required parameters
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
+            validate_parameters(body_json, required_parameters)
 
             # checks to makes sure position exists
-            print(elections_alchemy.query_position(position_id=str(body_json["position"])))
             if not elections_alchemy.query_position(position_id=str(body_json["position"])):
-                self.set_status(404)
-                self.write({"status": "position doesn't exist"})
-                return
+                raise exceptions.NotFound404Exception('position with specified ID not found')
 
             # checks to make sure election exists
             if not elections_alchemy.query_election(election_id=str(election_id)):
-                self.set_status(404)
-                self.write({"status": "election doesn't exist"})
-                return
+                raise exceptions.NotFound404Exception('election with specified ID not found')
 
             # checks to make sure there is a candidate to query
             if len(elections_alchemy.query_candidates(election_id=str(election_id),
                                                       candidate_id=str(candidate_id))) is 0:
-                self.set_status(404)
-                self.write({"status": "candidate doesn't exist"})
-                return
+                raise exceptions.NotFound404Exception('candidate with specified ID not found')
 
             # fetch position
             candidate = elections_alchemy.query_candidates(election_id=str(election_id),
                                                            candidate_id=str(candidate_id))
-
-            # checks to make sure there is an election
-            if len(elections_alchemy.query_election(election_id=str(election_id))) is 0:
-                self.set_status(404)
-                self.write({"status": "election doesn't exist"})
-                return
 
             election = elections_alchemy.query_election(election_id=str(election_id))[0]
 
             # checks to see if candidate is in current election
             if election != elections_alchemy.query_current() and election not in elections_alchemy.query_election(
                     start=datetime.now()):
-                self.set_status(403)
-                self.write({"status": "Candidate not in current election"})
-                return
-
+                raise exceptions.Forbidden403Exception('specified candidate is not in the current election')
             candidate = candidate[0]
 
             for parameter in required_parameters:
                 setattr(candidate, parameter, body_json[parameter])
             elections_alchemy.add_or_update(candidate)
 
-            self.set_status(200)
             self.write(candidate.serialize())
-
-        except Exception as e:
-            logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
 
     @tornado.web.authenticated
     def delete(self, election_id, candidate_id):
-        try:
-            user = self.current_user
-            # permission checking
-            if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-                self.set_status(403)
-                self.write({"status": "This action requires authorization or is not allowed."})
-                return
-            # get the candidate from the database
-            candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
-            if len(candidate) == 0:
-                self.set_status(404)
-                self.write({"status": "error"})
-                return
-            if len(candidate) != 1:
-                raise Exception('more than one candidate found with same ID')
-            candidate = candidate[0]
-            # dont allow deleting past candidates
-            election = elections_alchemy.query_election(election_id=str(election_id))
-            if len(election) == 0:
-                self.set_status(404)
-                self.write({"status": "error"})
-                return
-            if len(election) != 1:
-                raise Exception('more than one election found with same ID')
-            if election[0] != elections_alchemy.query_current() and election[0] not in elections_alchemy.query_election(
-                    start=datetime.now()):
-                self.set_status(403)
-                self.write({"status": "Candidate not in current election"})
-                return
-            # delete the candidate
-            elections_alchemy.delete(candidate)
-            # self.write(candidate.serialize())
-            self.set_status(204)
-
-        except Exception as e:
-            logger.error("SpecifiedElectionHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        user = self.current_user
+        # permission checking
+        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
+            raise exceptions.Forbidden403Exception('you do not have permissions to do this')
+        # get the candidate from the database
+        candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
+        if len(candidate) == 0:
+            raise exceptions.NotFound404Exception('candidate with specified ID not found')
+        candidate = candidate[0]
+        # dont allow deleting past candidates
+        election = elections_alchemy.query_election(election_id=str(election_id))
+        if len(election) == 0:
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        if election[0] != elections_alchemy.query_current() and election[0] not in elections_alchemy.query_election(
+                start=datetime.now()):
+            raise exceptions.Forbidden403Exception('candidate not in the current election')
+        # delete the candidate
+        elections_alchemy.delete(candidate)
+        self.set_status(204)
