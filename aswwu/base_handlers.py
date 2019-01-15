@@ -64,6 +64,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def options(self, *path_args, **path_kwargs):
         self.set_header("Access-Control-Allow-Headers",
                         "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, token")
+        self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
         pass
 
     # allow data to come from anywhere
