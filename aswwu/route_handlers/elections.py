@@ -9,7 +9,7 @@ from aswwu.base_handlers import BaseHandler
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.alchemy_new.mask as mask_alchemy
 import aswwu.models.elections as elections_model
-import aswwu.exceptions as http_exceptions
+import aswwu.exceptions as exceptions
 
 logger = logging.getLogger("aswwu")
 
@@ -19,14 +19,16 @@ election_db = elections_alchemy.election_db
 # Parameters: parameters (dict), required_parameters (tuple of strings)
 # Checks that the required parameters are in the json dict
 def validate_parameters(given_parameters, required_parameters):
-    if len(required_parameters) != len(list(given_parameters.keys())):
-        raise Exception
+    # check for missing parameters
     for parameter in required_parameters:
-        if not given_parameters.has_key(parameter):
-            raise Exception
-    if given_parameters.has_key('election_type'):
-        if given_parameters['election_type'] not in ('aswwu', 'senate'):
-            raise Exception
+        if parameter not in given_parameters.keys():
+            raise exceptions.BadRequest400Exception('missing parameters')
+    # check for too many parameters
+    if len(required_parameters) != len(list(given_parameters.keys())):
+        raise exceptions.BadRequest400Exception('too many parameters')
+    # check for bad election type
+    if 'election_type' in given_parameters.keys() and given_parameters['election_type'] not in ('aswwu', 'senate'):
+        raise exceptions.BadRequest400Exception('election_type is not aswwu or senate')
 
 
 def validate_vote(user, parameters, existing_vote=None):
@@ -34,185 +36,129 @@ def validate_vote(user, parameters, existing_vote=None):
     # check if election exists
     specified_election = elections_alchemy.query_election(election_id=parameters['election'])
     if specified_election == list():
-        raise http_exceptions.NotFound404Exception('election with specified ID not found')
+        raise exceptions.NotFound404Exception('election with specified ID not found')
     # check if not current election
     current_election = elections_alchemy.query_current()
     if specified_election[0] != current_election:
-        raise http_exceptions.Forbidden403Exception('this election is not available for voting')
+        raise exceptions.Forbidden403Exception('this election is not available for voting')
     # check if position exists and is active
     specified_position = elections_alchemy.query_position(position_id=parameters['position'])
     if specified_position == list() or specified_position[0].active is False:
-        raise http_exceptions.Forbidden403Exception('position with specified ID not found')
+        raise exceptions.Forbidden403Exception('position with specified ID not found')
     # check if position is the right election type
     if specified_position[0].election_type != current_election.election_type:
-        raise http_exceptions.Forbidden403Exception('you are voting for a position in a different election type')
+        raise exceptions.Forbidden403Exception('you are voting for a position in a different election type')
     # check for valid candidate username
     if mask_alchemy.query_by_username(parameters['vote']) is None:
-        raise http_exceptions.Forbidden403Exception('you cannot vote for this person')
+        raise exceptions.Forbidden403Exception('you cannot vote for this person')
     # check amount of votes a user has in aswwu or senate election
     if existing_vote is None:
         if specified_election[0].election_type == 'aswwu' and \
                 len(elections_alchemy.query_vote(election=specified_election[0].id,
                                                  position=specified_position[0].id,
                                                  username=str(user.username))) >= 1:
-            raise http_exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
+            raise exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
         elif specified_election[0].election_type == 'senate' and \
                 len(elections_alchemy.query_vote(election=specified_election[0].id,
                                                  position=specified_position[0].id,
                                                  username=str(user.username))) >= 2:
-            raise http_exceptions.Forbidden403Exception('you can only vote for two senators')
+            raise exceptions.Forbidden403Exception('you can only vote for two senators')
     # check for duplicate votes
     if parameters['vote'] != getattr(existing_vote, 'vote', None) and \
             elections_alchemy.query_vote(election=specified_election[0].id,
                                          position=specified_position[0].id,
                                          vote=parameters['vote'],
                                          username=str(user.username)) != list():
-        raise http_exceptions.Forbidden403Exception('you have already voted for this person')
+        raise exceptions.Forbidden403Exception('you have already voted for this person')
 
 
 class VoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        try:
-            # Put query into JSON form
-            search_criteria = {}
-            query = self.request.arguments
-            for key, value in query.items():
-                search_criteria[key] = value[0]
-            # request
-            user = self.current_user
-            current_election = elections_alchemy.query_current()
-            if current_election is None:
-                self.set_status(404)
-                self.write({"status": "there is currently no open election"})
-                return
-            votes = elections_alchemy.query_vote(election=current_election.id,
-                                                 username=str(user.username),
-                                                 position=search_criteria.get('position', None),
-                                                 vote=search_criteria.get('vote', None))
-            self.write({'votes': [v.serialize() for v in votes]})
-        except Exception as e:
-            logger.error("VoteHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        # Put query into JSON form
+        search_criteria = {}
+        query = self.request.arguments
+        for key, value in query.items():
+            search_criteria[key] = value[0]
+        # request
+        user = self.current_user
+        current_election = elections_alchemy.query_current()
+        if current_election is None:
+            raise exceptions.NotFound404Exception('there is currently no open election')
+        votes = elections_alchemy.query_vote(election=current_election.id,
+                                             username=str(user.username),
+                                             position=search_criteria.get('position', None),
+                                             vote=search_criteria.get('vote', None))
+        self.write({'votes': [v.serialize() for v in votes]})
 
     @tornado.web.authenticated
     def post(self):
-        try:
-            user = self.current_user
-            # load request body
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
-            # check body parameters
-            required_parameters = ('election', 'position', 'vote')
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
-            # validate vote
-            try:
-                validate_vote(user, body_json)
-            except http_exceptions.Forbidden403Exception as e:
-                self.set_status(403)
-                self.write({"status": str(e)})
-                return
-            except http_exceptions.NotFound404Exception as e:
-                self.set_status(404)
-                self.write({"status": str(e)})
-                return
-            # create a new vote
-            vote = elections_model.Vote()
-            for parameter in required_parameters:
-                setattr(vote, parameter, body_json[parameter])
-            setattr(vote, 'username', str(user.username))
-            elections_alchemy.add_or_update(vote)
-            # response
-            self.set_status(201)
-            self.write(vote.serialize())
-        except Exception as e:
-            logger.error("VoteHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        user = self.current_user
+        # load request body
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+        # check body parameters
+        required_parameters = ('election', 'position', 'vote')
+        validate_parameters(body_json, required_parameters)
+        # validate vote
+        validate_vote(user, body_json)
+        # create a new vote
+        vote = elections_model.Vote()
+        for parameter in required_parameters:
+            setattr(vote, parameter, body_json[parameter])
+        setattr(vote, 'username', str(user.username))
+        elections_alchemy.add_or_update(vote)
+        # response
+        self.set_status(201)
+        self.write(vote.serialize())
 
 
 class SpecificVoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, vote_id):
-        try:
-            user = self.current_user
-            # get current election
-            current_election = elections_alchemy.query_current()
-            if current_election is None:
-                self.set_status(404)
-                self.write({"status": "there is currently no open election"})
-                return
-            # get vote
-            vote = elections_alchemy.query_vote(vote_id=str(vote_id), election=current_election.id,
-                                                username=str(user.username))
-            if vote == list():
-                self.set_status(404)
-                self.write({"status": "vote with specified ID not found"})
-                return
-            self.write(vote[0].serialize())
-        except Exception as e:
-            logger.error("SpecificVoteHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        user = self.current_user
+        # get current election
+        current_election = elections_alchemy.query_current()
+        if current_election is None:
+            raise exceptions.Forbidden403Exception('there is currently no open election')
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(vote_id),
+                                            election=current_election.id,
+                                            username=str(user.username))
+        # validate vote ID
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        self.write(vote[0].serialize())
 
     @tornado.web.authenticated
     def put(self, vote_id):
-        try:
-            user = self.current_user
-            # load request body
-            body = self.request.body.decode('utf-8')
-            body_json = json.loads(body)
-            # get current election
-            current_election = elections_alchemy.query_current()
-            if current_election is None:
-                self.set_status(404)
-                self.write({"status": "there is currently no open election"})
-                return
-            # get vote
-            vote = elections_alchemy.query_vote(vote_id=vote_id,
-                                                election=current_election.id,
-                                                username=str(user.username))
-            if vote == list():
-                self.set_status(404)
-                self.write({"status": "vote with specified ID not found"})
-                return
-            # check body parameters
-            required_parameters = ('id', 'election', 'position', 'vote', 'username')
-            try:
-                validate_parameters(body_json, required_parameters)
-            except Exception:
-                self.set_status(400)
-                self.write({"status": "error"})
-                return
-            # validate vote
-            try:
-                validate_vote(user, body_json, vote[0])
-            except http_exceptions.Forbidden403Exception as e:
-                self.set_status(403)
-                self.write({"status": str(e)})
-                return
-            except http_exceptions.NotFound404Exception as e:
-                self.set_status(404)
-                self.write({"status": str(e)})
-                return
-            # update vote
-            for parameter in required_parameters:
-                if parameter not in ('id', 'username'):
-                    setattr(vote[0], parameter, body_json[parameter])
-            setattr(vote[0], 'username', str(user.username))
-            elections_alchemy.add_or_update(vote[0])
-            # response
-            self.write(vote[0].serialize())
-        except Exception as e:
-            logger.error("VoteHandler: error.\n" + str(e.message))
-            self.set_status(500)
-            self.write({"status": "error"})
+        user = self.current_user
+        # load request body
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+        # get current election
+        current_election = elections_alchemy.query_current()
+        if current_election is None:
+            exceptions.Forbidden403Exception('there is currently no open election')
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=vote_id,
+                                            election=current_election.id,
+                                            username=str(user.username))
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        # check body parameters
+        required_parameters = ('id', 'election', 'position', 'vote', 'username')
+        # validate parameters and vote
+        validate_parameters(body_json, required_parameters)
+        validate_vote(user, body_json, vote[0])
+        # update vote
+        for parameter in required_parameters:
+            if parameter not in ('id', 'username'):
+                setattr(vote[0], parameter, body_json[parameter])
+        setattr(vote[0], 'username', str(user.username))
+        elections_alchemy.add_or_update(vote[0])
+        # response
+        self.write(vote[0].serialize())
 
 
 class ElectionHandler(BaseHandler):
