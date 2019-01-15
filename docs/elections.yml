@@ -236,6 +236,8 @@ paths:
       description: Retrieve the user's vote in the current election.
       tags:
         - vote
+      parameters:
+        - $ref: '#/components/parameters/position_query'
       security:
         - cookieAuthentication: []
       responses:
@@ -316,7 +318,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/VotePOSTBody'
+        $ref: '#/components/requestBodies/VotePUTBody'
   '/position':
     get:
       summary: List all positions
@@ -648,6 +650,35 @@ components:
               - election
               - position
               - vote
+    VotePUTBody:
+      description: A JSON object containing vote information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the vote.
+                type: string
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              position:
+                description: The position of the person being voted for.
+                type: integer
+              vote:
+                description: The username of the candidate being voted for. This must be a valid username.
+                type: string
+              username:
+                description: The user's username.
+                type: string
+            required:
+              - id
+              - election
+              - position
+              - vote
+              - username
   responses:
     204NoContent:
       description: The request completed successfully and has no response body.
