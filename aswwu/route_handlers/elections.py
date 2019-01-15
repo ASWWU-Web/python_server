@@ -6,12 +6,14 @@ import json
 from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
-import aswwu.alchemy_new.elections as alchemy
+import aswwu.alchemy_new.elections as elections_alchemy
+import aswwu.alchemy_new.mask as mask_alchemy
 import aswwu.models.elections as elections_model
+import aswwu.exceptions as http_exceptions
 
 logger = logging.getLogger("aswwu")
 
-election_db = alchemy.election_db
+election_db = elections_alchemy.election_db
 
 
 # Parameters: parameters (dict), required_parameters (tuple of strings)
@@ -27,6 +29,47 @@ def checkParameters(given_parameters, required_parameters):
             raise Exception
 
 
+def validate_vote(user, parameters, existing_vote=None):
+    # validate parameters
+    # check if election exists
+    specified_election = elections_alchemy.query_election(election_id=parameters['election'])
+    if specified_election == list():
+        raise http_exceptions.NotFound404Exception('election with specified ID not found')
+    # check if not current election
+    current_election = elections_alchemy.query_current()
+    if specified_election[0] != current_election:
+        raise http_exceptions.Forbidden403Exception('this election is not available for voting')
+    # check if position exists and is active
+    specified_position = elections_alchemy.query_position(position_id=parameters['position'])
+    if specified_position == list() or specified_position[0].active is False:
+        raise http_exceptions.Forbidden403Exception('position with specified ID not found')
+    # check if position is the right election type
+    if specified_position[0].election_type != current_election.election_type:
+        raise http_exceptions.Forbidden403Exception('you are voting for a position in a different election type')
+    # check for valid candidate username
+    if mask_alchemy.query_by_username(parameters['vote']) is None:
+        raise http_exceptions.Forbidden403Exception('you cannot vote for this person')
+    # check amount of votes a user has in aswwu or senate election
+    if existing_vote is None:
+        if specified_election[0].election_type == 'aswwu' and \
+                len(elections_alchemy.query_vote(election=specified_election[0].id,
+                                                 position=specified_position[0].id,
+                                                 username=str(user.username))) >= 1:
+            raise http_exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
+        elif specified_election[0].election_type == 'senate' and \
+                len(elections_alchemy.query_vote(election=specified_election[0].id,
+                                                 position=specified_position[0].id,
+                                                 username=str(user.username))) >= 2:
+            raise http_exceptions.Forbidden403Exception('you can only vote for two senators')
+    # check for duplicate votes
+    if parameters['vote'] != getattr(existing_vote, 'vote', None) and \
+            elections_alchemy.query_vote(election=specified_election[0].id,
+                                         position=specified_position[0].id,
+                                         vote=parameters['vote'],
+                                         username=str(user.username)) != list():
+        raise http_exceptions.Forbidden403Exception('you have already voted for this person')
+
+
 class VoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -38,15 +81,15 @@ class VoteHandler(BaseHandler):
                 search_criteria[key] = value[0]
             # request
             user = self.current_user
-            current_election = alchemy.query_current()
+            current_election = elections_alchemy.query_current()
             if current_election is None:
                 self.set_status(404)
                 self.write({"status": "there is currently no open election"})
                 return
-            votes = alchemy.query_vote(election=current_election.id,
-                                       username=str(user.username),
-                                       position=search_criteria.get('position', None),
-                                       vote=search_criteria.get('vote', None))
+            votes = elections_alchemy.query_vote(election=current_election.id,
+                                                 username=str(user.username),
+                                                 position=search_criteria.get('position', None),
+                                                 vote=search_criteria.get('vote', None))
             self.write({'votes': [v.serialize() for v in votes]})
         except Exception as e:
             logger.error("VoteHandler: error.\n" + str(e.message))
@@ -68,59 +111,26 @@ class VoteHandler(BaseHandler):
                 self.set_status(400)
                 self.write({"status": "error"})
                 return
-            # validate parameters
-            # check if election exists
-            specified_election = alchemy.query_election(election_id=body_json['election'])
-            if specified_election == list():
+            # validate vote
+            try:
+                validate_vote(user, body_json)
+            except http_exceptions.Forbidden403Exception as e:
+                self.set_status(403)
+                self.write({"status": str(e)})
+                return
+            except http_exceptions.NotFound404Exception as e:
                 self.set_status(404)
-                self.write({"status": "election with specified ID not found"})
-                return
-            # check if not current election
-            current_election = alchemy.query_current()
-            if specified_election[0] != current_election:
-                self.set_status(403)
-                self.write({"status": "this election is not available for voting"})
-                return
-            # check if position exists and is active
-            specified_position = alchemy.query_position(position_id=body_json['position'])
-            if specified_position == list() or specified_position[0].active is False:
-                self.set_status(404)
-                self.write({"status": "position with specified ID not found"})
-                return
-            # check if position is the right election type
-            if specified_position[0].election_type != current_election.election_type:
-                self.set_status(403)
-                self.write({"status": "you are voting for a position in a different election type"})
-                return
-            # check if vote for position in current election already exists
-            if specified_election[0].election_type == 'aswwu' and alchemy.query_vote(election=specified_election[0].id,
-                                  position=specified_position[0].id,
-                                  vote=body_json['vote'],
-                                  username=str(user.username)) != list():
-                self.set_status(403)
-                self.write({"status": "you have already voted for this position"})
-                return
-            # check if user has already voted in senate election
-            if specified_election[0].election_type == 'aswwu' and len(alchemy.query_vote(election=specified_election[
-                0].id,
-                                  position=specified_position[0].id,
-                                  username=str(user.username))) >= 1:
-                self.set_status(403)
-                self.write({"status": "you have already voted for this position"})
-                return
-            elif specified_election[0].election_type == 'senate' and len(alchemy.query_vote(election=specified_election[
-                0].id,
-                                  position=specified_position[0].id,
-                                  username=str(user.username))) >= 2:
-                self.set_status(403)
-                self.write({"status": "you can only vote for one senator"})
+                self.write({"status": str(e)})
                 return
             # create a new vote
             vote = elections_model.Vote()
             for parameter in required_parameters:
                 setattr(vote, parameter, body_json[parameter])
             setattr(vote, 'username', str(user.username))
-            alchemy.add_or_update(vote)
+            elections_alchemy.add_or_update(vote)
+            # response
+            self.set_status(201)
+            self.write(vote.serialize())
         except Exception as e:
             logger.error("VoteHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -133,13 +143,14 @@ class SpecificVoteHandler(BaseHandler):
         try:
             user = self.current_user
             # get current election
-            current_election = alchemy.query_current()
+            current_election = elections_alchemy.query_current()
             if current_election is None:
                 self.set_status(404)
                 self.write({"status": "there is currently no open election"})
                 return
             # get vote
-            vote = alchemy.query_vote(vote_id=str(vote_id), election=current_election.id, username=str(user.username))
+            vote = elections_alchemy.query_vote(vote_id=str(vote_id), election=current_election.id,
+                                                username=str(user.username))
             if vote == list():
                 self.set_status(404)
                 self.write({"status": "vote with specified ID not found"})
@@ -158,68 +169,46 @@ class SpecificVoteHandler(BaseHandler):
             body = self.request.body.decode('utf-8')
             body_json = json.loads(body)
             # get current election
-            current_election = alchemy.query_current()
+            current_election = elections_alchemy.query_current()
             if current_election is None:
                 self.set_status(404)
                 self.write({"status": "there is currently no open election"})
                 return
             # get vote
-            vote = alchemy.query_vote(vote_id=vote_id, election=current_election.id, username=str(user.username))
+            vote = elections_alchemy.query_vote(vote_id=vote_id,
+                                                election=current_election.id,
+                                                username=str(user.username))
             if vote == list():
                 self.set_status(404)
                 self.write({"status": "vote with specified ID not found"})
                 return
             # check body parameters
-            required_parameters = ('election', 'position', 'vote')
+            required_parameters = ('id', 'election', 'position', 'vote', 'username')
             try:
                 checkParameters(body_json, required_parameters)
             except Exception:
                 self.set_status(400)
                 self.write({"status": "error"})
                 return
-            # validate parameters
-            # check if election exists
-            specified_election = alchemy.query_election(election_id=body_json['election'])
-            if specified_election == list():
+            # validate vote
+            try:
+                validate_vote(user, body_json, vote[0])
+            except http_exceptions.Forbidden403Exception as e:
+                self.set_status(403)
+                self.write({"status": str(e)})
+                return
+            except http_exceptions.NotFound404Exception as e:
                 self.set_status(404)
-                self.write({"status": "election with specified ID not found"})
-                return
-            # check if not current election
-            current_election = alchemy.query_current()
-            if specified_election[0] != current_election:
-                self.set_status(403)
-                self.write({"status": "this election is not available for voting"})
-                return
-            # check if position exists and is active
-            specified_position = alchemy.query_position(position_id=body_json['position'])
-            if specified_position == list() or specified_position[0].active is False:
-                self.set_status(404)
-                self.write({"status": "position with specified ID not found"})
-                return
-            # check if position is the right election type
-            if specified_position[0].election_type != current_election.election_type:
-                self.set_status(403)
-                self.write({"status": "you are voting for a position in a different election type"})
-                return
-            # check if vote for position in current election already exists
-            if alchemy.query_vote(election=specified_election[0].id,
-                                  position=specified_position[0].id,
-                                  vote=body_json['vote'],
-                                  username=str(user.username)) != list():
-                self.set_status(403)
-                self.write({"status": "you have already voted for this position"})
-                return
-            # check if user has already voted in senate election
-            if specified_election[0].election_type == 'senate' and \
-                    alchemy.query_vote(election=specified_election[0].id, username=str(user.username)) != list():
-                self.set_status(403)
-                self.write({"status": "you can only vote for one senator"})
+                self.write({"status": str(e)})
                 return
             # update vote
             for parameter in required_parameters:
-                setattr(vote[0], parameter, body_json[parameter])
+                if parameter not in ('id', 'username'):
+                    setattr(vote[0], parameter, body_json[parameter])
             setattr(vote[0], 'username', str(user.username))
-            alchemy.add_or_update(vote[0])
+            elections_alchemy.add_or_update(vote[0])
+            # response
+            self.write(vote[0].serialize())
         except Exception as e:
             logger.error("VoteHandler: error.\n" + str(e.message))
             self.set_status(500)
@@ -236,9 +225,9 @@ class ElectionHandler(BaseHandler):
                 search_criteria[key] = value[0]
                 if key in ('start', 'end'):
                     search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
-            elections = alchemy.query_election(election_type=search_criteria.get('election_type', None),
-                                               start=search_criteria.get('start', None),
-                                               end=search_criteria.get('end', None))
+            elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
+                                                         start=search_criteria.get('start', None),
+                                                         end=search_criteria.get('end', None))
 
             self.write({'elections': [e.serialize() for e in elections]})
         except Exception:
@@ -259,19 +248,19 @@ class ElectionHandler(BaseHandler):
                 return
 
             # checking to make sure new election doesn't overlap with current or upcoming elections
-            if alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
+            if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
                 self.set_status(403)
                 self.write({"status": "error"})
                 return
 
             # checking to make sure new election doesn't start time in the past
-            if alchemy.detect_election_start(body_json["start"], body_json["end"]):
+            if elections_alchemy.detect_election_start(body_json["start"], body_json["end"]):
                 self.set_status(403)
                 self.write({"status": "error"})
                 return
 
             # checking to make sure end time isn't less than start time
-            if alchemy.detect_bad_end(body_json["start"], body_json["end"]):
+            if elections_alchemy.detect_bad_end(body_json["start"], body_json["end"]):
                 self.set_status(400)
                 self.write({"status": "error"})
                 return
@@ -284,7 +273,7 @@ class ElectionHandler(BaseHandler):
                     setattr(election, parameter, d)
                 else:
                     setattr(election, parameter, body_json[parameter])
-            alchemy.add_or_update(election)
+            elections_alchemy.add_or_update(election)
 
             self.set_status(201)
             self.write(election.serialize())
@@ -298,7 +287,7 @@ class ElectionHandler(BaseHandler):
 class SpecifiedElectionHandler(BaseHandler):
     def get(self, election_id):
         try:
-            position = alchemy.query_election(election_id=str(election_id))
+            position = elections_alchemy.query_election(election_id=str(election_id))
             self.write(position[0].serialize())
 
         except Exception:
@@ -320,14 +309,14 @@ class SpecifiedElectionHandler(BaseHandler):
                 self.write({"status": "error"})
                 return
 
-            if alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
+            if elections_alchemy.detect_election_overlap(body_json["start"], body_json["end"]):
                 self.set_status(403)
                 self.write({"status": "error"})
                 return
 
             # fetch position
             try:
-                election = alchemy.query_election(election_id=str(election_id))
+                election = elections_alchemy.query_election(election_id=str(election_id))
 
             except Exception:
                 self.set_status(404)
@@ -342,7 +331,7 @@ class SpecifiedElectionHandler(BaseHandler):
                     setattr(election, parameter, d)
                 else:
                     setattr(election, parameter, body_json[parameter])
-            alchemy.add_or_update(election)
+            elections_alchemy.add_or_update(election)
 
             self.set_status(200)
             self.write(election.serialize())
@@ -355,7 +344,7 @@ class SpecifiedElectionHandler(BaseHandler):
 
 class CurrentHandler(BaseHandler):
     def get(self):
-        election = alchemy.query_current_or_upcoming()
+        election = elections_alchemy.query_current_or_upcoming()
         if election is None:
             self.set_status(404)
             self.write({'status': 'The resource could not be found.'})
@@ -371,10 +360,10 @@ class PositionHandler(BaseHandler):
             query = self.request.arguments
             for key, value in query.items():
                 search_criteria[key] = value[0]
-            positions = alchemy.query_position(position_id=search_criteria.get('id', None),
-                                               position=search_criteria.get('position', None),
-                                               election_type=search_criteria.get('election_type', None),
-                                               active=search_criteria.get('active', None))
+            positions = elections_alchemy.query_position(position_id=search_criteria.get('id', None),
+                                                         position=search_criteria.get('position', None),
+                                                         election_type=search_criteria.get('election_type', None),
+                                                         active=search_criteria.get('active', None))
             self.write({'positions': [p.serialize() for p in positions]})
         except Exception as e:
             logger.error("PositionHandler: error.\n" + str(e.message))
@@ -401,7 +390,7 @@ class PositionHandler(BaseHandler):
             for parameter in required_parameters:
                 setattr(position, parameter, body_json[parameter])
 
-            alchemy.add_or_update(position)
+            elections_alchemy.add_or_update(position)
             self.set_status(201)
             self.write(position.serialize())
 
@@ -414,7 +403,7 @@ class PositionHandler(BaseHandler):
 class SpecifiedPositionHandler(BaseHandler):
     def get(self, position_id):
         try:
-            position = alchemy.query_position(position_id=str(position_id))
+            position = elections_alchemy.query_position(position_id=str(position_id))
             self.write(position[0].serialize())
 
         except Exception:
@@ -438,7 +427,7 @@ class SpecifiedPositionHandler(BaseHandler):
 
             # fetch position
             try:
-                position = alchemy.query_position(position_id=str(position_id))
+                position = elections_alchemy.query_position(position_id=str(position_id))
 
             except Exception:
                 self.set_status(404)
@@ -450,7 +439,7 @@ class SpecifiedPositionHandler(BaseHandler):
             for parameter in required_parameters:
                 setattr(position, parameter, body_json[parameter])
 
-            alchemy.add_or_update(position)
+            elections_alchemy.add_or_update(position)
             self.set_status(200)
             self.write(position.serialize())
 
@@ -468,15 +457,15 @@ class CandidateHandler(BaseHandler):
             query = self.request.arguments
             for key, value in query.items():
                 search_criteria[key] = value[0]
-            if not alchemy.query_election(election_id=str(election_id)):
+            if not elections_alchemy.query_election(election_id=str(election_id)):
                 self.set_status(404)
                 self.write({"status": "election doesn't exist"})
                 return
             # query candidates from database
-            candidates = alchemy.query_candidates(position=search_criteria.get('position', None),
-                                                  username=search_criteria.get('username', None),
-                                                  display_name=search_criteria.get('display_name', None),
-                                                  election_id=str(election_id))
+            candidates = elections_alchemy.query_candidates(position=search_criteria.get('position', None),
+                                                            username=search_criteria.get('username', None),
+                                                            display_name=search_criteria.get('display_name', None),
+                                                            election_id=str(election_id))
 
             self.write({'candidates': [c.serialize() for c in candidates]})
         except Exception:
@@ -504,27 +493,28 @@ class CandidateHandler(BaseHandler):
                 return
 
             # checks to make sure there is an election to push candidates to
-            if len(alchemy.query_election(election_id=str(election_id))) is 0:
+            if len(elections_alchemy.query_election(election_id=str(election_id))) is 0:
                 self.set_status(404)
                 self.write({"status": "election doesn't exist"})
                 return
 
-            election = alchemy.query_election(election_id=str(election_id))[0]
+            election = elections_alchemy.query_election(election_id=str(election_id))[0]
 
             # checks to make sure election is either current of up and coming
-            if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):
+            if election != elections_alchemy.query_current() and election not in elections_alchemy.query_election(
+                    start=datetime.now()):
                 self.set_status(403)
                 self.write({"status": "Candidate not in current election"})
                 return
 
             # checks to makes sure position exists
-            if not alchemy.query_position(position_id=str(body_json["position"])):
+            if not elections_alchemy.query_position(position_id=str(body_json["position"])):
                 self.set_status(404)
                 self.write({"status": "position doesn't exist"})
                 return
 
             # checks to make sure election exists
-            if not alchemy.query_election(election_id=str(election_id)):
+            if not elections_alchemy.query_election(election_id=str(election_id)):
                 self.set_status(404)
                 self.write({"status": "election doesn't exist"})
                 return
@@ -534,7 +524,7 @@ class CandidateHandler(BaseHandler):
             for parameter in required_parameters:
                 setattr(candidate, parameter, body_json[parameter])
             candidate.election = str(election_id)
-            alchemy.add_or_update(candidate)
+            elections_alchemy.add_or_update(candidate)
 
             self.set_status(201)
             self.write(candidate.serialize())
@@ -549,13 +539,13 @@ class SpecifiedCandidateHandler(BaseHandler):
     def get(self, election_id, candidate_id):
 
         # checks to make sure there is a candidate to query
-        if len(alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))) is 0:
+        if len(elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))) is 0:
             self.set_status(404)
             self.write({"status": "candidate doesn't exist"})
             return
 
         # queries candidate
-        candidate = alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
+        candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
         self.write(candidate[0].serialize())
 
     @tornado.web.authenticated
@@ -581,38 +571,40 @@ class SpecifiedCandidateHandler(BaseHandler):
                 return
 
             # checks to makes sure position exists
-            print(alchemy.query_position(position_id=str(body_json["position"])))
-            if not alchemy.query_position(position_id=str(body_json["position"])):
+            print(elections_alchemy.query_position(position_id=str(body_json["position"])))
+            if not elections_alchemy.query_position(position_id=str(body_json["position"])):
                 self.set_status(404)
                 self.write({"status": "position doesn't exist"})
                 return
 
             # checks to make sure election exists
-            if not alchemy.query_election(election_id=str(election_id)):
+            if not elections_alchemy.query_election(election_id=str(election_id)):
                 self.set_status(404)
                 self.write({"status": "election doesn't exist"})
                 return
 
             # checks to make sure there is a candidate to query
-            if len(alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))) is 0:
+            if len(elections_alchemy.query_candidates(election_id=str(election_id),
+                                                      candidate_id=str(candidate_id))) is 0:
                 self.set_status(404)
                 self.write({"status": "candidate doesn't exist"})
                 return
 
             # fetch position
-            candidate = alchemy.query_candidates(election_id=str(election_id),
-                                                 candidate_id=str(candidate_id))
+            candidate = elections_alchemy.query_candidates(election_id=str(election_id),
+                                                           candidate_id=str(candidate_id))
 
             # checks to make sure there is an election
-            if len(alchemy.query_election(election_id=str(election_id))) is 0:
+            if len(elections_alchemy.query_election(election_id=str(election_id))) is 0:
                 self.set_status(404)
                 self.write({"status": "election doesn't exist"})
                 return
 
-            election = alchemy.query_election(election_id=str(election_id))[0]
+            election = elections_alchemy.query_election(election_id=str(election_id))[0]
 
             # checks to see if candidate is in current election
-            if election != alchemy.query_current() and election not in alchemy.query_election(start=datetime.now()):
+            if election != elections_alchemy.query_current() and election not in elections_alchemy.query_election(
+                    start=datetime.now()):
                 self.set_status(403)
                 self.write({"status": "Candidate not in current election"})
                 return
@@ -621,7 +613,7 @@ class SpecifiedCandidateHandler(BaseHandler):
 
             for parameter in required_parameters:
                 setattr(candidate, parameter, body_json[parameter])
-            alchemy.add_or_update(candidate)
+            elections_alchemy.add_or_update(candidate)
 
             self.set_status(200)
             self.write(candidate.serialize())
@@ -641,7 +633,7 @@ class SpecifiedCandidateHandler(BaseHandler):
                 self.write({"status": "This action requires authorization or is not allowed."})
                 return
             # get the candidate from the database
-            candidate = alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
+            candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
             if len(candidate) == 0:
                 self.set_status(404)
                 self.write({"status": "error"})
@@ -650,19 +642,20 @@ class SpecifiedCandidateHandler(BaseHandler):
                 raise Exception('more than one candidate found with same ID')
             candidate = candidate[0]
             # dont allow deleting past candidates
-            election = alchemy.query_election(election_id=str(election_id))
+            election = elections_alchemy.query_election(election_id=str(election_id))
             if len(election) == 0:
                 self.set_status(404)
                 self.write({"status": "error"})
                 return
             if len(election) != 1:
                 raise Exception('more than one election found with same ID')
-            if election[0] != alchemy.query_current() and election[0] not in alchemy.query_election(start=datetime.now()):
+            if election[0] != elections_alchemy.query_current() and election[0] not in elections_alchemy.query_election(
+                    start=datetime.now()):
                 self.set_status(403)
                 self.write({"status": "Candidate not in current election"})
                 return
             # delete the candidate
-            alchemy.delete(candidate)
+            elections_alchemy.delete(candidate)
             # self.write(candidate.serialize())
             self.set_status(204)
 

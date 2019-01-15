@@ -129,6 +129,17 @@ def query_by_wwuid(model, wwuid):
     return thing
 
 
+# finds a single user by their username
+def query_by_username(username):
+    thing = None
+    try:
+        thing = people_db.query(mask_model.User).filter_by(username=str(username)).one()
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
+
 # finds all rows for a given model matching the given ID
 def query_by_id(model, aid):
     thing = None
