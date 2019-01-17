@@ -195,10 +195,11 @@ class SpecifiedElectionHandler(BaseHandler):
         election = elections_alchemy.query_election(election_id=str(election_id))
         if election == list():
             raise exceptions.NotFound404Exception('election with specified ID not found')
+        election = election[0]
 
         # response
         self.set_status(200)
-        self.write(election[0].serialize())
+        self.write(election.serialize())
 
     @tornado.web.authenticated
     @permission_and(elections_permission)
@@ -228,6 +229,7 @@ class SpecifiedElectionHandler(BaseHandler):
         elections_alchemy.add_or_update(election)
 
         # response
+        self.set_status(200)
         self.write(election.serialize())
 
 
@@ -403,6 +405,8 @@ class SpecifiedCandidateHandler(BaseHandler):
             setattr(candidate, parameter, body_json[parameter])
         elections_alchemy.add_or_update(candidate)
 
+        # response
+        self.set_status(200)
         self.write(candidate.serialize())
 
     @tornado.web.authenticated

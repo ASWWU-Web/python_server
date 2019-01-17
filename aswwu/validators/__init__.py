@@ -1,4 +1,0 @@
-# sheldon woodward
-# DATE
-
-"""Docstring"""

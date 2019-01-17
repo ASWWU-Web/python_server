@@ -13,9 +13,11 @@ def validate_parameters(given_parameters, required_parameters):
     for parameter in required_parameters:
         if parameter not in given_parameters.keys():
             raise exceptions.BadRequest400Exception('missing parameters')
+
     # check for too many parameters
     if len(required_parameters) != len(list(given_parameters.keys())):
         raise exceptions.BadRequest400Exception('too many parameters')
+
     # check for bad election type
     if 'election_type' in given_parameters.keys() and given_parameters['election_type'] not in ('aswwu', 'senate'):
         raise exceptions.BadRequest400Exception('election_type is not aswwu or senate')
@@ -25,9 +27,11 @@ def validate_election(parameters):
     # check that election doesn't overlap with current or upcoming elections
     if elections_alchemy.detect_election_overlap(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('election takes place during another election')
+
     # checking that election doesn't start time in the past
     if elections_alchemy.detect_election_start(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('election takes place during the past')
+
     # check that end time isn't less than start time
     if elections_alchemy.detect_bad_end(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('start time is after end time')
