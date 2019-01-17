@@ -16,13 +16,10 @@ logger = logging.getLogger("aswwu")
 election_db = elections_alchemy.election_db
 
 # TODO: build_query_params() function
-# TODO: permission checking
-# TODO: validate_position() function
-# TODO: validate_candidate() function
 # TODO: check required PUT parameters
+# TODO: boolean validations in parameters
 
 
-# Parameters: parameters (dict), required_parameters (tuple of strings)
 # Checks that the required parameters are in the json dict
 def validate_parameters(given_parameters, required_parameters):
     # check for missing parameters
@@ -114,6 +111,11 @@ def validate_candidate(parameters, election_id):
     # check to make sure election exists
     if not elections_alchemy.query_election(election_id=str(election_id)):
         raise exceptions.NotFound404Exception('election with specified ID not found')
+
+
+def check_permissions(user):
+    if 'elections-admin' not in user.roles and 'administrator' not in user.roles:
+        raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
 
 class VoteHandler(BaseHandler):
@@ -247,6 +249,10 @@ class ElectionHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self):
+        # get current user and check permissions
+        user = self.current_user
+        check_permissions(user)
+
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -284,6 +290,10 @@ class SpecifiedElectionHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, election_id):
+        # get current user and check permissions
+        user = self.current_user
+        check_permissions(user)
+
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -343,6 +353,10 @@ class PositionHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self):
+        # get current user and check permissions
+        user = self.current_user
+        check_permissions(user)
+
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -375,6 +389,10 @@ class SpecifiedPositionHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, position_id):
+        # get current user and check permissions
+        user = self.current_user
+        check_permissions(user)
+
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -423,16 +441,13 @@ class CandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, election_id):
-        # get current user
+        # get current user and check permissions
         user = self.current_user
+        check_permissions(user)
 
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
-
-        # check user's permissions
-        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-            raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
         # validate parameters
         required_parameters = ('position', 'username', 'display_name')
@@ -464,16 +479,13 @@ class SpecifiedCandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, election_id, candidate_id):
-        # get current user
+        # get current user and check permissions
         user = self.current_user
+        check_permissions(user)
 
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
-
-        # check user's permissions
-        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-            raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
         # validate parameters
         required_parameters = ('election', 'position', 'username', 'display_name')
@@ -500,12 +512,9 @@ class SpecifiedCandidateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, election_id, candidate_id):
-        # get current user
+        # get current user and check permissions
         user = self.current_user
-
-        # check user's permissions
-        if 'election-admin' not in user.roles and 'administrator' not in user.roles:
-            raise exceptions.Forbidden403Exception('you do not have permissions to do this')
+        check_permissions(user)
 
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
