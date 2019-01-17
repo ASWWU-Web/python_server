@@ -47,6 +47,7 @@ class Application(tornado.web.Application):
             (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
             (r"/role/administrator", mask.AdministratorRoleHandler),
             (r"/role/volunteer", volunteers.VolunteerRoleHandler),
+            (r"/search/names", mask.SearchNamesFast),
             (r"/search/all", mask.SearchAllHandler),
             (r"/search/(.*)/(.*)", mask.SearchHandler),
             (r"/update/(.*)", mask.ProfileUpdateHandler),

@@ -68,6 +68,21 @@ def search_all_profiles():
     return thing
 
 
+def search_profile_names(query, limit=0):
+    thing = None
+    try:
+        # print('hello')
+        thing = people_db.query(mask_model.Profile) \
+            .with_entities(mask_model.Profile.username, mask_model.Profile.full_name) \
+            .filter(or_(mask_model.Profile.full_name. ilike("%" + query + "%"), mask_model.Profile.username. ilike("%" + query + "%"))) \
+            .order_by(mask_model.Profile.full_name) \
+            .limit(limit) \
+            .all()
+    except Exception as e:
+        logger.info(e)
+        people_db.rollback()
+    return thing
+
 def multiple_criteria_generator(key, criteria):
     for status in criteria.split(","):
         yield getattr(mask_model.Profile, key).ilike("%" + status + "%")

@@ -106,6 +106,16 @@ class SearchHandler(BaseHandler):
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
 
 
+# get 10 (username, full_name) pairs based on query of fullname
+class SearchNamesFast(BaseHandler):
+    def get(self):
+        search_criteria = {}
+        for key, value in self.request.arguments.items():
+            search_criteria[key] = value[0]
+        names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
+        self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})
+
+
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
