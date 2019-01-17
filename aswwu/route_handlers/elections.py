@@ -117,6 +117,16 @@ def check_permissions(user):
         raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
 
+def build_query_params(request_arguments):
+    search_criteria = {}
+    for key, value in request_arguments.items():
+        if key in ('start', 'end'):
+            search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            search_criteria[key] = value[0]
+    return search_criteria
+
+
 class VoteHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -124,10 +134,7 @@ class VoteHandler(BaseHandler):
         user = self.current_user
 
         # build query parameter dict
-        search_criteria = {}
-        query = self.request.arguments
-        for key, value in query.items():
-            search_criteria[key] = value[0]
+        search_criteria = build_query_params(self.request.arguments)
 
         # get current election
         current_election = elections_alchemy.query_current()
@@ -231,12 +238,7 @@ class SpecificVoteHandler(BaseHandler):
 class ElectionHandler(BaseHandler):
     def get(self):
         # build query parameter dict
-        search_criteria = {}
-        query = self.request.arguments
-        for key, value in query.items():
-            search_criteria[key] = value[0]
-            if key in ('start', 'end'):
-                search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
+        search_criteria = build_query_params(self.request.arguments)
 
         # get election
         elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
@@ -337,10 +339,7 @@ class CurrentHandler(BaseHandler):
 class PositionHandler(BaseHandler):
     def get(self):
         # build query parameter dict
-        search_criteria = {}
-        query = self.request.arguments
-        for key, value in query.items():
-            search_criteria[key] = value[0]
+        search_criteria = build_query_params(self.request.arguments)
 
         # get positions
         positions = elections_alchemy.query_position(position=search_criteria.get('position', None),
@@ -420,10 +419,7 @@ class SpecifiedPositionHandler(BaseHandler):
 class CandidateHandler(BaseHandler):
     def get(self, election_id):
         # build query parameter dict
-        search_criteria = {}
-        query = self.request.arguments
-        for key, value in query.items():
-            search_criteria[key] = value[0]
+        search_criteria = build_query_params(self.request.arguments)
 
         # get election
         if elections_alchemy.query_election(election_id=str(election_id)) == list():
