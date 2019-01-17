@@ -17,7 +17,6 @@ class BadRequest400Exception(HTTPError):
     """
     def __init__(self, log_message, *args, **kwargs):
         HTTPError.__init__(self, status_code=400, log_message=log_message, args=args, kwargs=kwargs)
-        logger.error()
 
 
 class Unauthorized401Exception(HTTPError):

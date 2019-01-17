@@ -9,6 +9,11 @@ elections_permission = 'elections-admin'
 
 
 def permission_or(*perm_args):
+    """
+    HTTP request decorator to check a user's permissions. The user must have *any* of the specified permissions.
+    :param perm_args: Permissions to be checked for.
+    :return: Returns the decorated HTTP request function.
+    """
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             user = getattr(self, 'current_user')
@@ -30,6 +35,11 @@ def permission_or(*perm_args):
 
 
 def permission_and(*perm_args):
+    """
+    HTTP request decorator to check a user's permissions. The user must have *all* of the specified permissions.
+    :param perm_args: Permissions to be checked for.
+    :return: Returns the decorated HTTP request function.
+    """
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             user = getattr(self, 'current_user')
