@@ -7,7 +7,7 @@ from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.exceptions as exceptions
-from aswwu.permissions import permission, election_permission
+from aswwu.permissions import permission_or, permission_and, elections_permission
 
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.models.elections as elections_model
@@ -169,7 +169,7 @@ class ElectionHandler(BaseHandler):
         self.write({'elections': [e.serialize() for e in elections]})
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def post(self):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -207,7 +207,7 @@ class SpecifiedElectionHandler(BaseHandler):
         self.write(election[0].serialize())
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def put(self, election_id):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -264,7 +264,7 @@ class PositionHandler(BaseHandler):
         self.write({'positions': [p.serialize() for p in positions]})
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_and(elections_permission, 'other')
     def post(self):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -298,7 +298,7 @@ class SpecifiedPositionHandler(BaseHandler):
         self.write(position[0].serialize())
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def put(self, position_id):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -345,7 +345,7 @@ class CandidateHandler(BaseHandler):
         self.write({'candidates': [c.serialize() for c in candidates]})
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def post(self, election_id):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -381,7 +381,7 @@ class SpecifiedCandidateHandler(BaseHandler):
         self.write(candidate[0].serialize())
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def put(self, election_id, candidate_id):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -412,7 +412,7 @@ class SpecifiedCandidateHandler(BaseHandler):
         self.write(candidate.serialize())
 
     @tornado.web.authenticated
-    @permission(election_permission)
+    @permission_or(elections_permission)
     def delete(self, election_id, candidate_id):
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
