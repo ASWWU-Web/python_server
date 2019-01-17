@@ -7,7 +7,7 @@ from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.exceptions as exceptions
-from aswwu.permissions import permissions
+from aswwu.permissions import permission, election_permission
 
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.models.elections as elections_model
@@ -16,11 +16,6 @@ import aswwu.validators.elections as elections_validator
 
 logger = logging.getLogger("aswwu")
 election_db = elections_alchemy.election_db
-
-
-def check_permissions(user):
-    if 'elections-admin' not in user.roles and 'administrator' not in user.roles:
-        raise exceptions.Forbidden403Exception('you do not have permissions to do this')
 
 
 def build_query_params(request_arguments):
@@ -174,11 +169,8 @@ class ElectionHandler(BaseHandler):
         self.write({'elections': [e.serialize() for e in elections]})
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def post(self):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -215,11 +207,8 @@ class SpecifiedElectionHandler(BaseHandler):
         self.write(election[0].serialize())
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def put(self, election_id):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -275,11 +264,8 @@ class PositionHandler(BaseHandler):
         self.write({'positions': [p.serialize() for p in positions]})
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def post(self):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -312,11 +298,8 @@ class SpecifiedPositionHandler(BaseHandler):
         self.write(position[0].serialize())
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def put(self, position_id):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -362,11 +345,8 @@ class CandidateHandler(BaseHandler):
         self.write({'candidates': [c.serialize() for c in candidates]})
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def post(self, election_id):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -401,11 +381,8 @@ class SpecifiedCandidateHandler(BaseHandler):
         self.write(candidate[0].serialize())
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def put(self, election_id, candidate_id):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
@@ -435,11 +412,8 @@ class SpecifiedCandidateHandler(BaseHandler):
         self.write(candidate.serialize())
 
     @tornado.web.authenticated
+    @permission(election_permission)
     def delete(self, election_id, candidate_id):
-        # get current user and check permissions
-        user = self.current_user
-        check_permissions(user)
-
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
         if candidate == list():
