@@ -83,6 +83,20 @@ class VoteHandler(BaseHandler):
         body_json['username'] = str(user.username)
         elections_model.Vote.validate(body_json)
 
+        # check for too many votes
+        specified_election = elections_alchemy.query_election(election_id=body_json['election'])
+        specified_position = elections_alchemy.query_position(position_id=body_json['position'])
+        if specified_election[0].election_type == 'aswwu' and \
+                len(elections_alchemy.query_vote(election=specified_election[0].id,
+                                                 position=specified_position[0].id,
+                                                 username=str(user.username))) >= 1:
+            raise exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
+        elif specified_election[0].election_type == 'senate' and \
+                len(elections_alchemy.query_vote(election=specified_election[0].id,
+                                                 position=specified_position[0].id,
+                                                 username=str(user.username))) >= 2:
+            raise exceptions.Forbidden403Exception('you can only vote for two senators')
+
         # create new vote
         vote = elections_model.Vote()
         for parameter in required_parameters:

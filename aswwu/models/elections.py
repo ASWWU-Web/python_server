@@ -92,19 +92,6 @@ class Vote(ElectionBase):
         if mask_alchemy.query_by_username(parameters['vote']) is None:
             raise exceptions.Forbidden403Exception('you cannot vote for this person')
 
-        # check amount of votes a user has in aswwu or senate election
-        if existing_vote is None:
-            if specified_election[0].election_type == 'aswwu' and \
-                    len(elections_alchemy.query_vote(election=specified_election[0].id,
-                                                     position=specified_position[0].id,
-                                                     username=parameters['username'])) >= 1:
-                raise exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
-            elif specified_election[0].election_type == 'senate' and \
-                    len(elections_alchemy.query_vote(election=specified_election[0].id,
-                                                     position=specified_position[0].id,
-                                                     username=parameters['username'])) >= 2:
-                raise exceptions.Forbidden403Exception('you can only vote for two senators')
-
         # check for duplicate votes
         if parameters['vote'] != getattr(existing_vote, 'vote', None) and \
                 elections_alchemy.query_vote(election=specified_election[0].id,
