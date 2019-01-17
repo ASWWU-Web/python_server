@@ -6,27 +6,16 @@ import json
 from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
+import aswwu.exceptions as exceptions
+from aswwu.permissions import permissions
+
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.models.elections as elections_model
-import aswwu.exceptions as exceptions
+import aswwu.validators.elections as elections_validator
+
 
 logger = logging.getLogger("aswwu")
-
 election_db = elections_alchemy.election_db
-
-
-# Checks that the required parameters are in the json dict
-def validate_parameters(given_parameters, required_parameters):
-    # check for missing parameters
-    for parameter in required_parameters:
-        if parameter not in given_parameters.keys():
-            raise exceptions.BadRequest400Exception('missing parameters')
-    # check for too many parameters
-    if len(required_parameters) != len(list(given_parameters.keys())):
-        raise exceptions.BadRequest400Exception('too many parameters')
-    # check for bad election type
-    if 'election_type' in given_parameters.keys() and given_parameters['election_type'] not in ('aswwu', 'senate'):
-        raise exceptions.BadRequest400Exception('election_type is not aswwu or senate')
 
 
 def check_permissions(user):
@@ -79,9 +68,9 @@ class VoteHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('election', 'position', 'vote')
-        validate_parameters(body_json, required_parameters)
+        elections_validator.validate_parameters(body_json, required_parameters)
         body_json['username'] = str(user.username)
-        elections_model.Vote.validate(body_json)
+        elections_validator.validate_vote(body_json)
 
         # check for too many votes
         specified_election = elections_alchemy.query_election(election_id=body_json['election'])
@@ -154,9 +143,9 @@ class SpecificVoteHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('id', 'election', 'position', 'vote', 'username')
-        validate_parameters(body_json, required_parameters)
+        elections_validator.validate_parameters(body_json, required_parameters)
         body_json['username'] = str(user.username)
-        elections_model.Vote.validate(body_json, vote)
+        elections_validator.validate_vote(body_json, vote)
 
         # update vote
         for parameter in required_parameters:
@@ -196,8 +185,8 @@ class ElectionHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('election_type', 'start', 'end')
-        validate_parameters(body_json, required_parameters)
-        elections_model.Election.validate(body_json)
+        elections_validator.validate_parameters(body_json, required_parameters)
+        elections_validator.validate_election(body_json)
 
         # create new election
         election = elections_model.Election()
@@ -243,8 +232,8 @@ class SpecifiedElectionHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('id', 'election_type', 'start', 'end')
-        validate_parameters(body_json, required_parameters)
-        elections_model.Election.validate(body_json)
+        elections_validator.validate_parameters(body_json, required_parameters)
+        elections_validator.validate_election(body_json)
 
         # update election
         for parameter in required_parameters:
@@ -297,8 +286,8 @@ class PositionHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('position', 'election_type', 'active')
-        validate_parameters(body_json, required_parameters)
-        elections_model.Position.validate(body_json)
+        elections_validator.validate_parameters(body_json, required_parameters)
+        elections_validator.validate_position(body_json)
 
         # create new position
         position = elections_model.Position()
@@ -334,8 +323,8 @@ class SpecifiedPositionHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('id', 'position', 'election_type', 'active')
-        validate_parameters(body_json, required_parameters)
-        elections_model.Position.validate(body_json)
+        elections_validator.validate_parameters(body_json, required_parameters)
+        elections_validator.validate_position(body_json)
 
         # get position
         position = elections_alchemy.query_position(position_id=str(position_id))
@@ -384,9 +373,9 @@ class CandidateHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('position', 'username', 'display_name')
-        validate_parameters(body_json, required_parameters)
+        elections_validator.validate_parameters(body_json, required_parameters)
         body_json['election'] = election_id
-        elections_model.Candidate.validate(body_json)
+        elections_validator.validate_candidate(body_json)
 
         # create new candidate
         candidate = elections_model.Candidate()
@@ -423,9 +412,9 @@ class SpecifiedCandidateHandler(BaseHandler):
 
         # validate parameters
         required_parameters = ('id', 'election', 'position', 'username', 'display_name')
-        validate_parameters(body_json, required_parameters)
+        elections_validator.validate_parameters(body_json, required_parameters)
         body_json['election'] = election_id
-        elections_model.Candidate.validate(body_json)
+        elections_validator.validate_candidate(body_json)
 
         # get election
         election = elections_alchemy.query_election(election_id=str(election_id))
