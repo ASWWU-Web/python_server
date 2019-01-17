@@ -65,7 +65,6 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers",
                         "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, token")
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-        pass
 
     # allow data to come from anywhere
     def set_default_headers(self):
@@ -129,6 +128,11 @@ class BaseHandler(tornado.web.RequestHandler):
                 self.request.arguments = json_data
             except:
                 pass
+
+    def write_error(self, status_code, **kwargs):
+        self.write({'status': str(kwargs['exc_info'][1])})
+        if status_code >= 500:
+            logger.error("{} error".format(self.__class__.__name__))
 
 
 # effectively useless, but at least provides an endpoint for people accessing "/" by accident

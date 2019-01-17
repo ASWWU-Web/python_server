@@ -166,7 +166,7 @@ def detect_election_overlap(start, end):
     return False
 
 
-def query_candidates(election_id=None, candidate_id=None, position=None, username=None, display_name=None):
+def query_candidates(candidate_id=None, election_id=None, position=None, username=None, display_name=None):
     thing = None
     try:
         thing = election_db.query(elections_model.Candidate)
