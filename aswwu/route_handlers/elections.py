@@ -207,6 +207,7 @@ class SpecificVoteHandler(BaseHandler):
         current_election = elections_alchemy.query_current()
         if current_election is None:
             exceptions.Forbidden403Exception('there is currently no open election')
+
         # get vote
         vote = elections_alchemy.query_vote(vote_id=vote_id, election=current_election.id, username=str(user.username))
         if vote == list():
@@ -398,7 +399,7 @@ class SpecifiedPositionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('position', 'election_type', 'active')
+        required_parameters = ('id', 'position', 'election_type', 'active')
         validate_parameters(body_json, required_parameters)
 
         # get position
@@ -488,7 +489,7 @@ class SpecifiedCandidateHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('election', 'position', 'username', 'display_name')
+        required_parameters = ('id', 'election', 'position', 'username', 'display_name')
         validate_parameters(body_json, required_parameters)
         validate_candidate(body_json, election_id)
 
