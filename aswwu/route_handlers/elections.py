@@ -15,9 +15,6 @@ logger = logging.getLogger("aswwu")
 
 election_db = elections_alchemy.election_db
 
-# TODO: build_query_params() function
-# TODO: type validations in parameters
-
 
 # Checks that the required parameters are in the json dict
 def validate_parameters(given_parameters, required_parameters):
@@ -89,6 +86,11 @@ def validate_election(parameters):
     # check that end time isn't less than start time
     if elections_alchemy.detect_bad_end(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('start time is after end time')
+
+
+def validate_position(parameters):
+    if not isinstance(parameters['active'], bool):
+        raise exceptions.BadRequest400Exception('parameter active has type bool')
 
 
 def validate_candidate(parameters, election_id):
@@ -363,6 +365,7 @@ class PositionHandler(BaseHandler):
         # validate parameters
         required_parameters = ('position', 'election_type', 'active')
         validate_parameters(body_json, required_parameters)
+        validate_position(body_json)
 
         # create new position
         position = elections_model.Position()
@@ -399,6 +402,7 @@ class SpecifiedPositionHandler(BaseHandler):
         # validate parameters
         required_parameters = ('id', 'position', 'election_type', 'active')
         validate_parameters(body_json, required_parameters)
+        validate_position(body_json)
 
         # get position
         position = elections_alchemy.query_position(position_id=str(position_id))
