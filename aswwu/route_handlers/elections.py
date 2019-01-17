@@ -1,5 +1,3 @@
-import logging
-
 import tornado.web
 import json
 
@@ -14,7 +12,6 @@ import aswwu.models.elections as elections_model
 import aswwu.validators.elections as elections_validator
 
 
-logger = logging.getLogger("aswwu")
 election_db = elections_alchemy.election_db
 
 
@@ -264,7 +261,7 @@ class PositionHandler(BaseHandler):
         self.write({'positions': [p.serialize() for p in positions]})
 
     @tornado.web.authenticated
-    @permission_and(elections_permission, 'other')
+    @permission_and(elections_permission)
     def post(self):
         # load request body
         body = self.request.body.decode('utf-8')
