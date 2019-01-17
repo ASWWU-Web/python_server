@@ -42,7 +42,7 @@ class Vote(ElectionBase):
             'id': self.id,
             'election': self.election,
             'position': self.position,
-            'vote':     self.vote,
+            'vote': self.vote,
             'username': self.username,
         }
 
@@ -54,11 +54,10 @@ class Candidate(ElectionBase):
     display_name = Column(String(100))
 
     def serialize(self):
-        return{
-            'id':           self.id,
-            'election':     self.election,
-            'position':     self.position,
-            'username':     self.username,
-            'display_name': self.display_name
-
+        return {
+            'id': self.id,
+            'election': self.election,
+            'position': self.position,
+            'username': self.username,
+            'display_name': self.display_name,
         }

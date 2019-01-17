@@ -16,8 +16,7 @@ logger = logging.getLogger("aswwu")
 election_db = elections_alchemy.election_db
 
 # TODO: build_query_params() function
-# TODO: check required PUT parameters
-# TODO: boolean validations in parameters
+# TODO: type validations in parameters
 
 
 # Checks that the required parameters are in the json dict
