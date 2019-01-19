@@ -12,6 +12,12 @@ datetime_format = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def validate_parameters(given_parameters, required_parameters):
+    """
+    Validate that the given parameters match the required parameters.
+    :param given_parameters: The parameters passed to the request.
+    :param required_parameters: The parameters that must be present in the request.
+    :return: None
+    """
     # check for missing parameters
     for parameter in required_parameters:
         if parameter not in given_parameters.keys():
@@ -27,6 +33,11 @@ def validate_parameters(given_parameters, required_parameters):
 
 
 def validate_election(parameters):
+    """
+    Validate an election's parameters based on constraints.
+    :param parameters: The election's parameters.
+    :return: None
+    """
     # check if start and end are valid datetime strings
     try:
         datetime.strptime(parameters['start'], datetime_format)
@@ -49,11 +60,22 @@ def validate_election(parameters):
 
 
 def validate_position(parameters):
+    """
+    Validate a position's parameters based on constraints.
+    :param parameters: The position's parameters.
+    :return: None
+    """
     if not isinstance(parameters['active'], bool):
         raise exceptions.BadRequest400Exception('parameter active has type bool')
 
 
 def validate_vote(parameters, existing_vote=None):
+    """
+    Validate a vote's parameters based on constraints.
+    :param parameters: The vote's parameters.
+    :param existing_vote: An existing vote being updated used to check for duplicate votes.
+    :return: None
+    """
     # check if election exists
     specified_election = elections_alchemy.query_election(election_id=parameters['election'])
     if specified_election == list():
@@ -87,6 +109,11 @@ def validate_vote(parameters, existing_vote=None):
 
 
 def validate_candidate(parameters):
+    """
+    Validate a candidate's parameters based on constraints.
+    :param parameters: The candidate's parameters.
+    :return: None
+    """
     # check to make sure there is an election to push candidates to
     election = elections_alchemy.query_election(election_id=parameters['election'])
     if election == list():
