@@ -25,7 +25,7 @@ paths:
   '/election':
     get:
       summary: List elections
-      description: List elections. They can be filtered by query paramtetsers 
+      description: List elections. They can be filtered by query parameters
         to narrow the list.
       tags:
         - election
@@ -119,7 +119,7 @@ paths:
   '/election/{election_id}/candidate':
     get:
       summary: List candidates in an election
-      description: List candidates in an election. They can be filtered by query paramtetsers to narrow the list.
+      description: List candidates in an election. They can be filtered by query parameters to narrow the list.
       tags:
         - candidate
       parameters:
@@ -169,7 +169,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/CandidateBody'
+        $ref: '#/components/requestBodies/CandidatePOSTBody'
   '/election/{election_id}/candidate/{candidate_id}':
     get:
       summary: Retrieve a candidate
@@ -236,6 +236,8 @@ paths:
       description: Retrieve the user's vote in the current election.
       tags:
         - vote
+      parameters:
+        - $ref: '#/components/parameters/position_query'
       security:
         - cookieAuthentication: []
       responses:
@@ -254,7 +256,7 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
     post:
       summary: Create a vote for the current election
-      description: Create a vote for the current election. This will override any existing vote with the same vote_num.
+      description: Create a vote for the current election.
       tags:
         - vote
       security:
@@ -272,12 +274,55 @@ paths:
           $ref: '#/components/responses/401NotAuthenticated'
         '403':
           $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/VoteBody'
+        $ref: '#/components/requestBodies/VotePOSTBody'
+  '/vote/{vote_id}':
+    get:
+        summary: Retrieve a vote
+        description: Retrieve a vote.
+        tags:
+          - vote
+        parameters:
+          - $ref: '#/components/parameters/vote_id'
+        responses:
+          '200':
+            description: The vote was retrieved successfully.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Vote'
+          '404':
+            $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update a vote
+      description: Update a vote. Only works if the election is still open.
+      tags:
+        - vote
+      security:
+        - cookieAuthentication: []
+      parameters:
+        - $ref: '#/components/parameters/vote_id'
+      responses:
+        '200':
+          description: The vote was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/VotePUTBody'
   '/position':
     get:
       summary: List all positions
-      description: List all positions. They can be filtered by query paramtetsers to narrow the list.
+      description: List all positions. They can be filtered by query parameters to narrow the list.
       tags:
         - position
       parameters:
@@ -289,7 +334,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: ['all', 'active', 'inactive']
+            enum: ['true', 'false']
       responses:
         '200':
           description: The positions were retrieved successfully.
@@ -320,8 +365,6 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '404':
-          $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/PositionBody'
   '/position/{position_id}':
@@ -385,6 +428,13 @@ components:
       name: position_id
       in: path
       description: The ID of the position to work with.
+      required: true
+      schema:
+        type: string
+    vote_id:
+      name: vote_id
+      in: path
+      description: The ID of the vote to work with.
       required: true
       schema:
         type: string
@@ -471,15 +521,15 @@ components:
           type: string
         vote:
           type: string
-        vote_num:
-          type: integer
+        position:
+          type: string
         username:
           type: string
       example:
         id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
         election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
+        position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         vote: 'sheldon.woodward'
-        vote_num: 0
         username: 'stephen.ermshar'
   securitySchemes:
     cookieAuthentication:
@@ -533,6 +583,27 @@ components:
               - position
               - username
               - display_name
+    CandidatePOSTBody:
+      description: A JSON object containing candidate information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              position:
+                description: The FK of the position the candidate is running for.
+                type: string
+              username:
+                description: The candidate's username.
+                type: string
+              display_name:
+                description: The candidate's display name.
+                type: string
+            required:
+              - position
+              - username
+              - display_name
     PositionBody:
       description: A JSON object containing position information.
       required: true
@@ -565,19 +636,69 @@ components:
               election:
                 description: The FK of the election the vote is for.
                 type: string
+              position:
+                description: The position of the person being voted for.
+                type: integer
               vote:
                 description: The username of the candidate being voted for. This must be a valid username.
                 type: string
-              vote_num:
-                description: The vote number. Used to deliniate between votes.
-                type: integer
               username:
                 description: The user's username.
                 type: string
             required:
               - election
+              - position
               - vote
-              - vote_num
+              - username
+    VotePOSTBody:
+      description: A JSON object containing vote information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              position:
+                description: The position of the person being voted for.
+                type: integer
+              vote:
+                description: The username of the candidate being voted for. This must be a valid username.
+                type: string
+            required:
+              - election
+              - position
+              - vote
+    VotePUTBody:
+      description: A JSON object containing vote information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the vote.
+                type: string
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              position:
+                description: The position of the person being voted for.
+                type: integer
+              vote:
+                description: The username of the candidate being voted for. This must be a valid username.
+                type: string
+              username:
+                description: The user's username.
+                type: string
+            required:
+              - id
+              - election
+              - position
+              - vote
               - username
   responses:
     204NoContent:
