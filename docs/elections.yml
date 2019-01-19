@@ -169,7 +169,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/CandidateBody'
+        $ref: '#/components/requestBodies/CandidatePOSTBody'
   '/election/{election_id}/candidate/{candidate_id}':
     get:
       summary: Retrieve a candidate
@@ -580,6 +580,27 @@ components:
                 type: string
             required:
               - election
+              - position
+              - username
+              - display_name
+    CandidatePOSTBody:
+      description: A JSON object containing candidate information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              position:
+                description: The FK of the position the candidate is running for.
+                type: string
+              username:
+                description: The candidate's username.
+                type: string
+              display_name:
+                description: The candidate's display name.
+                type: string
+            required:
               - position
               - username
               - display_name
