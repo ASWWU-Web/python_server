@@ -25,6 +25,11 @@ election_db = election_dbs()
 
 
 def add_or_update(thing):
+    """
+    Add or update a model instance in the database.
+    :param thing: The instance to update.
+    :return: Returns the newly updated object.
+    """
     try:
         election_db.add(thing)
         election_db.commit()
@@ -36,6 +41,11 @@ def add_or_update(thing):
 
 
 def delete(thing):
+    """
+    Delete a model instance in the database.
+    :param thing: The instance to delete.
+    :return: None
+    """
     try:
         election_db.delete(thing)
         election_db.commit()
@@ -44,16 +54,25 @@ def delete(thing):
         election_db.rollback()
 
 
-def query_vote(vote_id=None, election=None, position=None, vote=None, username=None):
+def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, username=None):
+    """
+    Queries the database for votes matching the specified parameters.
+    :param vote_id: A specific vote ID to query.
+    :param election_id: The election ID to filter by.
+    :param position_id: The position ID to filter by.
+    :param vote: The vote to filter by.
+    :param username: The username to filter by.
+    :return: Returns a list of all matching objects in the query.
+    """
     thing = None
     try:
         thing = election_db.query(elections_model.Vote)
         if vote_id is not None:
             thing = thing.filter_by(id=str(vote_id))
-        if election is not None:
-            thing = thing.filter_by(election=str(election))
-        if position is not None:
-            thing = thing.filter_by(position=str(position))
+        if election_id is not None:
+            thing = thing.filter_by(election=str(election_id))
+        if position_id is not None:
+            thing = thing.filter_by(position=str(position_id))
         if vote is not None:
             thing = thing.filter_by(vote=str(vote))
         if username is not None:
@@ -66,6 +85,14 @@ def query_vote(vote_id=None, election=None, position=None, vote=None, username=N
 
 
 def query_position(position_id=None, position=None, election_type=None, active=None):
+    """
+    Queries the database for positions matching the specified parameters.
+    :param position_id: A specific position ID to query.
+    :param position: The position to filter by.
+    :param election_type: The election type to filter by.
+    :param active: The active status to filter by.
+    :return: Returns a list of all matched objects in the query.
+    """
     thing = None
     try:
         thing = election_db.query(elections_model.Position)
@@ -87,6 +114,14 @@ def query_position(position_id=None, position=None, election_type=None, active=N
 
 
 def query_election(election_id=None, election_type=None, start=None, end=None):
+    """
+    Queries the database for elections matching the specified parameters.
+    :param election_id: A specific election ID to query.
+    :param election_type: The election type to filter by.
+    :param start: The minimum start date to filter by.
+    :param end: The maximum end date to filter by.
+    :return: Returns a list of all matched objects in the query.
+    """
     thing = None
     try:
         thing = election_db.query(elections_model.Election)
@@ -106,6 +141,10 @@ def query_election(election_id=None, election_type=None, start=None, end=None):
 
 
 def query_current():
+    """
+    Queries the database for an election that is currently taking place.
+    :return: Returns the matched election object or None if not found.
+    """
     thing = None
     try:
         thing = election_db.query(elections_model.Election) \
@@ -113,7 +152,6 @@ def query_current():
             .filter(elections_model.Election.start <= datetime.now()) \
             .order_by(elections_model.Election.start.asc()) \
             .first()
-
     except Exception as i:
         logger.info(i)
         election_db.rollback()
@@ -121,6 +159,10 @@ def query_current():
 
 
 def query_current_or_upcoming():
+    """
+    Queries the database for an election that is current or upcoming election.
+    :return: Returns the matched election object or None if not found.
+    """
     thing = None
     try:
         thing = election_db.query(elections_model.Election) \
@@ -134,7 +176,43 @@ def query_current_or_upcoming():
     return thing
 
 
+def query_candidates(candidate_id=None, election_id=None, position_id=None, username=None, display_name=None):
+    """
+    Queries the database for candidates matching the specified parameters.
+    :param candidate_id: A specific candidate ID to query.
+    :param election_id: A specific election ID to query.
+    :param position_id: A specific position ID to query.
+    :param username: The username to filter by.
+    :param display_name: The display name to filter by.
+    :return: Returns a list of matched objects in the query.
+    """
+    thing = None
+    try:
+        thing = election_db.query(elections_model.Candidate)
+        if candidate_id is not None:
+            thing = thing.filter_by(id=str(candidate_id))
+        if election_id is not None:
+            thing = thing.filter_by(election=str(election_id))
+        if position_id is not None:
+            thing = thing.filter_by(position=str(position_id))
+        if username is not None:
+            thing = thing.filter_by(username=str(username))
+        if display_name is not None:
+            thing = thing.filter_by(display_name=str(display_name))
+        thing = thing.all()
+    except Exception as e:
+        logger.info(e)
+        election_db.rollback()
+    return thing
+
+
 def detect_election_overlap(start, end):
+    """
+    Queries the database for an election that has overlapping times with the specified times.
+    :param start: The start date to check for.
+    :param end: The end date to check for.
+    :return: Returns True if an overlap occurs or False if an overlap does not occur.
+    """
     try:
         thing = election_db.query(elections_model.Election)
         thing = thing.filter(elections_model.Election.start >= start)
@@ -166,29 +244,13 @@ def detect_election_overlap(start, end):
     return False
 
 
-def query_candidates(candidate_id=None, election_id=None, position=None, username=None, display_name=None):
-    thing = None
-    try:
-        thing = election_db.query(elections_model.Candidate)
-        if candidate_id is not None:
-            thing = thing.filter_by(id=str(candidate_id))
-        if election_id is not None:
-            thing = thing.filter_by(election=str(election_id))
-        if position is not None:
-            thing = thing.filter_by(position=str(position))
-        if username is not None:
-            thing = thing.filter_by(username=str(username))
-        if display_name is not None:
-            thing = thing.filter_by(display_name=str(display_name))
-        thing = thing.all()
-    except Exception as e:
-        logger.info(e)
-        election_db.rollback()
-    return thing
-
-
-# Checks to see if election start time is in the past
-def detect_election_start(start, end):
+def detect_election_in_past(start, end):
+    """
+    Checks if an election started and ended in the past.
+    :param start: The start time to check.
+    :param end: The end time to check.
+    :return: Returns True if the election took place in the past and False if not.
+    """
     try:
         if start < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') or \
            end < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'):
@@ -199,8 +261,13 @@ def detect_election_start(start, end):
     return False
 
 
-# detects if the end time is less than start time
-def detect_bad_end(start, end):
+def detect_election_bad_times(start, end):
+    """
+    Checks if an election's start time is greater than its end time.
+    :param start:
+    :param end:
+    :return:
+    """
     try:
         if end < start:
             return True

@@ -29,11 +29,11 @@ def validate_election(parameters):
         raise exceptions.Forbidden403Exception('election takes place during another election')
 
     # checking that election doesn't start time in the past
-    if elections_alchemy.detect_election_start(parameters["start"], parameters["end"]):
+    if elections_alchemy.detect_election_in_past(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('election takes place during the past')
 
     # check that end time isn't less than start time
-    if elections_alchemy.detect_bad_end(parameters["start"], parameters["end"]):
+    if elections_alchemy.detect_election_bad_times(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('start time is after end time')
 
 
@@ -68,8 +68,8 @@ def validate_vote(parameters, existing_vote=None):
 
     # check for duplicate votes
     if parameters['vote'] != getattr(existing_vote, 'vote', None) and \
-            elections_alchemy.query_vote(election=specified_election[0].id,
-                                         position=specified_position[0].id,
+            elections_alchemy.query_vote(election_id=specified_election[0].id,
+                                         position_id=specified_position[0].id,
                                          vote=parameters['vote'],
                                          username=parameters['username']) != list():
         raise exceptions.Forbidden403Exception('you have already voted for this person')
