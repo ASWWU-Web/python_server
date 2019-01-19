@@ -23,6 +23,9 @@ def build_query_params(request_arguments):
 
 
 class VoteHandler(BaseHandler):
+    """
+    List and create endpoints for votes.
+    """
     @tornado.web.authenticated
     def get(self):
         # get current user
@@ -88,6 +91,9 @@ class VoteHandler(BaseHandler):
 
 
 class SpecificVoteHandler(BaseHandler):
+    """
+    Read and update endpoints for votes.
+    """
     @tornado.web.authenticated
     def get(self, vote_id):
         # get current user
@@ -149,6 +155,9 @@ class SpecificVoteHandler(BaseHandler):
 
 
 class ElectionHandler(BaseHandler):
+    """
+    List and create endpoints for elections.
+    """
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -190,6 +199,9 @@ class ElectionHandler(BaseHandler):
 
 
 class SpecifiedElectionHandler(BaseHandler):
+    """
+    Read and update endpoints for elections.
+    """
     def get(self, election_id):
         # get election
         election = elections_alchemy.query_election(election_id=str(election_id))
@@ -234,6 +246,9 @@ class SpecifiedElectionHandler(BaseHandler):
 
 
 class CurrentHandler(BaseHandler):
+    """
+    Read the current election.
+    """
     def get(self):
         # get election
         election = elections_alchemy.query_current_or_upcoming()
@@ -246,6 +261,9 @@ class CurrentHandler(BaseHandler):
 
 
 class PositionHandler(BaseHandler):
+    """
+    List and create endpoints for positions.
+    """
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -283,6 +301,9 @@ class PositionHandler(BaseHandler):
 
 
 class SpecifiedPositionHandler(BaseHandler):
+    """
+    Read and update endpoints for positions.
+    """
     def get(self, position_id):
         # get position
         position = elections_alchemy.query_position(position_id=str(position_id))
@@ -322,6 +343,9 @@ class SpecifiedPositionHandler(BaseHandler):
 
 
 class CandidateHandler(BaseHandler):
+    """
+    List and create endpoints for candidates.
+    """
     def get(self, election_id):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -366,6 +390,9 @@ class CandidateHandler(BaseHandler):
 
 
 class SpecifiedCandidateHandler(BaseHandler):
+    """
+    Read, update, and destroy endpoints for votes.
+    """
     def get(self, election_id, candidate_id):
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
