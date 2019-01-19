@@ -214,64 +214,34 @@ def detect_election_overlap(start, end):
     :return: Returns True if an overlap occurs or False if an overlap does not occur.
     """
     try:
+        # check overlapping start date
         thing = election_db.query(elections_model.Election)
         thing = thing.filter(elections_model.Election.start >= start)
         thing = thing.filter(elections_model.Election.start <= end)
         if len(thing.all()) > 0:
             return True
 
+        # check overlapping end date
         thing = election_db.query(elections_model.Election)
         thing = thing.filter(elections_model.Election.end >= start)
         thing = thing.filter(elections_model.Election.end <= end)
         if len(thing.all()) > 0:
             return True
 
+        # check outside containing dates
         thing = election_db.query(elections_model.Election)
         thing = thing.filter(elections_model.Election.start <= start)
         thing = thing.filter(elections_model.Election.end >= end)
         if len(thing.all()) > 0:
             return True
 
+        # check inside containing dates
         thing = election_db.query(elections_model.Election)
         thing = thing.filter(elections_model.Election.start >= start)
         thing = thing.filter(elections_model.Election.end <= end)
         if len(thing.all()) > 0:
             return True
-
     except Exception as j:
         logger.info(j)
-        election_db.rollback()
-    return False
-
-
-def detect_election_in_past(start, end):
-    """
-    Checks if an election started and ended in the past.
-    :param start: The start time to check.
-    :param end: The end time to check.
-    :return: Returns True if the election took place in the past and False if not.
-    """
-    try:
-        if start < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') or \
-           end < datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'):
-            return True
-    except Exception as j:
-        logger.info(j)
-        election_db.rollback()
-    return False
-
-
-def detect_election_bad_times(start, end):
-    """
-    Checks if an election's start time is greater than its end time.
-    :param start:
-    :param end:
-    :return:
-    """
-    try:
-        if end < start:
-            return True
-    except Exception as i:
-        logger.info(i)
         election_db.rollback()
     return False

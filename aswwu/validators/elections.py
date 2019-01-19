@@ -8,6 +8,9 @@ import aswwu.alchemy_new.mask as mask_alchemy
 import aswwu.exceptions as exceptions
 
 
+datetime_format = '%Y-%m-%d %H:%M:%S.%f'
+
+
 def validate_parameters(given_parameters, required_parameters):
     # check for missing parameters
     for parameter in required_parameters:
@@ -24,16 +27,24 @@ def validate_parameters(given_parameters, required_parameters):
 
 
 def validate_election(parameters):
+    # check if start and end are valid datetime strings
+    try:
+        datetime.strptime(parameters['start'], datetime_format)
+        datetime.strptime(parameters['end'], datetime_format)
+    except ValueError as e:
+        raise exceptions.BadRequest400Exception(e.message)
+
     # check that election doesn't overlap with current or upcoming elections
     if elections_alchemy.detect_election_overlap(parameters["start"], parameters["end"]):
         raise exceptions.Forbidden403Exception('election takes place during another election')
 
-    # checking that election doesn't start time in the past
-    if elections_alchemy.detect_election_in_past(parameters["start"], parameters["end"]):
+    # checking that election doesn't start or end in the past
+    now = datetime.now().strftime(datetime_format)
+    if parameters['start'] < now or parameters['end'] < now:
         raise exceptions.Forbidden403Exception('election takes place during the past')
 
     # check that end time isn't less than start time
-    if elections_alchemy.detect_election_bad_times(parameters["start"], parameters["end"]):
+    if parameters["start"] > parameters["end"]:
         raise exceptions.Forbidden403Exception('start time is after end time')
 
 
