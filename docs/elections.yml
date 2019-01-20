@@ -321,6 +321,22 @@ paths:
           $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/VotePUTBody'
+    delete:
+      summary: Destroy a vote
+      description: Destroy a vote. Only works if the election is still open.
+      tags:
+        - vote
+      security:
+        - cookieAuthentication: []
+      parameters:
+        - $ref: '#/components/parameters/vote_id'
+      responses:
+        '204':
+          $ref: '#/components/responses/204NoContent'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
   '/position':
     get:
       summary: List all positions

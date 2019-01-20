@@ -153,6 +153,28 @@ class SpecificVoteHandler(BaseHandler):
         self.set_status(200)
         self.write(vote.serialize())
 
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def delete(self, vote_id):
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(vote_id))
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        vote = vote[0]
+
+        # get election
+        election = elections_alchemy.query_election(election_id=str(vote.election))[0]
+
+        # dont allow deleting past candidates
+        if election != elections_alchemy.query_current():
+            raise exceptions.Forbidden403Exception('vote not in the current election')
+
+        # delete the vote
+        elections_alchemy.delete(vote)
+
+        # response
+        self.set_status(204)
+
 
 class ElectionHandler(BaseHandler):
     """
@@ -452,9 +474,8 @@ class SpecifiedCandidateHandler(BaseHandler):
         election = election[0]
 
         # dont allow deleting past candidates
-        if election != elections_alchemy.query_current() and \
-                election not in elections_alchemy.query_election(start=datetime.now()):
-            raise exceptions.Forbidden403Exception('candidate not in the current election')
+        if election != elections_alchemy.query_current_or_upcoming():
+            raise exceptions.Forbidden403Exception('candidate not in the current or upcoming election')
 
         # delete the candidate
         elections_alchemy.delete(candidate)
