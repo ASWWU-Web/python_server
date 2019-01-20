@@ -65,8 +65,17 @@ def validate_position(parameters):
     :param parameters: The position's parameters.
     :return: None
     """
+    # check active parameter's type
     if not isinstance(parameters['active'], bool):
         raise exceptions.BadRequest400Exception('parameter active has type bool')
+
+    # check order parameter's type
+    if not isinstance(parameters['order'], int):
+        raise exceptions.BadRequest400Exception('parameter order has type integer')
+
+    # check that order parameter is >= 0
+    if parameters['order'] < 0:
+        raise exceptions.Forbidden403Exception('parameter order must be greater than or equal to 0')
 
 
 def validate_vote(parameters, existing_vote=None):

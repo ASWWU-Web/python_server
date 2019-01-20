@@ -285,7 +285,7 @@ class PositionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('position', 'election_type', 'active')
+        required_parameters = ('position', 'election_type', 'active', 'order')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_position(body_json)
 
@@ -322,7 +322,7 @@ class SpecifiedPositionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('id', 'position', 'election_type', 'active')
+        required_parameters = ('id', 'position', 'election_type', 'active', 'order')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_position(body_json)
 
