@@ -74,7 +74,7 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
       requestBody:
-        $ref: '#/components/requestBodies/ElectionBody'
+        $ref: '#/components/requestBodies/ElectionPOSTBody'
   '/election/{election_id}':
     get:
       summary: Retrieve an election
@@ -115,7 +115,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/ElectionBody'
+        $ref: '#/components/requestBodies/ElectionPUTBody'
   '/election/{election_id}/candidate':
     get:
       summary: List candidates in an election
@@ -212,7 +212,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/CandidateBody'
+        $ref: '#/components/requestBodies/CandidatePUTBody'
     delete:
       summary: Destroy a candidate
       description: Destroy a candidate. Only works if the election is still open.
@@ -284,6 +284,8 @@ paths:
         description: Retrieve a vote.
         tags:
           - vote
+        security:
+          - cookieAuthentication: []
         parameters:
           - $ref: '#/components/parameters/vote_id'
         responses:
@@ -366,7 +368,7 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
       requestBody:
-        $ref: '#/components/requestBodies/PositionBody'
+        $ref: '#/components/requestBodies/PositionPOSTBody'
   '/position/{position_id}':
     get:
       summary: Retrieve a position
@@ -407,7 +409,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/PositionBody'
+        $ref: '#/components/requestBodies/PositionPUTBody'
 components:
   parameters:
     election_id:
@@ -507,11 +509,14 @@ components:
           type: string
         active:
           type: boolean
+        order:
+          type: integer
       example:
         id: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         position: 'Financial VP'
         election_type: 'aswwu'
         active: true
+        order: 3
     Vote:
       type: object
       properties:
@@ -537,7 +542,7 @@ components:
       in: cookie
       name: token
   requestBodies:
-    ElectionBody:
+    ElectionPOSTBody:
       description: A JSON object containing election information.
       required: true
       content:
@@ -558,31 +563,31 @@ components:
               - election_type
               - start
               - end
-    CandidateBody:
-      description: A JSON object containing candidate information.
+    ElectionPUTBody:
+      description: A JSON object containing election information.
       required: true
       content:
         application/x-www-form-urlencoded:
           schema:
             type: object
             properties:
-              election:
-                description: The FK of the election the candidate is participating in.
+              id:
+                description: The ID of the election.
                 type: string
-              position:
-                description: The FK of the position the candidate is running for.
+              election_type:
+                description: The type of election, either senate or aswwu.
                 type: string
-              username:
-                description: The candidate's username.
+              start:
+                description: The opening date and time of the election.
                 type: string
-              display_name:
-                description: The candidate's display name.
+              end:
+                description: The closing date and time of the election.
                 type: string
             required:
-              - election
-              - position
-              - username
-              - display_name
+              - id
+              - election_type
+              - start
+              - end
     CandidatePOSTBody:
       description: A JSON object containing candidate information.
       required: true
@@ -604,7 +609,36 @@ components:
               - position
               - username
               - display_name
-    PositionBody:
+    CandidatePUTBody:
+      description: A JSON object containing candidate information.
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the candidate.
+                type: string
+              election:
+                description: The FK of the election the candidate is participating in.
+                type: string
+              position:
+                description: The FK of the position the candidate is running for.
+                type: string
+              username:
+                description: The candidate's username.
+                type: string
+              display_name:
+                description: The candidate's display name.
+                type: string
+            required:
+              - id
+              - election
+              - position
+              - username
+              - display_name
+    PositionPOSTBody:
       description: A JSON object containing position information.
       required: true
       content:
@@ -621,35 +655,43 @@ components:
               active:
                 description: The availability of the position.
                 type: boolean
+              order:
+                description: The order of the position.
+                type: integer
             required:
               - position
               - election_type
               - active
-    VoteBody:
-      description: A JSON object containing vote information.
+              - order
+    PositionPUTBody:
+      description: A JSON object containing position information.
       required: true
       content:
         application/x-www-form-urlencoded:
           schema:
             type: object
             properties:
-              election:
-                description: The FK of the election the vote is for.
+              id:
+                description: The ID of the position.
                 type: string
               position:
-                description: The position of the person being voted for.
+                description: The name of the position.
+                type: string
+              election_type:
+                description: The type of election, either senate or aswwu.
+                type: string
+              active:
+                description: The availability of the position.
+                type: boolean
+              order:
+                description: The order of the position.
                 type: integer
-              vote:
-                description: The username of the candidate being voted for. This must be a valid username.
-                type: string
-              username:
-                description: The user's username.
-                type: string
             required:
-              - election
+              - id
               - position
-              - vote
-              - username
+              - election_type
+              - active
+              - order
     VotePOSTBody:
       description: A JSON object containing vote information.
       required: true

@@ -106,7 +106,7 @@ def query_position(position_id=None, position=None, election_type=None, active=N
             thing = thing.filter_by(active=True)
         elif active == 'false':
             thing = thing.filter_by(active=False)
-        thing = thing.all()
+        thing = thing.order_by(elections_model.Position.order).all()
     except Exception as e:
         logger.info(e)
         election_db.rollback()

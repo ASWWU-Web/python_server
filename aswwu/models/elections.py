@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean, Integer
 
 from aswwu.models.bases import ElectionBase
 
@@ -21,6 +21,7 @@ class Position(ElectionBase):
     position = Column(String(100))
     election_type = Column(String(10))
     active = Column(Boolean)
+    order = Column(Integer)
 
     def serialize(self):
         return {
@@ -28,6 +29,7 @@ class Position(ElectionBase):
             'position': self.position,
             'election_type': self.election_type,
             'active': self.active,
+            'order': self.order
         }
 
 
