@@ -474,9 +474,8 @@ class SpecifiedCandidateHandler(BaseHandler):
         election = election[0]
 
         # dont allow deleting past candidates
-        if election != elections_alchemy.query_current() and \
-                election not in elections_alchemy.query_election(start=datetime.now()):
-            raise exceptions.Forbidden403Exception('candidate not in the current election')
+        if election != elections_alchemy.query_current_or_upcoming():
+            raise exceptions.Forbidden403Exception('candidate not in the current or upcoming election')
 
         # delete the candidate
         elections_alchemy.delete(candidate)
