@@ -170,6 +170,26 @@ paths:
           $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/CandidatePOSTBody'
+  '/election/{election_id}/count':
+    get:
+      summary: Tally all votes for an election
+      description: Tally all votes for an election.
+      tags:
+        - election
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+      responses:
+        '200':
+          description: The votes were successfully tallied.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VoteCount'
   '/election/{election_id}/candidate/{candidate_id}':
     get:
       summary: Retrieve a candidate
@@ -552,6 +572,25 @@ components:
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         vote: 'sheldon.woodward'
         username: 'stephen.ermshar'
+    VoteCount:
+      type: object
+      properties:
+        position:
+          type: string
+        votes:
+          type: array
+          items:
+            type: object
+            properties:
+              candidate:
+                type: string
+              votes:
+                type: integer
+      example:
+        position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
+        votes:
+          candidate: 'sheldon.woodward'
+          votes: 10
   securitySchemes:
     cookieAuthentication:
       type: apiKey
