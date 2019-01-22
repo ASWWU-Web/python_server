@@ -102,9 +102,9 @@ def query_position(position_id=None, position=None, election_type=None, active=N
             thing = thing.filter_by(position=str(position))
         if election_type is not None:
             thing = thing.filter_by(election_type=str(election_type))
-        if active == 'true':
+        if active == 'true' or active is True:
             thing = thing.filter_by(active=True)
-        elif active == 'false':
+        elif active == 'false' or active is False:
             thing = thing.filter_by(active=False)
         thing = thing.order_by(elections_model.Position.order).all()
     except Exception as e:
@@ -245,3 +245,28 @@ def detect_election_overlap(start, end):
         logger.info(j)
         election_db.rollback()
     return False
+
+
+def count_votes(election_id, position_id):
+    """
+    Queries the database and tallies votes for every user in the specified election and position.
+    :param election_id: The election to tally votes for.
+    :param position_id: The position to tally votes for.
+    :return: Returns a list of dictionaries each containing the candidate's username and number of votes.
+    """
+    totals = list()
+    # iterate over all unique usernames as votes
+    for vote_username in election_db.query(elections_model.Vote.vote) \
+            .filter_by(election=str(election_id), position=str(position_id)) \
+            .distinct():
+        # count all votes for the username
+        num_votes = election_db.query(elections_model.Vote) \
+            .filter_by(election=str(election_id), position=str(position_id), vote=vote_username[0]) \
+            .count()
+        # add vote count object to the list
+        count_dict = {
+            'candidate': vote_username[0],
+            'votes': num_votes
+        }
+        totals.append(count_dict)
+    return totals

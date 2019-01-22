@@ -97,6 +97,7 @@ class Application(tornado.web.Application):
             (r"/elections/position", elections.PositionHandler),
             (r"/elections/position/(.*)", elections.SpecifiedPositionHandler),
             (r"/elections/election", elections.ElectionHandler),
+            (r"/elections/election/(.*)/count", elections.VoteCountHandler),
             (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
             (r"/elections/current", elections.CurrentHandler),
         ]

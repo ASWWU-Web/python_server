@@ -482,3 +482,29 @@ class SpecifiedCandidateHandler(BaseHandler):
 
         # response
         self.set_status(204)
+
+
+class VoteCountHandler(BaseHandler):
+    """
+    Read endpoint for counting votes.
+    """
+    def get(self, election_id):
+        # get election
+        election = elections_alchemy.query_election(election_id=election_id)
+        if election == list():
+            raise exceptions.NotFound404Exception('election with specified ID not found')
+        election = election[0]
+
+        # count votes for each position
+        position_totals = list()
+        for position in elections_alchemy.query_position(election_type=election.election_type, active=True):
+            # add each position to the totals
+            position_summary = {
+                'position': position.id,
+                'votes': elections_alchemy.count_votes(election_id, position.id)
+            }
+            position_totals.append(position_summary)
+
+        # response
+        self.set_status(200)
+        self.write({'positions': [position for position in position_totals]})
