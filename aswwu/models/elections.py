@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean, Integer
 
 from aswwu.models.bases import ElectionBase
@@ -11,12 +13,15 @@ class Election(ElectionBase):
 
     def serialize(self):
         # determine if show_results field should be cast to a string
-        show_results = None if self.show_results is None else str(self.show_results)
+        if self.show_results is not None:
+            show_results = datetime.strftime(self.show_results, '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            show_results = None
         return {
             'id': self.id,
             'election_type': self.election_type,
-            'start': str(self.start),
-            'end': str(self.end),
+            'start': datetime.strftime(self.start, '%Y-%m-%d %H:%M:%S.%f'),
+            'end': datetime.strftime(self.end, '%Y-%m-%d %H:%M:%S.%f'),
             'show_results': show_results,
         }
 
