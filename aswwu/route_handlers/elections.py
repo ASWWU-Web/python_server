@@ -205,14 +205,14 @@ class ElectionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('election_type', 'start', 'end')
+        required_parameters = ('election_type', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
         # create new election
         election = elections_model.Election()
         for parameter in required_parameters:
-            if parameter in ("start", "end"):
+            if parameter in ('start', 'end', 'show_results'):
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:
@@ -254,13 +254,13 @@ class SpecifiedElectionHandler(BaseHandler):
         election = election[0]
 
         # validate parameters
-        required_parameters = ('id', 'election_type', 'start', 'end')
+        required_parameters = ('id', 'election_type', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
         # update election
         for parameter in required_parameters:
-            if parameter in ("start", "end"):
+            if parameter in ('start', 'end', 'show_results'):
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:
