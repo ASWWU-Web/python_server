@@ -212,7 +212,10 @@ class ElectionHandler(BaseHandler):
         # create new election
         election = elections_model.Election()
         for parameter in required_parameters:
-            if parameter in ('start', 'end', 'show_results'):
+            if parameter in ('start', 'end'):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(election, parameter, d)
+            elif parameter == 'show_results' and body_json[parameter] is not None:
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:

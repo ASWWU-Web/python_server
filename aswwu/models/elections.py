@@ -10,12 +10,14 @@ class Election(ElectionBase):
     show_results = Column(DateTime)
 
     def serialize(self):
+        # determine if show_results field should be cast to a string
+        show_results = None if self.show_results is None else str(self.show_results)
         return {
             'id': self.id,
             'election_type': self.election_type,
             'start': str(self.start),
             'end': str(self.end),
-            'show_results': str(self.show_results),
+            'show_results': show_results,
         }
 
 
