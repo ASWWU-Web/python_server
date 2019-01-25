@@ -5,7 +5,7 @@ from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.exceptions as exceptions
-from aswwu.permissions import permission_and, elections_permission
+from aswwu.permissions import permission_and, admin_permission, elections_permission
 
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.models.elections as elections_model
@@ -26,6 +26,7 @@ class VoteHandler(BaseHandler):
     """
     List and create endpoints for votes.
     """
+
     @tornado.web.authenticated
     def get(self):
         # get current user
@@ -94,6 +95,7 @@ class SpecificVoteHandler(BaseHandler):
     """
     Read and update endpoints for votes.
     """
+
     @tornado.web.authenticated
     def get(self, vote_id):
         # get current user
@@ -131,7 +133,8 @@ class SpecificVoteHandler(BaseHandler):
             exceptions.Forbidden403Exception('there is currently no open election')
 
         # get vote
-        vote = elections_alchemy.query_vote(vote_id=vote_id, election_id=current_election.id, username=str(user.username))
+        vote = elections_alchemy.query_vote(vote_id=vote_id, election_id=current_election.id,
+                                            username=str(user.username))
         if vote == list():
             raise exceptions.NotFound404Exception('vote with specified ID not found')
         vote = vote[0]
@@ -180,6 +183,7 @@ class ElectionHandler(BaseHandler):
     """
     List and create endpoints for elections.
     """
+
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -224,6 +228,7 @@ class SpecifiedElectionHandler(BaseHandler):
     """
     Read and update endpoints for elections.
     """
+
     def get(self, election_id):
         # get election
         election = elections_alchemy.query_election(election_id=str(election_id))
@@ -271,6 +276,7 @@ class CurrentHandler(BaseHandler):
     """
     Read the current election.
     """
+
     def get(self):
         # get election
         election = elections_alchemy.query_current_or_upcoming()
@@ -286,6 +292,7 @@ class PositionHandler(BaseHandler):
     """
     List and create endpoints for positions.
     """
+
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -326,6 +333,7 @@ class SpecifiedPositionHandler(BaseHandler):
     """
     Read and update endpoints for positions.
     """
+
     def get(self, position_id):
         # get position
         position = elections_alchemy.query_position(position_id=str(position_id))
@@ -368,6 +376,7 @@ class CandidateHandler(BaseHandler):
     """
     List and create endpoints for candidates.
     """
+
     def get(self, election_id):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -415,6 +424,7 @@ class SpecifiedCandidateHandler(BaseHandler):
     """
     Read, update, and destroy endpoints for votes.
     """
+
     def get(self, election_id, candidate_id):
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
@@ -488,12 +498,23 @@ class VoteCountHandler(BaseHandler):
     """
     Read endpoint for counting votes.
     """
+
     def get(self, election_id):
         # get election
         election = elections_alchemy.query_election(election_id=election_id)
         if election == list():
             raise exceptions.NotFound404Exception('election with specified ID not found')
         election = election[0]
+
+        # check if there is a visible date or if the user has permissions
+        if election.show_results is None:
+            if admin_permission not in self.current_user.roles and \
+                    elections_permission not in self.current_user.roles:
+                raise exceptions.Forbidden403Exception('you do not have permission to do this')
+
+        # check if the results are available yet
+        elif election.show_results > datetime.now():
+            raise exceptions.Forbidden403Exception('the election results are not available yet')
 
         # count votes for each position
         position_totals = list()

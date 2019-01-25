@@ -7,6 +7,7 @@ class Election(ElectionBase):
     election_type = Column(String(10))
     start = Column(DateTime)
     end = Column(DateTime)
+    show_results = Column(DateTime)
 
     def serialize(self):
         return {
@@ -14,6 +15,7 @@ class Election(ElectionBase):
             'election_type': self.election_type,
             'start': str(self.start),
             'end': str(self.end),
+            'show_results': str(self.show_results),
         }
 
 
