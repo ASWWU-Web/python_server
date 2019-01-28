@@ -503,21 +503,19 @@ class VoteCountHandler(BaseHandler):
     """
 
     def get(self, election_id):
+        # get current user
+        user = self.current_user
+
         # get election
         election = elections_alchemy.query_election(election_id=election_id)
         if election == list():
             raise exceptions.NotFound404Exception('election with specified ID not found')
         election = election[0]
 
-        # check if there is a visible date or if the user has permissions
-        if election.show_results is None:
-            if admin_permission not in self.current_user.roles and \
-                    elections_permission not in self.current_user.roles:
-                raise exceptions.Forbidden403Exception('you do not have permission to do this')
-
-        # check if the results are available yet
-        elif election.show_results > datetime.now():
-            raise exceptions.Forbidden403Exception('the election results are not available yet')
+        # check if results should not be sent
+        is_admin = user is not None and (admin_permission in user.roles or elections_permission in user.roles)
+        if not is_admin and (election.show_results is None or datetime.now() < election.show_results):
+            raise exceptions.Forbidden403Exception('results are not available for this election')
 
         # count votes for each position
         position_totals = list()
