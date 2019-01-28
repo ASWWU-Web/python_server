@@ -510,11 +510,14 @@ components:
           type: string
         end:
           type: string
+        show_results:
+          type: string
       example:
         id: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
         election_type: 'aswwu'
         start: '2018-11-05 08:00:00.000000'
         end: '2018-11-05 20:00:00.000000'
+        show_results: '2018-12-01 20:00:00.000000'
     Candidate:
       type: object
       properties:
@@ -601,7 +604,7 @@ components:
       description: A JSON object containing election information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -614,15 +617,19 @@ components:
               end:
                 description: The closing date and time of the election.
                 type: string
+              show_results:
+                description: The date and time that election reults will be available. Can be null if results are never to be shown.
+                type: string
             required:
               - election_type
               - start
               - end
+              - show_results
     ElectionPUTBody:
       description: A JSON object containing election information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -638,16 +645,20 @@ components:
               end:
                 description: The closing date and time of the election.
                 type: string
+              show_results:
+                description: The date and time that election reults will be available. Can be null if results are never to be shown.
+                type: string
             required:
               - id
               - election_type
               - start
               - end
+              - show_results
     CandidatePOSTBody:
       description: A JSON object containing candidate information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -668,7 +679,7 @@ components:
       description: A JSON object containing candidate information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -697,7 +708,7 @@ components:
       description: A JSON object containing position information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -722,7 +733,7 @@ components:
       description: A JSON object containing position information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -751,7 +762,7 @@ components:
       description: A JSON object containing vote information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -772,7 +783,7 @@ components:
       description: A JSON object containing vote information.
       required: true
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:

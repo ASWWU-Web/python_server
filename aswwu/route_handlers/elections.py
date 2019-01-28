@@ -5,7 +5,7 @@ from datetime import datetime
 
 from aswwu.base_handlers import BaseHandler
 import aswwu.exceptions as exceptions
-from aswwu.permissions import permission_and, elections_permission
+from aswwu.permissions import permission_and, admin_permission, elections_permission
 
 import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.models.elections as elections_model
@@ -26,6 +26,7 @@ class VoteHandler(BaseHandler):
     """
     List and create endpoints for votes.
     """
+
     @tornado.web.authenticated
     def get(self):
         # get current user
@@ -94,6 +95,7 @@ class SpecificVoteHandler(BaseHandler):
     """
     Read and update endpoints for votes.
     """
+
     @tornado.web.authenticated
     def get(self, vote_id):
         # get current user
@@ -131,7 +133,8 @@ class SpecificVoteHandler(BaseHandler):
             exceptions.Forbidden403Exception('there is currently no open election')
 
         # get vote
-        vote = elections_alchemy.query_vote(vote_id=vote_id, election_id=current_election.id, username=str(user.username))
+        vote = elections_alchemy.query_vote(vote_id=vote_id, election_id=current_election.id,
+                                            username=str(user.username))
         if vote == list():
             raise exceptions.NotFound404Exception('vote with specified ID not found')
         vote = vote[0]
@@ -180,6 +183,7 @@ class ElectionHandler(BaseHandler):
     """
     List and create endpoints for elections.
     """
+
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -201,14 +205,17 @@ class ElectionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('election_type', 'start', 'end')
+        required_parameters = ('election_type', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
         # create new election
         election = elections_model.Election()
         for parameter in required_parameters:
-            if parameter in ("start", "end"):
+            if parameter in ('start', 'end'):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(election, parameter, d)
+            elif parameter == 'show_results' and body_json[parameter] is not None:
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:
@@ -224,6 +231,7 @@ class SpecifiedElectionHandler(BaseHandler):
     """
     Read and update endpoints for elections.
     """
+
     def get(self, election_id):
         # get election
         election = elections_alchemy.query_election(election_id=str(election_id))
@@ -249,13 +257,13 @@ class SpecifiedElectionHandler(BaseHandler):
         election = election[0]
 
         # validate parameters
-        required_parameters = ('id', 'election_type', 'start', 'end')
+        required_parameters = ('id', 'election_type', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
         # update election
         for parameter in required_parameters:
-            if parameter in ("start", "end"):
+            if parameter in ('start', 'end', 'show_results'):
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:
@@ -271,6 +279,7 @@ class CurrentHandler(BaseHandler):
     """
     Read the current election.
     """
+
     def get(self):
         # get election
         election = elections_alchemy.query_current_or_upcoming()
@@ -286,6 +295,7 @@ class PositionHandler(BaseHandler):
     """
     List and create endpoints for positions.
     """
+
     def get(self):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -326,6 +336,7 @@ class SpecifiedPositionHandler(BaseHandler):
     """
     Read and update endpoints for positions.
     """
+
     def get(self, position_id):
         # get position
         position = elections_alchemy.query_position(position_id=str(position_id))
@@ -368,6 +379,7 @@ class CandidateHandler(BaseHandler):
     """
     List and create endpoints for candidates.
     """
+
     def get(self, election_id):
         # build query parameter dict
         search_criteria = build_query_params(self.request.arguments)
@@ -415,6 +427,7 @@ class SpecifiedCandidateHandler(BaseHandler):
     """
     Read, update, and destroy endpoints for votes.
     """
+
     def get(self, election_id, candidate_id):
         # get candidate
         candidate = elections_alchemy.query_candidates(election_id=str(election_id), candidate_id=str(candidate_id))
@@ -488,12 +501,21 @@ class VoteCountHandler(BaseHandler):
     """
     Read endpoint for counting votes.
     """
+
     def get(self, election_id):
+        # get current user
+        user = self.current_user
+
         # get election
         election = elections_alchemy.query_election(election_id=election_id)
         if election == list():
             raise exceptions.NotFound404Exception('election with specified ID not found')
         election = election[0]
+
+        # check if results should not be sent
+        is_admin = user is not None and (admin_permission in user.roles or elections_permission in user.roles)
+        if not is_admin and (election.show_results is None or datetime.now() < election.show_results):
+            raise exceptions.Forbidden403Exception('results are not available for this election')
 
         # count votes for each position
         position_totals = list()
