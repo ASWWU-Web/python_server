@@ -206,39 +206,44 @@ def query_candidates(candidate_id=None, election_id=None, position_id=None, user
     return thing
 
 
-def detect_election_overlap(start, end):
+def detect_election_overlap(start, end, existing_election=None):
     """
     Queries the database for an election that has overlapping times with the specified times.
     :param start: The start date to check for.
     :param end: The end date to check for.
+    :param existing_election: The election that is being updated. Used to prevent detecting sel overlaps.
     :return: Returns True if an overlap occurs or False if an overlap does not occur.
     """
     try:
         # check overlapping start date
-        thing = election_db.query(elections_model.Election)
-        thing = thing.filter(elections_model.Election.start >= start)
-        thing = thing.filter(elections_model.Election.start <= end)
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.start >= start) \
+            .filter(elections_model.Election.start <= end) \
+            .filter(elections_model.Election.id != getattr(existing_election, 'id', None))
         if len(thing.all()) > 0:
             return True
 
         # check overlapping end date
-        thing = election_db.query(elections_model.Election)
-        thing = thing.filter(elections_model.Election.end >= start)
-        thing = thing.filter(elections_model.Election.end <= end)
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.end >= start) \
+            .filter(elections_model.Election.end <= end) \
+            .filter(elections_model.Election.id != getattr(existing_election, 'id', None))
         if len(thing.all()) > 0:
             return True
 
         # check outside containing dates
-        thing = election_db.query(elections_model.Election)
-        thing = thing.filter(elections_model.Election.start <= start)
-        thing = thing.filter(elections_model.Election.end >= end)
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.start <= start) \
+            .filter(elections_model.Election.end >= end) \
+            .filter(elections_model.Election.id != getattr(existing_election, 'id', None))
         if len(thing.all()) > 0:
             return True
 
         # check inside containing dates
-        thing = election_db.query(elections_model.Election)
-        thing = thing.filter(elections_model.Election.start >= start)
-        thing = thing.filter(elections_model.Election.end <= end)
+        thing = election_db.query(elections_model.Election) \
+            .filter(elections_model.Election.start >= start) \
+            .filter(elections_model.Election.end <= end) \
+            .filter(elections_model.Election.id != getattr(existing_election, 'id', None))
         if len(thing.all()) > 0:
             return True
     except Exception as j:

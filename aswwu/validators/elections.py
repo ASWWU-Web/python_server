@@ -32,10 +32,11 @@ def validate_parameters(given_parameters, required_parameters):
         raise exceptions.BadRequest400Exception('election_type is not aswwu or senate')
 
 
-def validate_election(parameters):
+def validate_election(parameters, existing_election=None):
     """
     Validate an election's parameters based on constraints.
     :param parameters: The election's parameters.
+    :param existing_election: An existing election to not compare against during validation.
     :return: None
     """
     # check if start and end are valid datetime strings
@@ -45,18 +46,20 @@ def validate_election(parameters):
     except ValueError as e:
         raise exceptions.BadRequest400Exception(e.message)
 
-    # check that election doesn't overlap with current or upcoming elections
-    if elections_alchemy.detect_election_overlap(parameters["start"], parameters["end"]):
-        raise exceptions.Forbidden403Exception('election takes place during another election')
-
     # checking that election doesn't start or end in the past
     now = datetime.now().strftime(datetime_format)
     if parameters['start'] < now or parameters['end'] < now:
         raise exceptions.Forbidden403Exception('election takes place during the past')
 
     # check that end time isn't less than start time
-    if parameters["start"] > parameters["end"]:
+    print(parameters['start'])
+    print(parameters['end'])
+    if parameters['start'] > parameters['end']:
         raise exceptions.Forbidden403Exception('start time is after end time')
+
+    # check that election doesn't overlap with current or upcoming elections
+    if elections_alchemy.detect_election_overlap(parameters["start"], parameters["end"], existing_election):
+        raise exceptions.Forbidden403Exception('election takes place during another election')
 
 
 def validate_position(parameters):

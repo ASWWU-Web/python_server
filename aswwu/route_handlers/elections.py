@@ -259,11 +259,14 @@ class SpecifiedElectionHandler(BaseHandler):
         # validate parameters
         required_parameters = ('id', 'election_type', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
-        elections_validator.validate_election(body_json)
+        elections_validator.validate_election(body_json, election)
 
         # update election
         for parameter in required_parameters:
-            if parameter in ('start', 'end', 'show_results'):
+            if parameter in ('start', 'end'):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(election, parameter, d)
+            elif parameter == 'show_results' and body_json[parameter] is not None:
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
                 setattr(election, parameter, d)
             else:
