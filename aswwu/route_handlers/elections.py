@@ -190,8 +190,8 @@ class ElectionHandler(BaseHandler):
 
         # get election
         elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
-                                                     start=search_criteria.get('start', None),
-                                                     end=search_criteria.get('end', None))
+                                                     start_after=search_criteria.get('start', None),
+                                                     end_before=search_criteria.get('end', None))
 
         # response
         self.set_status(200)

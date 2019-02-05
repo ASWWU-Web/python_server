@@ -113,13 +113,16 @@ def query_position(position_id=None, position=None, election_type=None, active=N
     return thing
 
 
-def query_election(election_id=None, election_type=None, start=None, end=None):
+def query_election(election_id=None, election_type=None, start_before=None,
+                   start_after=None, end_before=None, end_after=None):
     """
     Queries the database for elections matching the specified parameters.
     :param election_id: A specific election ID to query.
     :param election_type: The election type to filter by.
-    :param start: The minimum start date to filter by.
-    :param end: The maximum end date to filter by.
+    :param start_before: The maximum start date to filter by.
+    :param start_after: The minimum start date to filter by.
+    :param end_before: The maximum end date to filter by.
+    :param end_after: The minimum end date to filter by.
     :return: Returns a list of all matched objects in the query.
     """
     thing = None
@@ -127,10 +130,14 @@ def query_election(election_id=None, election_type=None, start=None, end=None):
         thing = election_db.query(elections_model.Election)
         if election_type is not None:
             thing = thing.filter_by(election_type=str(election_type))
-        if start is not None:
-            thing = thing.filter(elections_model.Election.start >= start)
-        if end is not None:
-            thing = thing.filter(elections_model.Election.end <= end)
+        if start_before is not None:
+            thing = thing.filter(elections_model.Election.start <= start_before)
+        if start_after is not None:
+            thing = thing.filter(elections_model.Election.start >= start_after)
+        if end_before is not None:
+            thing = thing.filter(elections_model.Election.end <= end_before)
+        if end_after is not None:
+            thing = thing.filter(elections_model.Election.end >= end_before)
         if election_id is not None:
             thing = thing.filter_by(id=election_id)
         thing = thing.all()
