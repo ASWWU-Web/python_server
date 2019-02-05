@@ -31,15 +31,27 @@ paths:
         - election
       parameters:
         - $ref: '#/components/parameters/election_type_query'
-        - name: start
+        - name: start_before
           in: query
-          description: The start date and time to filter by.
+          description: The maximum start date and time to filter by.
           required: false
           schema:
             type: string
-        - name: end
+        - name: start_after
           in: query
-          description: The end date and time to filter by.
+          description: The minimum start date and time to filter by.
+          required: false
+          schema:
+            type: string
+        - name: end_before
+          in: query
+          description: The maximum end date and time to filter by.
+          required: false
+          schema:
+            type: string
+        - name: end_after
+          in: query
+          description: The minimum end date and time to filter by.
           required: false
           schema:
             type: string
