@@ -134,7 +134,7 @@ def validate_candidate(parameters):
 
     # check to make sure election is either current or up and coming
     if election != elections_alchemy.query_current() and \
-            election not in elections_alchemy.query_election(start=datetime.now()):
+            election not in elections_alchemy.query_election(start_after=datetime.now()):
         raise exceptions.Forbidden403Exception('candidate not in current election')
 
     # check to makes sure position exists
