@@ -47,6 +47,7 @@ class Application(tornado.web.Application):
             (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
             (r"/role/administrator", mask.AdministratorRoleHandler),
             (r"/role/volunteer", volunteers.VolunteerRoleHandler),
+            (r"/search/names", mask.SearchNamesFast),
             (r"/search/all", mask.SearchAllHandler),
             (r"/search/(.*)/(.*)", mask.SearchHandler),
             (r"/update/(.*)", mask.ProfileUpdateHandler),
@@ -55,8 +56,6 @@ class Application(tornado.web.Application):
             (r"/feed", instagram.FeedHandler),
             (r"/verify", base.BaseVerifyLoginHandler),
             (r"/", base.BaseIndexHandler),
-            (r"/senate_election/vote/(.*)", elections.ElectionSenateVoteHandler),
-            (r"/senate_election/candidate/(.*)", elections.ElectionSenateCandidateHandler),
             (r"/saml/account/", saml.SamlHandler),
             (r"/matcher", mask.MatcherHandler),
             (r"/forms/job/new", forms.NewFormHandler),
@@ -91,6 +90,16 @@ class Application(tornado.web.Application):
             (r"/pages/media/static/(.*)", froala.LoadImageHandler),
             (r"/pages/(.*)", pages.GetHandler),
             (r"/homepage/open_forum", homepage.OpenForumHandler),
+            (r"/elections/vote", elections.VoteHandler),
+            (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
+            (r"/elections/election/(.*)/candidate", elections.CandidateHandler),
+            (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler),
+            (r"/elections/position", elections.PositionHandler),
+            (r"/elections/position/(.*)", elections.SpecifiedPositionHandler),
+            (r"/elections/election", elections.ElectionHandler),
+            (r"/elections/election/(.*)/count", elections.VoteCountHandler),
+            (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
+            (r"/elections/current", elections.CurrentHandler),
         ]
 
         # a bunch of setup stuff

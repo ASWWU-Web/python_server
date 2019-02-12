@@ -1,35 +1,74 @@
-import datetime
+from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, String, DateTime, Integer
+from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean, Integer
 
 from aswwu.models.bases import ElectionBase
 
 
-class Vote(ElectionBase):
-    username = Column(String(100), nullable=False)
-    district = Column(String(50))
-    vote_1 = Column(String(50))
-    vote_2 = Column(String(50))
-    write_in_1 = Column(String(50))
-    write_in_2 = Column(String(50))
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now)
+class Election(ElectionBase):
+    election_type = Column(String(10))
+    start = Column(DateTime)
+    end = Column(DateTime)
+    show_results = Column(DateTime)
 
-    # return those who have voted
-    def voters(self):
-        return self.to_json(limitList=['username'])
+    def serialize(self):
+        # determine if show_results field should be cast to a string
+        if self.show_results is not None:
+            show_results = datetime.strftime(self.show_results, '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            show_results = None
+        return {
+            'id': self.id,
+            'election_type': self.election_type,
+            'start': datetime.strftime(self.start, '%Y-%m-%d %H:%M:%S.%f'),
+            'end': datetime.strftime(self.end, '%Y-%m-%d %H:%M:%S.%f'),
+            'show_results': show_results,
+        }
 
-    def base_info(self):
-        return self.to_json(limitList=['username', 'updated_at'])
 
-
-class Candidate(ElectionBase):
-    username = Column(String(250), nullable=False)
-    full_name = Column(String(250))
-    district = Column(Integer)
+class Position(ElectionBase):
+    position = Column(String(100))
+    election_type = Column(String(10))
+    active = Column(Boolean)
+    order = Column(Integer)
 
     def serialize(self):
         return {
+            'id': self.id,
+            'position': self.position,
+            'election_type': self.election_type,
+            'active': self.active,
+            'order': self.order
+        }
+
+
+class Vote(ElectionBase):
+    election = Column(String(100), ForeignKey('elections.id'))
+    position = Column(String(100), ForeignKey('positions.id'))
+    vote = Column(String(100))
+    username = Column(String(100))
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'election': self.election,
+            'position': self.position,
+            'vote': self.vote,
             'username': self.username,
-            'full_name': self.full_name,
-            'district': self.district,
+        }
+
+
+class Candidate(ElectionBase):
+    election = Column(String(100), ForeignKey('elections.id'))
+    position = Column(String(100), ForeignKey('positions.id'))
+    username = Column(String(100))
+    display_name = Column(String(100))
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'election': self.election,
+            'position': self.position,
+            'username': self.username,
+            'display_name': self.display_name,
         }
