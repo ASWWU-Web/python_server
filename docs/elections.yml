@@ -604,8 +604,8 @@ components:
       example:
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         votes:
-          candidate: 'sheldon.woodward'
-          votes: 10
+          - candidate: 'sheldon.woodward'
+            votes: 10
   securitySchemes:
     cookieAuthentication:
       type: apiKey
