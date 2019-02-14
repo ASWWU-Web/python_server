@@ -190,6 +190,8 @@ class ElectionHandler(BaseHandler):
 
         # get election
         elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
+                                                     name=search_criteria.get('name', None),
+                                                     max_votes=search_criteria.get('max_votes', None),
                                                      start_before=search_criteria.get('start_before', None),
                                                      start_after=search_criteria.get('start_after', None),
                                                      end_before=search_criteria.get('end_before', None),
@@ -207,7 +209,7 @@ class ElectionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('election_type', 'start', 'end', 'show_results')
+        required_parameters = ('election_type', 'name', 'max_votes', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
@@ -259,7 +261,7 @@ class SpecifiedElectionHandler(BaseHandler):
         election = election[0]
 
         # validate parameters
-        required_parameters = ('id', 'election_type', 'start', 'end', 'show_results')
+        required_parameters = ('id', 'election_type', 'name', 'max_votes', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json, election)
 
