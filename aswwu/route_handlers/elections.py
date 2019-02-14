@@ -68,16 +68,12 @@ class VoteHandler(BaseHandler):
         # check for too many votes
         specified_election = elections_alchemy.query_election(election_id=body_json['election'])
         specified_position = elections_alchemy.query_position(position_id=body_json['position'])
-        if specified_election[0].election_type == 'aswwu' and \
-                len(elections_alchemy.query_vote(election_id=specified_election[0].id,
-                                                 position_id=specified_position[0].id,
-                                                 username=str(user.username))) >= 1:
-            raise exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
-        elif specified_election[0].election_type == 'senate' and \
-                len(elections_alchemy.query_vote(election_id=specified_election[0].id,
-                                                 position_id=specified_position[0].id,
-                                                 username=str(user.username))) >= 2:
-            raise exceptions.Forbidden403Exception('you can only vote for two senators')
+        if len(elections_alchemy.query_vote(election_id=specified_election[0].id,
+                                            position_id=specified_position[0].id,
+                                            username=str(user.username))) >= specified_election[0].max_votes:
+            raise exceptions.Forbidden403Exception(
+                'you may only cast {} vote/s'.format(str(specified_election[0].max_votes))
+            )
 
         # create new vote
         vote = elections_model.Vote()
