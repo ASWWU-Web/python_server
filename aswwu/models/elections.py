@@ -10,6 +10,8 @@ class Election(ElectionBase):
     start = Column(DateTime)
     end = Column(DateTime)
     show_results = Column(DateTime)
+    name = Column(String(100))
+    max_votes = Column(Integer)
 
     def serialize(self):
         # determine if show_results field should be cast to a string
@@ -23,6 +25,8 @@ class Election(ElectionBase):
             'start': datetime.strftime(self.start, '%Y-%m-%d %H:%M:%S.%f'),
             'end': datetime.strftime(self.end, '%Y-%m-%d %H:%M:%S.%f'),
             'show_results': show_results,
+            'name': self.name,
+            'max_votes': self.max_votes
         }
 
 
