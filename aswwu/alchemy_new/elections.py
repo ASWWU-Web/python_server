@@ -113,12 +113,14 @@ def query_position(position_id=None, position=None, election_type=None, active=N
     return thing
 
 
-def query_election(election_id=None, election_type=None, start_before=None,
-                   start_after=None, end_before=None, end_after=None):
+def query_election(election_id=None, election_type=None, name=None, max_votes=None,
+                   start_before=None, start_after=None, end_before=None, end_after=None):
     """
     Queries the database for elections matching the specified parameters.
     :param election_id: A specific election ID to query.
     :param election_type: The election type to filter by.
+    :param name: The name to filter by.
+    :param max_votes: The max_votes value to filter by.
     :param start_before: The maximum start date to filter by.
     :param start_after: The minimum start date to filter by.
     :param end_before: The maximum end date to filter by.
@@ -128,8 +130,14 @@ def query_election(election_id=None, election_type=None, start_before=None,
     thing = None
     try:
         thing = election_db.query(elections_model.Election)
+        if election_id is not None:
+            thing = thing.filter_by(id=election_id)
         if election_type is not None:
             thing = thing.filter_by(election_type=str(election_type))
+        if name is not None:
+            thing = thing.filter_by(name=str(name))
+        if max_votes is not None:
+            thing = thing.filter_by(max_votes=max_votes)
         if start_before is not None:
             thing = thing.filter(elections_model.Election.start <= start_before)
         if start_after is not None:
@@ -138,8 +146,6 @@ def query_election(election_id=None, election_type=None, start_before=None,
             thing = thing.filter(elections_model.Election.end <= end_before)
         if end_after is not None:
             thing = thing.filter(elections_model.Election.end >= end_before)
-        if election_id is not None:
-            thing = thing.filter_by(id=election_id)
         thing = thing.all()
     except Exception as e:
         logger.info(e)

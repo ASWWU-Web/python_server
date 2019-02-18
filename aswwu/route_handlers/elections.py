@@ -68,16 +68,12 @@ class VoteHandler(BaseHandler):
         # check for too many votes
         specified_election = elections_alchemy.query_election(election_id=body_json['election'])
         specified_position = elections_alchemy.query_position(position_id=body_json['position'])
-        if specified_election[0].election_type == 'aswwu' and \
-                len(elections_alchemy.query_vote(election_id=specified_election[0].id,
-                                                 position_id=specified_position[0].id,
-                                                 username=str(user.username))) >= 1:
-            raise exceptions.Forbidden403Exception('you can only vote for one aswwu representative')
-        elif specified_election[0].election_type == 'senate' and \
-                len(elections_alchemy.query_vote(election_id=specified_election[0].id,
-                                                 position_id=specified_position[0].id,
-                                                 username=str(user.username))) >= 2:
-            raise exceptions.Forbidden403Exception('you can only vote for two senators')
+        if len(elections_alchemy.query_vote(election_id=specified_election[0].id,
+                                            position_id=specified_position[0].id,
+                                            username=str(user.username))) >= specified_election[0].max_votes:
+            raise exceptions.Forbidden403Exception(
+                'you may only cast {} vote/s'.format(str(specified_election[0].max_votes))
+            )
 
         # create new vote
         vote = elections_model.Vote()
@@ -190,6 +186,8 @@ class ElectionHandler(BaseHandler):
 
         # get election
         elections = elections_alchemy.query_election(election_type=search_criteria.get('election_type', None),
+                                                     name=search_criteria.get('name', None),
+                                                     max_votes=search_criteria.get('max_votes', None),
                                                      start_before=search_criteria.get('start_before', None),
                                                      start_after=search_criteria.get('start_after', None),
                                                      end_before=search_criteria.get('end_before', None),
@@ -207,7 +205,7 @@ class ElectionHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('election_type', 'start', 'end', 'show_results')
+        required_parameters = ('election_type', 'name', 'max_votes', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json)
 
@@ -259,7 +257,7 @@ class SpecifiedElectionHandler(BaseHandler):
         election = election[0]
 
         # validate parameters
-        required_parameters = ('id', 'election_type', 'start', 'end', 'show_results')
+        required_parameters = ('id', 'election_type', 'name', 'max_votes', 'start', 'end', 'show_results')
         elections_validator.validate_parameters(body_json, required_parameters)
         elections_validator.validate_election(body_json, election)
 

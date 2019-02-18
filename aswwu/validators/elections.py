@@ -61,6 +61,10 @@ def validate_election(parameters, existing_election=None):
     if elections_alchemy.detect_election_overlap(parameters["start"], parameters["end"], existing_election):
         raise exceptions.Forbidden403Exception('election takes place during another election')
 
+    # check that max_votes is at least one
+    if int(parameters['max_votes']) < 1:
+        raise exceptions.Forbidden403Exception('max_votes must be at least one')
+
 
 def validate_position(parameters):
     """

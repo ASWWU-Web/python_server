@@ -7,6 +7,8 @@ from aswwu.models.bases import ElectionBase
 
 class Election(ElectionBase):
     election_type = Column(String(10))
+    name = Column(String(100))
+    max_votes = Column(Integer)
     start = Column(DateTime)
     end = Column(DateTime)
     show_results = Column(DateTime)
@@ -20,9 +22,11 @@ class Election(ElectionBase):
         return {
             'id': self.id,
             'election_type': self.election_type,
+            'name': self.name,
+            'max_votes': self.max_votes,
             'start': datetime.strftime(self.start, '%Y-%m-%d %H:%M:%S.%f'),
             'end': datetime.strftime(self.end, '%Y-%m-%d %H:%M:%S.%f'),
-            'show_results': show_results,
+            'show_results': show_results
         }
 
 

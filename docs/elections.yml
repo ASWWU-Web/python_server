@@ -31,6 +31,8 @@ paths:
         - election
       parameters:
         - $ref: '#/components/parameters/election_type_query'
+        - $ref: '#/components/parameters/name_query'
+        - $ref: '#/components/parameters/max_votes_query'
         - name: start_before
           in: query
           description: The maximum start date and time to filter by.
@@ -496,6 +498,20 @@ components:
       schema:
         type: string
         enum: [senate, aswwu]
+    name_query:
+      name: name
+      in: query
+      description: The election name to filter by.
+      required: false
+      schema:
+        type: string
+    max_votes_query:
+      name: max_votes
+      in: query
+      description: The number of votes to filter by.
+      required: false
+      schema:
+        type: string
     position_query:
       name: position
       in: query
@@ -518,6 +534,10 @@ components:
           type: string
         election_type:
           type: string
+        name:
+          type: string
+        max_votes:
+          type: integer
         start:
           type: string
         end:
@@ -527,6 +547,8 @@ components:
       example:
         id: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
         election_type: 'aswwu'
+        name: 'Primaries'
+        max_votes: 2
         start: '2018-11-05 08:00:00.000000'
         end: '2018-11-05 20:00:00.000000'
         show_results: '2018-12-01 20:00:00.000000'
@@ -604,8 +626,8 @@ components:
       example:
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         votes:
-          candidate: 'sheldon.woodward'
-          votes: 10
+          - candidate: 'sheldon.woodward'
+            votes: 10
   securitySchemes:
     cookieAuthentication:
       type: apiKey
@@ -623,6 +645,12 @@ components:
               election_type:
                 description: The type of election, either senate or aswwu.
                 type: string
+              name:
+                description: The name of the election.
+                type: string
+              max_votes:
+                description: The maximum number of votes allowed in the election, must be greater than one.
+                type: integer
               start:
                 description: The opening date and time of the election.
                 type: string
@@ -634,6 +662,8 @@ components:
                 type: string
             required:
               - election_type
+              - name
+              - max_votes
               - start
               - end
               - show_results
@@ -651,6 +681,12 @@ components:
               election_type:
                 description: The type of election, either senate or aswwu.
                 type: string
+              name:
+                description: The name of the election.
+                type: string
+              max_votes:
+                description: The maximum number of votes allowed in the election, must be greater than one.
+                type: integer
               start:
                 description: The opening date and time of the election.
                 type: string
@@ -663,6 +699,8 @@ components:
             required:
               - id
               - election_type
+              - name
+              - max_votes
               - start
               - end
               - show_results
