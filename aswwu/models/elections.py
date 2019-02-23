@@ -51,6 +51,7 @@ class Vote(ElectionBase):
     position = Column(String(100), ForeignKey('positions.id'))
     vote = Column(String(100))
     username = Column(String(100))
+    manual_entry = Column(String(100), default=None)
 
     def serialize(self):
         return {
@@ -59,6 +60,16 @@ class Vote(ElectionBase):
             'position': self.position,
             'vote': self.vote,
             'username': self.username,
+        }
+
+    def serialize_ballot(self):
+        return {
+            'id': self.id,
+            'election': self.election,
+            'position': self.position,
+            'vote': self.vote,
+            'username': self.username,
+            'manual_entry': self.manual_entry
         }
 
 
