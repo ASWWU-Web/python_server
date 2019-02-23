@@ -361,6 +361,7 @@ paths:
         - vote
       parameters:
         - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/vote_query'
       security:
         - cookieAuthentication: []
       responses:
@@ -469,6 +470,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/election_id'
         - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/vote_query'
       security:
         - cookieAuthentication: []
       responses:
@@ -604,6 +606,13 @@ components:
       name: position
       in: query
       description: The position UUID to filter by.
+      required: false
+      schema:
+        type: string
+    vote_query:
+      name: vote
+      in: query
+      description: The vote username to filter by.
       required: false
       schema:
         type: string
