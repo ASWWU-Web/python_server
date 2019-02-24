@@ -179,7 +179,7 @@ class SpecificVoteHandler(BaseHandler):
 
 class BallotHandler(BaseHandler):
     """
-    Read and update endpoints for manual vote entry.
+    List and create endpoints for manual vote entry.
     """
 
     @tornado.web.authenticated
@@ -253,6 +253,26 @@ class BallotHandler(BaseHandler):
         # response
         self.set_status(201)
         self.write(vote.serialize_ballot())
+
+
+class SpecifiedBallotHandler(BaseHandler):
+    """
+    Read and update endpoints for manual vote entry.
+    """
+
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def get(self, election_id, ballot_id):
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(ballot_id), election_id=election_id, manual_entry=True)
+
+        # validate vote ID
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+
+        # response
+        self.set_status(200)
+        self.write(vote[0].serialize_ballot())
 
 
 class ElectionHandler(BaseHandler):

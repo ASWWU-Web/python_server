@@ -93,7 +93,7 @@ class Application(tornado.web.Application):
             (r"/elections/vote", elections.VoteHandler),
             (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
             (r"/elections/election/(.*)/ballot", elections.BallotHandler),
-            # (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler),
+            (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler),
             (r"/elections/election/(.*)/candidate", elections.CandidateHandler),
             (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler),
             (r"/elections/position", elections.PositionHandler),
