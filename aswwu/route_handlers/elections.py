@@ -274,6 +274,23 @@ class SpecifiedBallotHandler(BaseHandler):
         self.set_status(200)
         self.write(vote[0].serialize_ballot())
 
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def delete(self, election_id, ballot_id):
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(ballot_id), election_id=election_id, manual_entry=True)
+
+        # validate vote ID
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        vote = vote[0]
+
+        # delete the candidate
+        elections_alchemy.delete(vote)
+
+        # response
+        self.set_status(204)
+
 
 class ElectionHandler(BaseHandler):
     """
