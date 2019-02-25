@@ -717,7 +717,7 @@ components:
           type: string
         position:
           type: string
-        username:
+        student_id:
           type: string
         manual_entry:
           type: string
@@ -726,7 +726,7 @@ components:
         election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         vote: 'sheldon.woodward'
-        username: 'stephen.ermshar'
+        student_id: '1234567'
         manual_entry: 'kaden.sukachevin'
     VoteCount:
       type: object
