@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean, Integer
 
 from aswwu.models.bases import ElectionBase
+import aswwu.alchemy_new.mask as mask_alchemy
 
 
 class Election(ElectionBase):
@@ -63,12 +64,13 @@ class Vote(ElectionBase):
         }
 
     def serialize_ballot(self):
+        student_id = mask_alchemy.query_by_username(self.username).wwuid
         return {
             'id': self.id,
             'election': self.election,
             'position': self.position,
             'vote': self.vote,
-            'username': self.username,
+            'student_id': student_id,
             'manual_entry': self.manual_entry
         }
 
