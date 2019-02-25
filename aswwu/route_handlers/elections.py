@@ -8,7 +8,9 @@ import aswwu.exceptions as exceptions
 from aswwu.permissions import permission_and, admin_permission, elections_permission
 
 import aswwu.alchemy_new.elections as elections_alchemy
+import aswwu.alchemy_new.mask as mask_alchemy
 import aswwu.models.elections as elections_model
+import aswwu.models.mask as mask_model
 import aswwu.validators.elections as elections_validator
 
 
@@ -169,6 +171,120 @@ class SpecificVoteHandler(BaseHandler):
             raise exceptions.Forbidden403Exception('vote not in the current election')
 
         # delete the vote
+        elections_alchemy.delete(vote)
+
+        # response
+        self.set_status(204)
+
+
+class BallotHandler(BaseHandler):
+    """
+    List and create endpoints for manual vote entry.
+    """
+
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def get(self, election_id):
+        # build query parameter dict
+        search_criteria = build_query_params(self.request.arguments)
+
+        # get the specified election
+        specified_election = elections_alchemy.query_election(election_id=str(election_id))
+        if specified_election == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        specified_election = specified_election[0]
+
+        # get votes
+        votes = elections_alchemy.query_vote(election_id=specified_election.id,
+                                             position_id=search_criteria.get('position', None),
+                                             vote=search_criteria.get('vote', None),
+                                             manual_entry=True)
+
+        # response
+        self.set_status(200)
+        self.write({'ballots': [v.serialize_ballot() for v in votes]})
+
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def post(self, election_id):
+        # get current user
+        user = self.current_user
+
+        # load request body
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+
+        # validate parameters
+        required_parameters = ('election', 'position', 'student_id', 'vote')
+        elections_validator.validate_parameters(body_json, required_parameters)
+
+        # get student username from student ID
+        voter = mask_alchemy.query_by_wwuid(mask_model.User, body_json['student_id'])
+        if voter == list():
+            raise exceptions.NotFound404Exception('user with specified student ID not found')
+        voter = voter[0]
+
+        # build proper vote from ballot data and validate it
+        body_json['election'] = str(election_id)
+        body_json['username'] = str(voter.username)
+        body_json['manual_entry'] = str(user.username)
+        elections_validator.validate_ballot(body_json)
+
+        # check for too many votes
+        specified_election = elections_alchemy.query_election(election_id=body_json['election'])
+        specified_position = elections_alchemy.query_position(position_id=body_json['position'])
+        if len(elections_alchemy.query_vote(election_id=specified_election[0].id,
+                                            position_id=specified_position[0].id,
+                                            username=str(voter.username))) >= specified_election[0].max_votes:
+            raise exceptions.Forbidden403Exception(
+                'this user has already cast {} vote/s'.format(str(specified_election[0].max_votes))
+            )
+
+        # create new vote
+        vote = elections_model.Vote()
+        for parameter in required_parameters:
+            if parameter != 'student_id':
+                setattr(vote, parameter, body_json[parameter])
+        setattr(vote, 'username', str(voter.username))
+        setattr(vote, 'manual_entry', str(user.username))
+        elections_alchemy.add_or_update(vote)
+
+        # response
+        self.set_status(201)
+        self.write(vote.serialize_ballot())
+
+
+class SpecifiedBallotHandler(BaseHandler):
+    """
+    Read and update endpoints for manual vote entry.
+    """
+
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def get(self, election_id, ballot_id):
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(ballot_id), election_id=election_id, manual_entry=True)
+
+        # validate vote ID
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+
+        # response
+        self.set_status(200)
+        self.write(vote[0].serialize_ballot())
+
+    @tornado.web.authenticated
+    @permission_and(elections_permission)
+    def delete(self, election_id, ballot_id):
+        # get vote
+        vote = elections_alchemy.query_vote(vote_id=str(ballot_id), election_id=election_id, manual_entry=True)
+
+        # validate vote ID
+        if vote == list():
+            raise exceptions.NotFound404Exception('vote with specified ID not found')
+        vote = vote[0]
+
+        # delete the candidate
         elections_alchemy.delete(vote)
 
         # response

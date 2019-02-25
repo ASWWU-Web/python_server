@@ -54,7 +54,7 @@ def delete(thing):
         election_db.rollback()
 
 
-def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, username=None):
+def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, username=None, manual_entry=None):
     """
     Queries the database for votes matching the specified parameters.
     :param vote_id: A specific vote ID to query.
@@ -62,6 +62,8 @@ def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, user
     :param position_id: The position ID to filter by.
     :param vote: The vote to filter by.
     :param username: The username to filter by.
+    :param manual_entry: Either boolean or a string. If boolean, will query all records that do or do not have manual
+    entries. If string, will find all matching manual entries.
     :return: Returns a list of all matching objects in the query.
     """
     thing = None
@@ -77,6 +79,16 @@ def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, user
             thing = thing.filter_by(vote=str(vote))
         if username is not None:
             thing = thing.filter_by(username=str(username))
+        if manual_entry is not None:
+            if isinstance(manual_entry, bool) and manual_entry:
+                thing = thing.filter(elections_model.Vote.manual_entry != None).\
+                    order_by(elections_model.Vote.updated_at.desc())
+            elif isinstance(manual_entry, bool) and not manual_entry:
+                thing = thing.filter(elections_model.Vote.manual_entry == None).\
+                    order_by(elections_model.Vote.updated_at.desc())
+            elif isinstance(manual_entry, str):
+                thing = thing.filter_by(manual_entry=str(manual_entry)).\
+                    order_by(elections_model.Vote.updated_at.desc())
         thing = thing.all()
     except Exception as e:
         logger.info(e)

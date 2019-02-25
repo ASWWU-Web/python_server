@@ -7,7 +7,6 @@ import aswwu.alchemy_new.elections as elections_alchemy
 import aswwu.alchemy_new.mask as mask_alchemy
 import aswwu.exceptions as exceptions
 
-
 datetime_format = '%Y-%m-%d %H:%M:%S.%f'
 
 
@@ -122,6 +121,38 @@ def validate_vote(parameters, existing_vote=None):
                                          vote=parameters['vote'],
                                          username=parameters['username']) != list():
         raise exceptions.Forbidden403Exception('you have already voted for this person')
+
+
+def validate_ballot(parameters):
+    """
+    Validate a ballot's parameters based on constraints.
+    :param parameters: The ballot's parameters.
+    :return: None
+    """
+    # check if election exists
+    specified_election = elections_alchemy.query_election(election_id=parameters['election'])
+    if specified_election == list():
+        raise exceptions.NotFound404Exception('election with specified ID not found')
+
+    # check if position exists and is active
+    specified_position = elections_alchemy.query_position(position_id=parameters['position'])
+    if specified_position == list() or specified_position[0].active is False:
+        raise exceptions.Forbidden403Exception('position with specified ID not found')
+
+    # check if position is the right election type
+    if specified_position[0].election_type != specified_election[0].election_type:
+        raise exceptions.Forbidden403Exception('you are creating a vote for a position in a different election type')
+
+    # check for valid candidate username
+    if mask_alchemy.query_by_username(parameters['vote']) is None:
+        raise exceptions.Forbidden403Exception('you cannot create a vote for this candidate')
+
+    # check for duplicate votes
+    if elections_alchemy.query_vote(election_id=specified_election[0].id,
+                                    position_id=specified_position[0].id,
+                                    vote=parameters['vote'],
+                                    username=parameters['username']) != list():
+        raise exceptions.Forbidden403Exception('this candidate has already been voted for by this user')
 
 
 def validate_candidate(parameters):

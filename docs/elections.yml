@@ -130,6 +130,115 @@ paths:
           $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/ElectionPUTBody'
+  '/election/{election_id}/count':
+    get:
+      summary: Tally all votes for an election
+      description: Tally all votes for an election.
+      tags:
+        - election
+      parameters:
+        - $ref: '#/components/parameters/election_id'
+      responses:
+        '200':
+          description: The votes were successfully tallied.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VoteCount'
+  '/position':
+    get:
+      summary: List all positions
+      description: List all positions. They can be filtered by query parameters to narrow the list.
+      tags:
+        - position
+      parameters:
+        - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/election_type_query'
+        - name: active
+          in: query
+          description: Filter positions by their active status.
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: The positions were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Position'
+    post:
+      summary: Create a position
+      description: Create a position.
+      tags:
+        - position
+      security:
+        - cookieAuthentication: []
+      responses:
+        '201':
+          description: The position was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+      requestBody:
+        $ref: '#/components/requestBodies/PositionPOSTBody'
+  '/position/{position_id}':
+    get:
+      summary: Retrieve a position
+      description: Retrieve a position.
+      tags:
+        - position
+      parameters:
+        - $ref: '#/components/parameters/position_id'
+      responses:
+        '200':
+          description: The position was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      summary: Update a position
+      description: Update a position.
+      tags:
+        - position
+      security:
+        - cookieAuthentication: []
+      parameters:
+        - $ref: '#/components/parameters/position_id'
+      responses:
+        '200':
+          description: The position was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/PositionPUTBody'
   '/election/{election_id}/candidate':
     get:
       summary: List candidates in an election
@@ -184,26 +293,6 @@ paths:
           $ref: '#/components/responses/404NotFound'
       requestBody:
         $ref: '#/components/requestBodies/CandidatePOSTBody'
-  '/election/{election_id}/count':
-    get:
-      summary: Tally all votes for an election
-      description: Tally all votes for an election.
-      tags:
-        - election
-      parameters:
-        - $ref: '#/components/parameters/election_id'
-      responses:
-        '200':
-          description: The votes were successfully tallied.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  positions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/VoteCount'
   '/election/{election_id}/candidate/{candidate_id}':
     get:
       summary: Retrieve a candidate
@@ -272,6 +361,7 @@ paths:
         - vote
       parameters:
         - $ref: '#/components/parameters/position_query'
+        - $ref: '#/components/parameters/vote_query'
       security:
         - cookieAuthentication: []
       responses:
@@ -371,95 +461,95 @@ paths:
           $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
-  '/position':
+  '/election/{election_id}/ballot':
     get:
-      summary: List all positions
-      description: List all positions. They can be filtered by query parameters to narrow the list.
+      summary: Retrieve all manually entered votes in the specified election
+      description: Retrieve all manually entered votes in the specified election.
       tags:
-        - position
+        - ballot
       parameters:
+        - $ref: '#/components/parameters/election_id'
         - $ref: '#/components/parameters/position_query'
-        - $ref: '#/components/parameters/election_type_query'
-        - name: active
-          in: query
-          description: Filter positions by their active status.
-          required: false
-          schema:
-            type: string
-            enum: ['true', 'false']
+        - $ref: '#/components/parameters/vote_query'
+      security:
+        - cookieAuthentication: []
       responses:
         '200':
-          description: The positions were retrieved successfully.
+          description: The manually entered votes were retrieved successfully.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  positions:
+                  ballots:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Position'
+                      $ref: '#/components/schemas/Ballot'
+        '401':
+          $ref: '#/components/responses/401NotAuthenticated'
     post:
-      summary: Create a position
-      description: Create a position.
+      summary: Create a manually entered vote for the specified election
+      description: Create a manually entered vote for the specified election.
       tags:
-        - position
+        - ballot
+      parameters:
+        - $ref: '#/components/parameters/election_id'
       security:
         - cookieAuthentication: []
       responses:
         '201':
-          description: The position was created successfully.
+          description: The manually entered vote was created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Position'
+                $ref: '#/components/schemas/Ballot'
         '400':
           $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthenticated'
         '403':
           $ref: '#/components/responses/403Forbidden'
-      requestBody:
-        $ref: '#/components/requestBodies/PositionPOSTBody'
-  '/position/{position_id}':
-    get:
-      summary: Retrieve a position
-      description: Retrieve a position.
-      tags:
-        - position
-      parameters:
-        - $ref: '#/components/parameters/position_id'
-      responses:
-        '200':
-          description: The position was retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Position'
         '404':
           $ref: '#/components/responses/404NotFound'
-    put:
-      summary: Update a position
-      description: Update a position.
+      requestBody:
+        $ref: '#/components/requestBodies/BallotPOSTBody'
+  '/election/{election_id}/ballot/{vote_id}':
+    get:
+        summary: Retrieve a manually entered vote
+        description: Retrieve a manually entered vote.
+        tags:
+          - ballot
+        security:
+          - cookieAuthentication: []
+        parameters:
+          - $ref: '#/components/parameters/election_id'
+          - $ref: '#/components/parameters/vote_id'
+        responses:
+          '200':
+            description: The manually entered vote was retrieved successfully.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Ballot'
+          '404':
+            $ref: '#/components/responses/404NotFound'
+    delete:
+      summary: Destroy a manually entered vote
+      description: Destroy a manually entered vote.
       tags:
-        - position
+        - ballot
       security:
         - cookieAuthentication: []
       parameters:
-        - $ref: '#/components/parameters/position_id'
+        - $ref: '#/components/parameters/election_id'
+        - $ref: '#/components/parameters/vote_id'
       responses:
-        '200':
-          description: The position was updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Position'
-        '400':
-          $ref: '#/components/responses/400BadRequest'
+        '204':
+          $ref: '#/components/responses/204NoContent'
         '403':
           $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
-      requestBody:
-        $ref: '#/components/requestBodies/PositionPUTBody'
 components:
   parameters:
     election_id:
@@ -516,6 +606,13 @@ components:
       name: position
       in: query
       description: The position UUID to filter by.
+      required: false
+      schema:
+        type: string
+    vote_query:
+      name: vote
+      in: query
+      description: The vote username to filter by.
       required: false
       schema:
         type: string
@@ -609,6 +706,28 @@ components:
         position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
         vote: 'sheldon.woodward'
         username: 'stephen.ermshar'
+    Ballot:
+      type: object
+      properties:
+        id:
+          type: string
+        election:
+          type: string
+        vote:
+          type: string
+        position:
+          type: string
+        student_id:
+          type: string
+        manual_entry:
+          type: string
+      example:
+        id: '383f7395-2bc0-4f6b-80e6-ef1d742024e3'
+        election: 'e7c5c84f-0a58-4f3b-8490-14ee0737d96f'
+        position: '7c336bd7-7e21-4a81-a4c2-bc076852611c'
+        vote: 'sheldon.woodward'
+        student_id: '1234567'
+        manual_entry: 'kaden.sukachevin'
     VoteCount:
       type: object
       properties:
@@ -821,7 +940,7 @@ components:
                 type: string
               position:
                 description: The position of the person being voted for.
-                type: integer
+                type: string
               vote:
                 description: The username of the candidate being voted for. This must be a valid username.
                 type: string
@@ -845,7 +964,7 @@ components:
                 type: string
               position:
                 description: The position of the person being voted for.
-                type: integer
+                type: string
               vote:
                 description: The username of the candidate being voted for. This must be a valid username.
                 type: string
@@ -858,6 +977,30 @@ components:
               - position
               - vote
               - username
+    BallotPOSTBody:
+      description: A JSON object containing manual vote information.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              election:
+                description: The FK of the election the vote is for.
+                type: string
+              position:
+                description: The position of the person being voted for.
+                type: string
+              student_id:
+                description: The student ID of the voter.
+                type: string
+              vote:
+                description: The username of the candidate being voted for. This does not have to be an actual username
+                type: string
+            required:
+              - election
+              - position
+              - vote
   responses:
     204NoContent:
       description: The request completed successfully and has no response body.
