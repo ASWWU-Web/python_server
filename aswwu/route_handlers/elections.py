@@ -228,7 +228,6 @@ class BallotHandler(BaseHandler):
         body_json['election'] = str(election_id)
         body_json['username'] = str(voter.username)
         body_json['manual_entry'] = str(user.username)
-        print(body_json['manual_entry'])
         elections_validator.validate_ballot(body_json)
 
         # check for too many votes
@@ -236,7 +235,7 @@ class BallotHandler(BaseHandler):
         specified_position = elections_alchemy.query_position(position_id=body_json['position'])
         if len(elections_alchemy.query_vote(election_id=specified_election[0].id,
                                             position_id=specified_position[0].id,
-                                            username=str(user.username))) >= specified_election[0].max_votes:
+                                            username=str(voter.username))) >= specified_election[0].max_votes:
             raise exceptions.Forbidden403Exception(
                 'this user has already cast {} vote/s'.format(str(specified_election[0].max_votes))
             )
