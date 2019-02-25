@@ -81,11 +81,14 @@ def query_vote(vote_id=None, election_id=None, position_id=None, vote=None, user
             thing = thing.filter_by(username=str(username))
         if manual_entry is not None:
             if isinstance(manual_entry, bool) and manual_entry:
-                thing = thing.filter(elections_model.Vote.manual_entry != None)
+                thing = thing.filter(elections_model.Vote.manual_entry != None).\
+                    order_by(elections_model.Vote.updated_at.desc())
             elif isinstance(manual_entry, bool) and not manual_entry:
-                thing = thing.filter(elections_model.Vote.manual_entry == None)
+                thing = thing.filter(elections_model.Vote.manual_entry == None).\
+                    order_by(elections_model.Vote.updated_at.desc())
             elif isinstance(manual_entry, str):
-                thing = thing.filter_by(manual_entry=str(manual_entry))
+                thing = thing.filter_by(manual_entry=str(manual_entry)).\
+                    order_by(elections_model.Vote.updated_at.desc())
         thing = thing.all()
     except Exception as e:
         logger.info(e)
