@@ -163,8 +163,31 @@ class Archive0607(ArchiveBase):
 
 
 def get_archive_model(archive_year):
-    return eval("Archive" + str(archive_year))
+    if archive_year == '0607':
+        return Archive0607
+    elif archive_year == '0708':
+        return Archive0708
+    elif archive_year == '0809':
+        return Archive0809
+    elif archive_year == '0910':
+        return Archive0910
+    elif archive_year == '1011':
+        return Archive1011
+    elif archive_year == '1112':
+        return Archive1112
+    elif archive_year == '1213':
+        return Archive1213
+    elif archive_year == '1314':
+        return Archive1314
+    elif archive_year == '1415':
+        return Archive1415
+    elif archive_year == '1516':
+        return Archive1516
+    elif archive_year == '1617':
+        return Archive1617
+    elif archive_year == '1718':
+        return Archive1718
 
 
-for year in ["1718","1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
+for year in ["1718", "1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
     set_archive_columns(get_archive_model(year))
