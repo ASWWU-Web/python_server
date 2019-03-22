@@ -7,13 +7,15 @@ RUN adduser -S tornado
 WORKDIR /home/tornado
 
 # only copy the files needed to run the server
-COPY ./requirements.txt .
+COPY ./Pipfile .
+COPY ./Pipfile.lock .
 COPY ./server.py .
 COPY ./settings.py .
 COPY ./aswwu .
 
-# install the python dependencies and delete the alpine build dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# install pipenv and python dependencies
+RUN pip install --no-cache-dir pipenv && \
+    pipenv install --system --deploy
 
 # expose the tornado server port
 EXPOSE 8888

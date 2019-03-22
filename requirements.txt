@@ -1,5 +1,0 @@
-inflect
-requests
-SQLAlchemy
-tornado
-bleach
