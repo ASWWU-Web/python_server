@@ -4,7 +4,7 @@ import logging
 import uuid
 
 import six
-from pattern.en import pluralize
+from pattern.text.en import pluralize
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 

@@ -1,4 +1,4 @@
-pattern==2.6
+pattern
 requests
 SQLAlchemy
 tornado
