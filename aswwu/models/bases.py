@@ -4,12 +4,12 @@ import logging
 import uuid
 
 import six
-from pattern.text.en import pluralize
+import inflect
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 logger = logging.getLogger("aswwu")
-
+inflect_engine = inflect.engine()
 
 # create a UUID generator function
 def uuid_gen():
@@ -21,7 +21,7 @@ class Base(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -67,7 +67,7 @@ class ElectionBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -105,7 +105,7 @@ class PagesBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -144,7 +144,7 @@ class JobsBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
