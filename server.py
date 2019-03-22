@@ -18,11 +18,11 @@ if __name__ == "__main__":
 
     server, event_loop_thread = application.start_server()
 
-    print 'services running, press ctrl+c to stop'
+    print('services running, press ctrl+c to stop')
     try:
         while True:
-            raw_input('')
+            input('')
     except KeyboardInterrupt:
-        print 'stopping services...'
+        print('stopping services...')
         application.stop_server(server, event_loop_thread)
         exit(0)

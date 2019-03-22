@@ -100,7 +100,7 @@ def start_server():
     event_loop_thread = threading.Thread(target=tornado.ioloop.IOLoop.current().start)
     event_loop_thread.daemon = True
     event_loop_thread.start()
-    print 'The Tornado IOLoop thread has started.'
+    print('The Tornado IOLoop thread has started.')
     return server, event_loop_thread
 
 
