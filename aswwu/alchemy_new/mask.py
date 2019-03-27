@@ -1,6 +1,7 @@
 # mask.py
 
 import logging
+from os import getenv
 
 from sqlalchemy import create_engine, func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +9,6 @@ from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
-
 
 MaskBase = base.MaskBase
 ElectionBase = base.ElectionBase
@@ -18,7 +18,11 @@ JobsBase = base.JobsBase
 logger = logging.getLogger("aswwu")
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine('mysql+pymysql://sheldon:password@127.0.0.1/server')
+engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}'.format(getenv('DB_USER'),
+                                                               getenv('DB_PASSWORD'),
+                                                               getenv('DB_IP', '127.0.0.1'),
+                                                               getenv('DB_PORT', '3306'),
+                                                               getenv('DB_NAME')))
 connection = engine.connect()
 
 # bind instances of the databases to corresponding variables
@@ -78,7 +82,8 @@ def search_profile_names(query, limit=0):
         # print('hello')
         thing = people_db.query(mask_model.Profile) \
             .with_entities(mask_model.Profile.username, mask_model.Profile.full_name) \
-            .filter(or_(mask_model.Profile.full_name. ilike("%" + query + "%"), mask_model.Profile.username. ilike("%" + query + "%"))) \
+            .filter(or_(mask_model.Profile.full_name.ilike("%" + query + "%"),
+                        mask_model.Profile.username.ilike("%" + query + "%"))) \
             .order_by(mask_model.Profile.full_name) \
             .limit(limit) \
             .all()
@@ -86,6 +91,7 @@ def search_profile_names(query, limit=0):
         logger.info(e)
         people_db.rollback()
     return thing
+
 
 def multiple_criteria_generator(key, criteria):
     for status in criteria.split(","):
@@ -113,7 +119,7 @@ def search_profiles(search_criteria):
         thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
             filter(search_statement). \
             join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed).\
+            group_by(mask_model.ProfileView.viewed). \
             order_by(desc("views"))
     except Exception as e:
         logger.info(e)

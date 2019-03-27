@@ -10,12 +10,6 @@ The dependency packages need to be installed and they can be installed with the 
 $ pipenv install
 ```
 
-If pip has errors building mysqlclient on Mac, run the following commands to allow the compiling to run successfully:
-```
-$ export LDFLAGS="-L/usr/local/opt/openssl/lib"
-$ export CPPFLAGS="-I/usr/local/opt/openssl/include"
-```
-
 Then you need to get a copy of the settings file. To do this, run the following command:
 ```
 $ scp user@aswwu.com:/data/python_server/settings.py ./
@@ -30,6 +24,9 @@ $ git clone user@aswwu.com:/data/databases
 ```
 The python library looks for the database file in `../databases` so make sure you clone the database repository into
 the correct place.
+
+You will also need to setup a `.env` file. Copy the `.env.sample` file and fill in the connection info. Pipenv will 
+load the environment variables on startup.
 
 ## Running
 
