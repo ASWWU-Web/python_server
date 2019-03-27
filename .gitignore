@@ -1,7 +1,6 @@
 *.pyc
 *.log
 *.db
-settings.py
 *.xml
 .idea/
 .DS_Store
