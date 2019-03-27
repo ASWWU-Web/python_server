@@ -17,7 +17,7 @@ def uuid_gen():
 
 
 # define a base model for all other models
-class Base(object):
+class MaskBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
@@ -60,7 +60,7 @@ class Base(object):
         return obj
 
 
-Base = declarative_base(cls=Base)
+MaskBase = declarative_base(cls=MaskBase)
 
 
 class ElectionBase(object):

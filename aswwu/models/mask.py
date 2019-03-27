@@ -1,11 +1,11 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 
-from aswwu.models.bases import Base
+from aswwu.models.bases import MaskBase
 
 
 # you guessed it, our generic User model
-class User(Base):
+class User(MaskBase):
     wwuid = Column(String(7), unique=True)
     username = Column(String(250), nullable=False, unique=True)
     full_name = Column(String(250))
@@ -14,7 +14,7 @@ class User(Base):
 
 
 # table for profile data
-class Profile(Base):
+class Profile(MaskBase):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250), CheckConstraint('LENGTH(username) < 250'), unique=True)
     full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
@@ -76,7 +76,7 @@ class Profile(Base):
                                        'department', 'office', 'office_hours'])
 
 
-class ProfileView(Base):
+class ProfileView(MaskBase):
     viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
     viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
     last_viewed = Column(DateTime)

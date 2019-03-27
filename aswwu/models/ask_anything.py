@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 import aswwu.models.bases as base
 
-Base = declarative_base(cls=base.Base)
+Base = declarative_base(cls=base.MaskBase)
 
 
 class AskAnything(Base):

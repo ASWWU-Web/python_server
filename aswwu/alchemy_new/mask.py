@@ -10,7 +10,7 @@ import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
 
 
-Base = base.Base
+MaskBase = base.MaskBase
 ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
@@ -22,12 +22,12 @@ engine = create_engine('mysql+pymysql://sheldon:password@127.0.0.1/server')
 connection = engine.connect()
 
 # bind instances of the databases to corresponding variables
-Base.metadata.bind = connection
+MaskBase.metadata.bind = connection
 dbs = sessionmaker(bind=connection)
 people_db = dbs()
 
 # create the model tables if they don't already exist
-Base.metadata.create_all()
+MaskBase.metadata.create_all()
 
 
 # updates a model, or creates it if it doesn't exist
