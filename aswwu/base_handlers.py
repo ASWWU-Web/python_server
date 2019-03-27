@@ -73,7 +73,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # creates an HMAC digest that is a hexadecimal hash based on a provided message
     def generate_hmac_digest(self, message):
         secret = self.application.settings['secret_key']
-        signature = hmac.new(secret, message, digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(secret, message.encode('utf8'), digestmod=hashlib.sha256).hexdigest()
         return signature
 
     # create a authorization token for the given WWUID based on the current time
