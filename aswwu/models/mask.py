@@ -1,16 +1,13 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, func
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 
-import aswwu.models.bases as base
-
-Base = declarative_base(cls=base.Base)
+from aswwu.models.bases import Base
 
 
 # you guessed it, our generic User model
 class User(Base):
     wwuid = Column(String(7), unique=True)
-    username = Column(String(250), nullable=False)
+    username = Column(String(250), nullable=False, unique=True)
     full_name = Column(String(250))
     status = Column(String(250))
     roles = Column(String(500))
@@ -19,7 +16,7 @@ class User(Base):
 # table for profile data
 class Profile(Base):
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-    username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    username = Column(String(250), CheckConstraint('LENGTH(username) < 250'), unique=True)
     full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
     photo = Column(String(250))
     gender = Column(String(250))
@@ -36,7 +33,7 @@ class Profile(Base):
     class_of = Column(String(250))
     relationship_status = Column(String(250))
     attached_to = Column(String(250))
-    quote = Column(String(1000))
+    quote = Column(String(3000))
     quote_author = Column(String(250))
     hobbies = Column(String(500))
     career_goals = Column(String(1000))
@@ -46,7 +43,8 @@ class Profile(Base):
     favorite_music = Column(String(1000))
     pet_peeves = Column(String(500))
     personality = Column(String(250))
-    views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
+    # views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
+    views = Column(Integer)
     privacy = Column(Integer)
     department = Column(String(250))
     office = Column(String(250))

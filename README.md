@@ -1,8 +1,13 @@
 # The ASWWU Server
 ## Installation
-The following python packages need to be installed and they can be installed with the following command.
+First install pipenv to manage the Python dependencies.
 ```
-$ pip3 install -r requirements.txt
+$ pip3 install pipenv
+```
+
+The dependency packages need to be installed and they can be installed with the following command.
+```
+$ pipenv install
 ```
 
 If pip has errors building mysqlclient on Mac, run the following commands to allow the compiling to run successfully:
@@ -30,7 +35,7 @@ the correct place.
 
 Now run the server by calling.
 ```
-$ python3 server.py
+$ pipenv run python server.py
 ```
 You can test the connection by opening `http://localhost:8888/search/all`.
 

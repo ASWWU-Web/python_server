@@ -11,6 +11,7 @@ requests = "==2.*"
 tornado = "~=6.0"
 bleach = "==3.*"
 SQLAlchemy = "~=1.3"
+pymysql = "==0.*"
 
 [requires]
 python_version = "3.7"

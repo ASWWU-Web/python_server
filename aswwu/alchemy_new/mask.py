@@ -18,12 +18,16 @@ JobsBase = base.JobsBase
 logger = logging.getLogger("aswwu")
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///../databases/people.db")
+engine = create_engine('mysql+pymysql://sheldon:password@127.0.0.1/server')
+connection = engine.connect()
 
 # bind instances of the databases to corresponding variables
-Base.metadata.bind = engine
-dbs = sessionmaker(bind=engine)
+Base.metadata.bind = connection
+dbs = sessionmaker(bind=connection)
 people_db = dbs()
+
+# create the model tables if they don't already exist
+Base.metadata.create_all()
 
 
 # updates a model, or creates it if it doesn't exist
