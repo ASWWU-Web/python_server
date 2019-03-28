@@ -1,29 +1,21 @@
 # mask.py
 
 import logging
-from os import getenv
 
-from sqlalchemy import create_engine, func, or_, and_, desc
+from sqlalchemy import func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
+from aswwu.alchemy_new import connection
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
+
+logger = logging.getLogger("aswwu")
 
 MaskBase = base.MaskBase
 ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
-
-logger = logging.getLogger("aswwu")
-
-# defines the databases URLs relative to "server.py"
-engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}'.format(getenv('DB_USER'),
-                                                               getenv('DB_PASSWORD'),
-                                                               getenv('DB_IP', '127.0.0.1'),
-                                                               getenv('DB_PORT', '3306'),
-                                                               getenv('DB_NAME')))
-connection = engine.connect()
 
 # bind instances of the databases to corresponding variables
 MaskBase.metadata.bind = connection
