@@ -10,7 +10,7 @@ class JobForm(JobsBase):
     department = Column(String(150))
     visibility = Column(Boolean, default=False)
     owner = Column(String(100), nullable=False)
-    questions = relationship("JobQuestion", backref="jobforms", lazy="joined")
+    questions = relationship("JobQuestion", backref="jobs_jobforms", lazy="joined")
     image = Column(String(100), nullable=False)
 
     def serialize(self):
@@ -29,15 +29,15 @@ class JobForm(JobsBase):
 
 class JobQuestion(JobsBase):
     question = Column(String(5000))
-    jobID = Column(String(50), ForeignKey('jobforms.id'))
+    jobID = Column(String(50), ForeignKey('jobs_jobforms.id'))
 
     def serialize(self):
         return {'question': self.question, 'id': self.id}
 
 
 class JobApplication(JobsBase):
-    jobID = Column(String(50), ForeignKey('jobforms.id'))
-    answers = relationship("JobAnswer", backref="jobapplications", lazy="joined")
+    jobID = Column(String(50), ForeignKey('jobs_jobforms.id'))
+    answers = relationship("JobAnswer", backref="jobs_jobapplications", lazy="joined")
     username = Column(String(100), nullable=False)
     status = Column(String(50))
 
@@ -54,9 +54,9 @@ class JobApplication(JobsBase):
 
 
 class JobAnswer(JobsBase):
-    questionID = Column(String(50), ForeignKey('jobquestions.id'))
+    questionID = Column(String(50), ForeignKey('jobs_jobquestions.id'))
     answer = Column(String(10000))
-    applicationID = Column(String(50), ForeignKey('jobapplications.id'))
+    applicationID = Column(String(50), ForeignKey('jobs_jobapplications.id'))
 
     def serialize(self):
         return {'questionID': self.questionID, 'answer': self.answer}

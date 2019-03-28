@@ -48,8 +48,8 @@ class Position(ElectionBase):
 
 
 class Vote(ElectionBase):
-    election = Column(String(100), ForeignKey('elections.id'))
-    position = Column(String(100), ForeignKey('positions.id'))
+    election = Column(String(100), ForeignKey('elections_elections.id'))
+    position = Column(String(100), ForeignKey('elections_positions.id'))
     vote = Column(String(100))
     username = Column(String(100))
     manual_entry = Column(String(100), default=None)
@@ -76,8 +76,8 @@ class Vote(ElectionBase):
 
 
 class Candidate(ElectionBase):
-    election = Column(String(100), ForeignKey('elections.id'))
-    position = Column(String(100), ForeignKey('positions.id'))
+    election = Column(String(100), ForeignKey('elections_elections.id'))
+    position = Column(String(100), ForeignKey('elections_positions.id'))
     username = Column(String(100))
     display_name = Column(String(100))
 

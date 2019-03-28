@@ -15,7 +15,7 @@ class User(MaskBase):
 
 # table for profile data
 class Profile(MaskBase):
-    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
+    wwuid = Column(String(7), ForeignKey('mask_users.wwuid'), nullable=False)
     username = Column(String(250), CheckConstraint('LENGTH(username) < 250'), unique=True)
     full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
     photo = Column(String(250))
@@ -77,7 +77,7 @@ class Profile(MaskBase):
 
 
 class ProfileView(MaskBase):
-    viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
-    viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
+    viewer = Column(String(75), ForeignKey('mask_users.username'), nullable=False)
+    viewed = Column(String(75), ForeignKey('mask_profiles.username'), nullable=False)
     last_viewed = Column(DateTime)
     num_views = Column(Integer, default=0, index=True)

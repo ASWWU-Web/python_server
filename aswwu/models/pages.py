@@ -13,13 +13,13 @@ class Page(PagesBase):
     content = Column(String(5000))
     cover_image = Column(String(250))
     owner = Column(String(50))
-    editors = relationship("PageEditor", backref="Page_Editor", lazy="joined")
+    editors = relationship("PageEditor", backref="pages_page_editor", lazy="joined")
     author = Column(String(50))
     is_visible = Column(Boolean, default=False)
     created = Column(DateTime, default=datetime.datetime.now)
-    tags = relationship("PageTag", backref="Page_Tag", lazy="joined")
-    category = Column(String(50), ForeignKey('categories.category'))
-    department = Column(String(100), ForeignKey('departments.department'))
+    tags = relationship("PageTag", backref="pages_page_tag", lazy="joined")
+    category = Column(String(50), ForeignKey('pages_categories.category'))
+    department = Column(String(100), ForeignKey('pages_departments.department'))
     extra_info = Column(String(500))
     current = Column(Boolean)
     # TODO: Every 24 hours is an editing period for a page.
@@ -79,12 +79,12 @@ class Page(PagesBase):
 
 class PageEditor(PagesBase):
     username = Column(String(50))
-    url = Column(String(50), ForeignKey('pages.url'))
+    url = Column(String(50), ForeignKey('pages_pages.url'))
 
 
 class PageTag(PagesBase):
     tag = Column(String(50))
-    url = Column(String(50), ForeignKey('pages.url'))
+    url = Column(String(50), ForeignKey('pages_pages.url'))
 
 
 class Category(PagesBase):
@@ -116,7 +116,8 @@ class Department(PagesBase):
             'color': self.color
         }
 
+
 class Featured(PagesBase):
-    url = Column(String(50), ForeignKey('pages.url'))
+    url = Column(String(50), ForeignKey('pages_pages.url'))
     # TODO: unnecessary column
     featured = Column(Boolean)
