@@ -11,7 +11,7 @@ COPY ./Pipfile .
 COPY ./Pipfile.lock .
 COPY ./server.py .
 COPY ./settings.py .
-COPY ./aswwu .
+COPY ./aswwu ./aswwu
 
 # install pipenv and python dependencies
 RUN pip install --no-cache-dir pipenv && \
@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir pipenv && \
 
 # expose the tornado server port
 EXPOSE 8888
+
+# default environment variables
+ENV PROD true
 
 # change to the non-root user and start the tornado server
 USER tornado
