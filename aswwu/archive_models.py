@@ -103,62 +103,62 @@ def set_archive_columns(self):
 
 
 class Archive1718(ArchiveBase):
-    __tablename__ = 'profiles1718'
+    __tablename__ = 'mask_profiles1718'
     id = Column(String(50), primary_key=True)
 
 class Archive1617(ArchiveBase):
-    __tablename__ = 'profiles1617'
+    __tablename__ = 'mask_profiles1617'
     id = Column(String(50), primary_key=True)
 
 
 class Archive1516(ArchiveBase):
-    __tablename__ = 'profiles1516'
+    __tablename__ = 'mask_profiles1516'
     id = Column(String(50), primary_key=True)
 
 
 class Archive1415(ArchiveBase):
-    __tablename__ = 'profiles1415'
+    __tablename__ = 'mask_profiles1415'
     id = Column(String(50), primary_key=True)
 
 
 # FIXME: Projects here and after cannot have a blank query(return internal server error instead of a list of all profiles);
 class Archive1314(ArchiveBase):
-    __tablename__ = 'profiles1314'
+    __tablename__ = 'mask_profiles1314'
     id = Column(String(50), primary_key=True)
 
 
 class Archive1213(ArchiveBase):
-    __tablename__ = 'profiles1213'
+    __tablename__ = 'mask_profiles1213'
     id = Column(String(50), primary_key=True)
 
 
 class Archive1112(ArchiveBase):
-    __tablename__ = 'profiles1112'
+    __tablename__ = 'mask_profiles1112'
     id = Column(String(50), primary_key=True)
 
 
 class Archive1011(ArchiveBase):
-    __tablename__ = 'profiles1011'
+    __tablename__ = 'mask_profiles1011'
     id = Column(String(50), primary_key=True)
 
 
 class Archive0910(ArchiveBase):
-    __tablename__ = 'profiles0910'
+    __tablename__ = 'mask_profiles0910'
     id = Column(String(50), primary_key=True)
 
 
 class Archive0809(ArchiveBase):
-    __tablename__ = 'profiles0809'
+    __tablename__ = 'mask_profiles0809'
     id = Column(String(50), primary_key=True)
 
 
 class Archive0708(ArchiveBase):
-    __tablename__ = 'profiles0708'
+    __tablename__ = 'mask_profiles0708'
     id = Column(String(50), primary_key=True)
 
 
 class Archive0607(ArchiveBase):
-    __tablename__ = 'profiles0607'
+    __tablename__ = 'mask_profiles0607'
     id = Column(String(50), primary_key=True)
 
 
