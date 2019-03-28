@@ -1,10 +1,7 @@
 from sqlalchemy import Column, ForeignKey, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-import aswwu.models.bases as base
-
-JobsBase = declarative_base(cls=base.JobsBase)
+from aswwu.models.bases import JobsBase
 
 
 class JobForm(JobsBase):
