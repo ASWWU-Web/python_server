@@ -1,0 +1,11 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "aswwu",
+      "image": "472347272217.dkr.ecr.us-west-2.amazonaws.com/aswwu",
+      "essential": true,
+      "memory": 128,
+    }
+  ]
+}
