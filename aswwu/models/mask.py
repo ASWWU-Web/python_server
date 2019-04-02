@@ -75,6 +75,16 @@ class Profile(MaskBase):
                                        'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy',
                                        'department', 'office', 'office_hours'])
 
+    def serialize_summary(self):
+        return {
+            'username': self.username,
+            'full_name': self.full_name,
+            'photo': self.photo,
+            'email': self.email,
+            'views': self.views
+        }
+
+
 
 class ProfileView(MaskBase):
     viewer = Column(String(75), ForeignKey('mask_users.username'), nullable=False)

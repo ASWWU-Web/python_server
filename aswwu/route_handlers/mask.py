@@ -120,8 +120,7 @@ class SearchNamesFast(BaseHandler):
 class SearchAllHandler(BaseHandler):
     def get(self):
         profiles = mask.search_all_profiles()
-        keys = ['username', 'full_name', 'photo', 'email', 'views']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in profiles]})
+        self.write({'results': [r.serialize_summary() for r in profiles]})
 
 # get user's profile information
 class ProfileHandler(BaseHandler):

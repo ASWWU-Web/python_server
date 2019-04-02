@@ -9,7 +9,6 @@ import tornado.web
 from tornado.options import define, options
 
 import aswwu.base_handlers as base
-import aswwu.route_handlers.ask_anything as ask_anything
 import aswwu.route_handlers.elections as elections
 import aswwu.route_handlers.forms as forms
 import aswwu.route_handlers.instagram as instagram
@@ -68,12 +67,6 @@ class Application(tornado.web.Application):
             (r"/forms/resume/upload", forms.ResumeUploadHandler),
             (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
             (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
-            (r"/askanything/add", ask_anything.AskAnythingAddHandler),
-            (r"/askanything/view", ask_anything.AskAnythingViewAllHandler),
-            (r"/askanything/view/rejected", ask_anything.AskAnythingRejectedHandler),
-            (r"/askanything/(.*)/vote", ask_anything.AskAnythingVoteHandler),
-            (r"/askanything/authorize", ask_anything.AskAnythingAuthorizeHandler),
-            (r"/askanything/(.*)/authorize", ask_anything.AskAnythingAuthorizeHandler),
             (r"/pages", pages.GetAllHandler),
             (r"/pages/search", pages.SearchHandler),
             (r"/pages/categories", pages.CategoryHandler),
