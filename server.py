@@ -41,11 +41,16 @@ class Application(tornado.web.Application):
 
         # list out the routes (as regex) and their corresponding handlers
         handlers = [
+            # base
             (r"/login", base.BaseLoginHandler),
+            (r"/verify", base.BaseVerifyLoginHandler),
+            (r"/saml/account/", saml.SamlHandler),
+            (r"/", base.BaseIndexHandler),
+            # mask
             (r"/profile/(.*)/(.*)", mask.ProfileHandler),
-            (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),
+            (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
             (r"/role/administrator", mask.AdministratorRoleHandler),
-            (r"/role/volunteer", volunteers.VolunteerRoleHandler),
+            (r"/role/volunteer", volunteers.VolunteerRoleHandler),  # UNUSED
             (r"/search/names", mask.SearchNamesFast),
             (r"/search/all", mask.SearchAllHandler),
             (r"/search/(.*)/(.*)", mask.SearchHandler),
@@ -53,10 +58,8 @@ class Application(tornado.web.Application):
             (r"/volunteer", volunteers.VolunteerHandler),
             (r"/volunteer/(.*)", volunteers.VolunteerHandler),
             (r"/feed", instagram.FeedHandler),
-            (r"/verify", base.BaseVerifyLoginHandler),
-            (r"/", base.BaseIndexHandler),
-            (r"/saml/account/", saml.SamlHandler),
             (r"/matcher", mask.MatcherHandler),
+            # jobs
             (r"/forms/job/new", forms.NewFormHandler),
             (r"/forms/job/view/(.*)", forms.ViewFormHandler),
             (r"/forms/job/delete", forms.DeleteFormHandler),
@@ -67,6 +70,7 @@ class Application(tornado.web.Application):
             (r"/forms/resume/upload", forms.ResumeUploadHandler),
             (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
             (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
+            # pages
             (r"/pages", pages.GetAllHandler),
             (r"/pages/search", pages.SearchHandler),
             (r"/pages/categories", pages.CategoryHandler),
@@ -82,7 +86,9 @@ class Application(tornado.web.Application):
             (r"/pages/media/load_images", froala.LoadAllHandler),
             (r"/pages/media/static/(.*)", froala.LoadImageHandler),
             (r"/pages/(.*)", pages.GetHandler),
+            # homepage
             (r"/homepage/open_forum", homepage.OpenForumHandler),
+            # elections
             (r"/elections/vote", elections.VoteHandler),
             (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
             (r"/elections/election/(.*)/ballot", elections.BallotHandler),

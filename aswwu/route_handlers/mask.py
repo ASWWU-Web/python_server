@@ -144,14 +144,14 @@ class ProfileHandler(BaseHandler):
                 update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:
-                    self.write(profile.impers_info())
+                    self.write(profile.serialize_no_wwuid())
                 else:
-                    self.write(profile.base_info())
+                    self.write(profile.serialize_summary())
             else:
                 if user.username == profile.username:
-                    self.write(profile.to_json())
+                    self.write(profile.serialize())
                 else:
-                    self.write(profile.view_other())
+                    self.write(profile.serialize_no_wwuid())
 
 
 def update_views(user, profile, year):

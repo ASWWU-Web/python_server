@@ -121,6 +121,11 @@ class Profile(MaskBase):
             'office_hours': self.office_hours
         }
 
+    def serialize_no_wwuid(self):
+        profile = self.serialize()
+        del profile['wwuid']
+        return profile
+
     def serialize_summary(self):
         return {
             'username': self.username,
