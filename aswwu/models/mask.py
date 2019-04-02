@@ -12,6 +12,15 @@ class User(MaskBase):
     status = Column(String(250))
     roles = Column(String(500))
 
+    def serialize(self):
+        return {
+            'wwuid': self.wwuid,
+            'username': self.username,
+            'full_name': self.full_name,
+            'status': self.status,
+            'roles': self.roles
+        }
+
 
 # table for profile data
 class Profile(MaskBase):
@@ -75,6 +84,43 @@ class Profile(MaskBase):
                                        'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy',
                                        'department', 'office', 'office_hours'])
 
+    def serialize(self):
+        return {
+            'wwuid': self.wwuid,
+            'username': self.username,
+            'full_name': self.full_name,
+            'photo': self.photo,
+            'gender': self.gender,
+            'birthday': self.birthday,
+            'email': self.email,
+            'phone': self.phone,
+            'website': self.website,
+            'majors': self.majors,
+            'minors': self.minors,
+            'graduate': self.graduate,
+            'preprofessional': self.preprofessional,
+            'class_standing': self.class_standing,
+            'high_school': self.high_school,
+            'class_of': self.class_of,
+            'relationship_status': self.relationship_status,
+            'attached_to': self.attached_to,
+            'quote': self.quote,
+            'quote_author': self.quote_author,
+            'hobbies': self.hobbies,
+            'career_goals': self.career_goals,
+            'favorite_books': self.favorite_books,
+            'favorite_food': self.favorite_food,
+            'favorite_movies': self.favorite_movies,
+            'favorite_music': self.favorite_music,
+            'pet_peeves': self.pet_peeves,
+            'personality': self.personality,
+            'views': self.views,
+            'privacy': self.privacy,
+            'department': self.department,
+            'office': self.office,
+            'office_hours': self.office_hours
+        }
+
     def serialize_summary(self):
         return {
             'username': self.username,
@@ -83,7 +129,6 @@ class Profile(MaskBase):
             'email': self.email,
             'views': self.views
         }
-
 
 
 class ProfileView(MaskBase):
