@@ -72,7 +72,7 @@ class SearchHandler(BaseHandler):
                     v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
                     results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
                 else:
-                    # we want these queries to matche exactly
+                    # we want these queries to match exactly
                     # e.g. "%male%" would also return "female"
                     if f[0] in ['gender']:
                         results = results.filter(getattr(model, f[0]).ilike(f[1]))
@@ -83,7 +83,7 @@ class SearchHandler(BaseHandler):
                                 or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
                         else:
                             results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
-            self.write({'results': [r.base_info() for r in results]})
+            self.write({'results': [r.serialize_summary() for r in results]})
             return
 
         try:
@@ -102,8 +102,7 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
-        keys = ['username', 'full_name', 'photo', 'email', 'views']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
+        self.write({'results': [r.serialize_summary() for r in results]})
 
 
 # get 10 (username, full_name) pairs based on query of fullname
