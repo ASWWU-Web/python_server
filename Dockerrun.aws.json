@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "aswwu",
-      "image": "472347272217.dkr.ecr.us-west-2.amazonaws.com/aswwu",
+      "image": "472347272217.dkr.ecr.us-west-2.amazonaws.com/aswwu:latest",
       "essential": true,
       "memory": 128,
       "portMappings": [
