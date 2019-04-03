@@ -55,10 +55,10 @@ class Application(tornado.web.Application):
             (r"/search/all", mask.SearchAllHandler),
             (r"/search/(.*)/(.*)", mask.SearchHandler),
             (r"/update/(.*)", mask.ProfileUpdateHandler),
-            (r"/volunteer", volunteers.VolunteerHandler),
-            (r"/volunteer/(.*)", volunteers.VolunteerHandler),
-            (r"/feed", instagram.FeedHandler),
-            (r"/matcher", mask.MatcherHandler),
+            (r"/volunteer", volunteers.VolunteerHandler),  # UNUSED
+            (r"/volunteer/(.*)", volunteers.VolunteerHandler),  # UNUSED
+            (r"/feed", instagram.FeedHandler),  # UNUSED
+            (r"/matcher", mask.MatcherHandler),  # UNUSED
             # jobs
             (r"/forms/job/new", forms.NewFormHandler),
             (r"/forms/job/view/(.*)", forms.ViewFormHandler),
