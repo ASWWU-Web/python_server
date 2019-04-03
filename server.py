@@ -49,7 +49,7 @@ class Application(tornado.web.Application):
             # mask
             (r"/profile/(.*)/(.*)", mask.ProfileHandler),
             (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
-            (r"/role/administrator", mask.AdministratorRoleHandler),
+            (r"/role/administrator", mask.AdministratorRoleHandler),  # UNUSED
             (r"/role/volunteer", volunteers.VolunteerRoleHandler),  # UNUSED
             (r"/search/names", mask.SearchNamesFast),
             (r"/search/all", mask.SearchAllHandler),

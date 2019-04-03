@@ -111,7 +111,8 @@ class SearchNamesFast(BaseHandler):
         search_criteria = {}
         for key, value in self.request.arguments.items():
             search_criteria[key] = value[0]
-        names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
+        names = mask.search_profile_names(search_criteria.get('full_name', b'').decode('utf8'), limit=int(
+            search_criteria.get('limit', 5)))
         self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})
 
 
@@ -120,6 +121,7 @@ class SearchAllHandler(BaseHandler):
     def get(self):
         profiles = mask.search_all_profiles()
         self.write({'results': [r.serialize_summary() for r in profiles]})
+
 
 # get user's profile information
 class ProfileHandler(BaseHandler):
