@@ -31,7 +31,12 @@ class AdministratorRoleHandler(BaseHandler):
             # sharing is caring
             if cmd == 'set_role':
                 username = self.get_argument('username', '').replace(' ', '.').lower()
-                fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
+                try:
+                    fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
+                except Exception as e:
+                    logger.info(e)
+                    mask.people_db.rollback()
+                    self.write({'status': 'error'})
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
@@ -62,7 +67,12 @@ class SearchHandler(BaseHandler):
         # otherwise we're going old school with the Archives
         else:
             model = archive_model.get_archive_model(year)
-            results = archive.archive_db.query(model)
+            try:
+                results = archive.archive_db.query(model)
+            except Exception as e:
+                logger.info(e)
+                archive.archive_db.rollback()
+                self.write({'status': 'error'})
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]
             for f in fields:
@@ -128,9 +138,19 @@ class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            try:
+                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            except Exception as e:
+                logger.info(e)
+                mask.people_db.rollback()
+                self.write({'status': 'error'})
         else:
-            profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            try:
+                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            except Exception as e:
+                logger.info(e)
+                archive.archive_db.rollback()
+                self.write({'status': 'error'})
         # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -159,8 +179,13 @@ def update_views(user, profile, year):
     # check to make sure the user is logged in and the profile exists in the current uear
     if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
         # get all views on this profile
-        views = mask.people_db.query(mask_model.ProfileView)\
-            .filter_by(viewer=user.username, viewed=profile.username).all()
+        try:
+            views = mask.people_db.query(mask_model.ProfileView)\
+                .filter_by(viewer=user.username, viewed=profile.username).all()
+        except Exception as e:
+            logger.info(e)
+            mask.people_db.rollback()
+            self.write({'status': 'error'})
         # the user has not viewed tis profile
         if len(views) == 0:
             view = mask_model.ProfileView()
@@ -199,13 +224,28 @@ class ProfilePhotoHandler(BaseHandler):
             if wwuid:
                 profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
             else:
-                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+                try:
+                    profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+                except Exception as e:
+                    logger.info(e)
+                    mask.people_db.rollback()
+                    self.write({'status': 'error'})
         else:
             if wwuid:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
+                try:
+                    profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
+                except Exception as e:
+                    logger.info(e)
+                    archive.archive_db.rollback()
+                    self.write({'status': 'error'})
             else:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year))\
-                    .filter_by(username=str(username)).all()
+                try:
+                    profile = archive.archive_db.query(archive_model.get_archive_model(year))\
+                        .filter_by(username=str(username)).all()
+                except Exception as e:
+                    logger.info(e)
+                    archive.archive_db.rollback()
+                    self.write({'status': 'error'})
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
         elif len(profile) > 1:
@@ -226,7 +266,12 @@ class ProfileUpdateHandler(BaseHandler):
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            try: 
+                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            except Exception as e:
+                logger.info(e)
+                mask.people_db.rollback()
+                self.write({'status': 'error'})
             profile.full_name = bleach.clean(self.get_argument('full_name'))
             profile.photo = bleach.clean(self.get_argument('photo', ''))
             profile.gender = bleach.clean(self.get_argument('gender', ''))
