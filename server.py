@@ -41,11 +41,6 @@ class Application(tornado.web.Application):
 
         # list out the routes (as regex) and their corresponding handlers
         handlers = [
-            # base
-            (r"/login", base.BaseLoginHandler),
-            (r"/verify", base.BaseVerifyLoginHandler),
-            (r"/saml/account/", saml.SamlHandler),
-            (r"/", base.BaseIndexHandler),
             # mask
             (r"/profile/(.*)/(.*)", mask.ProfileHandler),
             (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
@@ -101,6 +96,11 @@ class Application(tornado.web.Application):
             (r"/elections/election/(.*)/count", elections.VoteCountHandler),
             (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
             (r"/elections/current", elections.CurrentHandler),
+            # base
+            (r"/login", base.BaseLoginHandler),
+            (r"/verify", base.BaseVerifyLoginHandler),
+            (r"/saml/account/", saml.SamlHandler),
+            (r"/", base.BaseIndexHandler),
         ]
 
         # a bunch of setup stuff
