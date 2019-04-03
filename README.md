@@ -16,7 +16,7 @@ mysql> CREATE DATABASE server CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 The server will automatically create the tables on startup
 
-4. You will need to setup a `.env` file. Copy the `.env.sample` file and fill in the appropriate info. Pipenv will 
+4. You will need to setup a `.env` file. Copy the `.env.sample` file and fill in the appropriate info. Pipenv will
 load the environment variables on startup.
 
 ## Running
@@ -47,7 +47,7 @@ $ docker run -d -p 8888:8888 --env-file .env aswwu:latest
 You must setup your `.env` file before running the container.
 
 ## Push
-Forthcoming...
+The pre-built images are stored in the AWS Elastic Container Registry. Commands to setup the AWS CLI and push the container to the registry can be found in the ECR control panel.
 
 # Documentation
 The raw documentation files can be found in the docs folder. To view the parsed versions, use the following links:
