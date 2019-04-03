@@ -53,36 +53,14 @@ class Profile(MaskBase):
     pet_peeves = Column(String(500))
     personality = Column(String(250))
     # views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
-    views = Column(Integer)
+    views = Column(Integer, default=0)
     privacy = Column(Integer)
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))
 
     def num_views(self):
-        from aswwu.alchemy_new.mask import num_views
-        views = num_views(self.username)
-        return views
-
-    # sometimes useful to only get a small amount of information about a user
-    # e.g. listing ALL of the profiles in a cache for faster search later
-    def base_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
-
-    def impers_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors',
-                                       'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author',
-                                       'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
-                                       'favorite_music', 'pet_peeves', 'personality', 'views',
-                                       'privacy', 'department', 'office', 'office_hours'])
-
-    def view_other(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'birthday', 'email', 'phone',
-                                       'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing',
-                                       'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote',
-                                       'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
-                                       'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy',
-                                       'department', 'office', 'office_hours'])
+        return self.views
 
     def serialize(self):
         return {

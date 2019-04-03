@@ -156,9 +156,12 @@ class ProfileHandler(BaseHandler):
 
 
 def update_views(user, profile, year):
+    # check to make sure the user is logged in and the profile exists in the current uear
     if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
+        # get all views on this profile
         views = mask.people_db.query(mask_model.ProfileView)\
             .filter_by(viewer=user.username, viewed=profile.username).all()
+        # the user has not viewed tis profile
         if len(views) == 0:
             view = mask_model.ProfileView()
             view.viewer = user.username
@@ -166,12 +169,20 @@ def update_views(user, profile, year):
             view.last_viewed = datetime.datetime.now()
             view.num_views = 1
             mask.add_or_update(view)
+            # increase the vote tally on the profile
+            profile.views += 1
+            mask.add_or_update(profile)
+        # the user has viewed this profile
         else:
-            for view in views:
-                if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
-                    view.num_views += 1
-                    view.last_viewed = datetime.datetime.now()
-                    mask.add_or_update(view)
+            view = views[0]
+            if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
+                # create new profileview record
+                view.num_views += 1
+                view.last_viewed = datetime.datetime.now()
+                mask.add_or_update(view)
+                # increase the vote tally on the profile
+                profile.views += 1
+                mask.add_or_update(profile)
 
 
 # queries the server for a user's photos
