@@ -4,12 +4,12 @@ import logging
 import uuid
 
 import six
-from pattern.en import pluralize
+import inflect
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 logger = logging.getLogger("aswwu")
-
+inflect_engine = inflect.engine()
 
 # create a UUID generator function
 def uuid_gen():
@@ -17,11 +17,11 @@ def uuid_gen():
 
 
 # define a base model for all other models
-class Base(object):
+class MaskBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return 'mask_' + inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -60,14 +60,14 @@ class Base(object):
         return obj
 
 
-Base = declarative_base(cls=Base)
+MaskBase = declarative_base(cls=MaskBase)
 
 
 class ElectionBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return 'elections_' + inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -105,7 +105,7 @@ class PagesBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return 'pages_' + inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
@@ -144,11 +144,11 @@ class JobsBase(object):
     @declared_attr
     def __tablename__(self):
         # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
+        return 'jobs_' + inflect_engine.plural(self.__name__.lower())
 
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
-    id = Column(Integer, primary_key=True)
+    id = Column(String(50), primary_key=True, default=uuid_gen)
     updated_at = Column(DateTime, onupdate=datetime.datetime.now, default=datetime.datetime.now)
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user

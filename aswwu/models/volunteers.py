@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 import aswwu.models.bases as base
 
-Base = declarative_base(cls=base.Base)
+Base = declarative_base(cls=base.MaskBase)
 
 
 # an unfortunately large table to hold the volunteer information

@@ -2,28 +2,28 @@
 
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
+from sqlalchemy import func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
+from aswwu.alchemy_new import connection
 import aswwu.models.bases as base
 import aswwu.models.mask as mask_model
 
+logger = logging.getLogger("aswwu")
 
-Base = base.Base
+MaskBase = base.MaskBase
 ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
 
-logger = logging.getLogger("aswwu")
-
-# defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///../databases/people.db")
-
 # bind instances of the databases to corresponding variables
-Base.metadata.bind = engine
-dbs = sessionmaker(bind=engine)
+MaskBase.metadata.bind = connection
+dbs = sessionmaker(bind=connection)
 people_db = dbs()
+
+# create the model tables if they don't already exist
+MaskBase.metadata.create_all()
 
 
 # updates a model, or creates it if it doesn't exist
@@ -51,16 +51,7 @@ def query_all(model):
 def search_all_profiles():
     thing = None
     try:
-        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views
-        #                            FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views)
-        #                            AS real_views
-        #                            FROM profileviews
-        #                            GROUP BY viewed)
-        #                            AS pv
-        #                            ON profiles.username = pv.viewed)")
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
-            join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed). \
+        thing = people_db.query(mask_model.Profile). \
             order_by(desc("views"))
     except Exception as e:
         logger.info(e)
@@ -71,10 +62,10 @@ def search_all_profiles():
 def search_profile_names(query, limit=0):
     thing = None
     try:
-        # print('hello')
         thing = people_db.query(mask_model.Profile) \
             .with_entities(mask_model.Profile.username, mask_model.Profile.full_name) \
-            .filter(or_(mask_model.Profile.full_name. ilike("%" + query + "%"), mask_model.Profile.username. ilike("%" + query + "%"))) \
+            .filter(or_(mask_model.Profile.full_name.ilike("%" + query + "%"),
+                        mask_model.Profile.username.ilike("%" + query + "%"))) \
             .order_by(mask_model.Profile.full_name) \
             .limit(limit) \
             .all()
@@ -82,6 +73,7 @@ def search_profile_names(query, limit=0):
         logger.info(e)
         people_db.rollback()
     return thing
+
 
 def multiple_criteria_generator(key, criteria):
     for status in criteria.split(","):
@@ -106,10 +98,8 @@ def search_profiles(search_criteria):
     thing = None
     try:
         search_statement = and_(search_term_generator(search_criteria))
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
+        thing = people_db.query(mask_model.Profile). \
             filter(search_statement). \
-            join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed).\
             order_by(desc("views"))
     except Exception as e:
         logger.info(e)

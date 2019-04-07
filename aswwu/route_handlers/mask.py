@@ -31,7 +31,12 @@ class AdministratorRoleHandler(BaseHandler):
             # sharing is caring
             if cmd == 'set_role':
                 username = self.get_argument('username', '').replace(' ', '.').lower()
-                fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
+                try:
+                    fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
+                except Exception as e:
+                    logger.info(e)
+                    mask.people_db.rollback()
+                    self.write({'status': 'error'})
                 if not fuser:
                     self.write({'error': 'user does not exist'})
                 else:
@@ -62,7 +67,12 @@ class SearchHandler(BaseHandler):
         # otherwise we're going old school with the Archives
         else:
             model = archive_model.get_archive_model(year)
-            results = archive.archive_db.query(model)
+            try:
+                results = archive.archive_db.query(model)
+            except Exception as e:
+                logger.info(e)
+                archive.archive_db.rollback()
+                self.write({'status': 'error'})
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]
             for f in fields:
@@ -72,7 +82,7 @@ class SearchHandler(BaseHandler):
                     v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
                     results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
                 else:
-                    # we want these queries to matche exactly
+                    # we want these queries to match exactly
                     # e.g. "%male%" would also return "female"
                     if f[0] in ['gender']:
                         results = results.filter(getattr(model, f[0]).ilike(f[1]))
@@ -83,7 +93,7 @@ class SearchHandler(BaseHandler):
                                 or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
                         else:
                             results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
-            self.write({'results': [r.base_info() for r in results]})
+            self.write({'results': [r.serialize_summary() for r in results]})
             return
 
         try:
@@ -102,8 +112,7 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
-        keys = ['username', 'full_name', 'photo', 'email', 'views']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
+        self.write({'results': [r.serialize_summary() for r in results]})
 
 
 # get 10 (username, full_name) pairs based on query of fullname
@@ -112,7 +121,8 @@ class SearchNamesFast(BaseHandler):
         search_criteria = {}
         for key, value in self.request.arguments.items():
             search_criteria[key] = value[0]
-        names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
+        names = mask.search_profile_names(search_criteria.get('full_name', b'').decode('utf8'), limit=int(
+            search_criteria.get('limit', 5)))
         self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})
 
 
@@ -120,17 +130,27 @@ class SearchNamesFast(BaseHandler):
 class SearchAllHandler(BaseHandler):
     def get(self):
         profiles = mask.search_all_profiles()
-        keys = ['username', 'full_name', 'photo', 'email', 'views']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in profiles]})
+        self.write({'results': [r.serialize_summary() for r in profiles]})
+
 
 # get user's profile information
 class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            try:
+                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            except Exception as e:
+                logger.info(e)
+                mask.people_db.rollback()
+                self.write({'status': 'error'})
         else:
-            profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            try:
+                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            except Exception as e:
+                logger.info(e)
+                archive.archive_db.rollback()
+                self.write({'status': 'error'})
         # some quick error checking
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
@@ -141,24 +161,32 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            if "mask" in self.request.headers.get('Referer'):
+            if 'Referer' in self.request.headers.keys() and 'mask' in self.request.headers.get('Referer'):
                 update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:
-                    self.write(profile.impers_info())
+                    self.write(profile.serialize_no_wwuid())
                 else:
-                    self.write(profile.base_info())
+                    self.write(profile.serialize_summary())
             else:
                 if user.username == profile.username:
-                    self.write(profile.to_json())
+                    self.write(profile.serialize())
                 else:
-                    self.write(profile.view_other())
+                    self.write(profile.serialize_no_wwuid())
 
 
 def update_views(user, profile, year):
+    # check to make sure the user is logged in and the profile exists in the current uear
     if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
-        views = mask.people_db.query(mask_model.ProfileView)\
-            .filter_by(viewer=user.username, viewed=profile.username).all()
+        # get all views on this profile
+        try:
+            views = mask.people_db.query(mask_model.ProfileView)\
+                .filter_by(viewer=user.username, viewed=profile.username).all()
+        except Exception as e:
+            logger.info(e)
+            mask.people_db.rollback()
+            self.write({'status': 'error'})
+        # the user has not viewed tis profile
         if len(views) == 0:
             view = mask_model.ProfileView()
             view.viewer = user.username
@@ -166,12 +194,20 @@ def update_views(user, profile, year):
             view.last_viewed = datetime.datetime.now()
             view.num_views = 1
             mask.add_or_update(view)
+            # increase the vote tally on the profile
+            profile.views += 1
+            mask.add_or_update(profile)
+        # the user has viewed this profile
         else:
-            for view in views:
-                if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
-                    view.num_views += 1
-                    view.last_viewed = datetime.datetime.now()
-                    mask.add_or_update(view)
+            view = views[0]
+            if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
+                # create new profileview record
+                view.num_views += 1
+                view.last_viewed = datetime.datetime.now()
+                mask.add_or_update(view)
+                # increase the vote tally on the profile
+                profile.views += 1
+                mask.add_or_update(profile)
 
 
 # queries the server for a user's photos
@@ -188,13 +224,28 @@ class ProfilePhotoHandler(BaseHandler):
             if wwuid:
                 profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
             else:
-                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+                try:
+                    profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+                except Exception as e:
+                    logger.info(e)
+                    mask.people_db.rollback()
+                    self.write({'status': 'error'})
         else:
             if wwuid:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
+                try:
+                    profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
+                except Exception as e:
+                    logger.info(e)
+                    archive.archive_db.rollback()
+                    self.write({'status': 'error'})
             else:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year))\
-                    .filter_by(username=str(username)).all()
+                try:
+                    profile = archive.archive_db.query(archive_model.get_archive_model(year))\
+                        .filter_by(username=str(username)).all()
+                except Exception as e:
+                    logger.info(e)
+                    archive.archive_db.rollback()
+                    self.write({'status': 'error'})
         if len(profile) == 0:
             self.write({'error': 'no profile found'})
         elif len(profile) > 1:
@@ -215,7 +266,12 @@ class ProfileUpdateHandler(BaseHandler):
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            try: 
+                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            except Exception as e:
+                logger.info(e)
+                mask.people_db.rollback()
+                self.write({'status': 'error'})
             profile.full_name = bleach.clean(self.get_argument('full_name'))
             profile.photo = bleach.clean(self.get_argument('photo', ''))
             profile.gender = bleach.clean(self.get_argument('gender', ''))

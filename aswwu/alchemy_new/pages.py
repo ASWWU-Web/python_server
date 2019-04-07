@@ -4,30 +4,24 @@
 import ast
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-# from sqlalchemy.sql import label
 
+from aswwu.alchemy_new import connection
 import aswwu.models.bases as base
-# import aswwu.models.mask as mask_model
 import aswwu.models.pages as pages_model
-
-PagesBase = base.PagesBase
 
 logger = logging.getLogger("aswwu")
 
-# defines the databases URLs relative to "server.py"
-pages_engine = create_engine("sqlite:///../databases/pages.db")
+PagesBase = base.PagesBase
 
-# create the model tables if they don't already exist
-PagesBase.metadata.create_all(pages_engine)
-
-# same for pages
-PagesBase.metadata.bind = pages_engine
-pages_dbs = sessionmaker(bind=pages_engine)
+# bind instances of the databases to corresponding variables
+PagesBase.metadata.bind = connection
+pages_dbs = sessionmaker(bind=connection)
 page_db = pages_dbs()
 
-# Section for ASWWU Pages Functions
+# create the model tables if they don't already exist
+PagesBase.metadata.create_all()
 
 
 # updates a model, or creates it if it doesn't exist
