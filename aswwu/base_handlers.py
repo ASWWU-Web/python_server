@@ -10,7 +10,7 @@ import time
 import requests
 import tornado.web
 
-from settings import testing
+from settings import testing, keys
 
 # import models and alchemy functions as needed
 import aswwu.models.mask as mask_model
@@ -150,8 +150,8 @@ class BaseVerifyLoginHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         """
-        The verify endpoint for the front-end. This endpoint 
-        will update the user's cookie and send them info back 
+        The verify endpoint for the front-end. This endpoint
+        will update the user's cookie and send them info back
         about their account.
         """
         # get the users info
@@ -172,9 +172,9 @@ class BaseVerifyLoginHandler(BaseHandler):
 
     def post(self):
         """
-        The verify endpoint for SAML only. This endpoint will 
-        get or create a user's account info and send it back 
-        to the SAML container. It also sets the cookie which 
+        The verify endpoint for SAML only. This endpoint will
+        get or create a user's account info and send it back
+        to the SAML container. It also sets the cookie which
         will login the user on the front-end.
         """
         # check secret key to ensure this is the SAML conatiner
@@ -193,14 +193,14 @@ class BaseVerifyLoginHandler(BaseHandler):
             self.write({'error': 'invalid parameters'})
             return
         # get the user from the database
-        user = alchemy.query_user(employee_id)
+        user = mask.query_user(employee_id)
         # create a new user if necessary
         if not user:
-            user = mask_model.User(wwuid=employee_id, 
+            user = mask_model.User(wwuid=employee_id,
                                    username=email_address.split('@', 1)[0],
                                    full_name=full_name,
                                    status='Student')
-            alchemy.add_or_update(user)
+            mask.add_or_update(user)
             # initial view for the new user
             add_null_view('null.user', user.username)
         # return the new users token and information
