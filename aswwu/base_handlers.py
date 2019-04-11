@@ -137,8 +137,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class BaseLoginHandler(BaseHandler):
     def get(self):
-        self.set_status(500)
-        self.write({'error': 'not implemented'})
+        self.set_status(401)
+        self.write({'error': 'not logged in'})
 
     def post(self):
         self.set_status(500)
@@ -211,7 +211,6 @@ class BaseVerifyLoginHandler(BaseHandler):
         })
         # set the cookie header in the response
         self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
-
 
 
 def get_last_year():
