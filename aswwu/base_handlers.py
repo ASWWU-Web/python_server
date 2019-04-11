@@ -135,66 +135,83 @@ class BaseHandler(tornado.web.RequestHandler):
             logger.error("{} error".format(self.__class__.__name__))
 
 
-# effectively useless, but at least provides an endpoint for people accessing "/" by accident
-class BaseIndexHandler(BaseHandler):
-    @tornado.web.authenticated
-    def get(self):
-        user = self.current_user
-        self.write(user.to_json())
-
-
-# login and/or register users as needed
 class BaseLoginHandler(BaseHandler):
-    # verify login information with the WWU servers somehow
-    @staticmethod
-    def login_with_wwu(username, password):
-        # NOTE: this url is old, yet still functional
-        # expect it to change eventually
-        mask_url = "https://www.wallawalla.edu/auth/mask.php"
-
-        # pass the username and password to our accepted URL
-        r = requests.post(mask_url, data={'username': username, 'password': password}, verify=True)
-
-        # parse out the ugly response
-        parsed_user = r.text.encode('utf-8')[6:-7]
-        parsed_user = json.loads(parsed_user)['user']
-        if parsed_user:
-            parsed_user['wwuid'] = parsed_user['wwcid']
-            return parsed_user
-        else:
-            return None
-
-    # if someone gets here they have bigger problems than not being logged in
     def get(self):
-        logger.debug("not logged in")
-        self.set_status(401)
-        self.write({'error': 'not logged in'})
+        self.set_status(500)
+        self.write({'error': 'not implemented'})
 
-    # the main login/registration handler
     def post(self):
-        logger.debug("'class':'LoginHandler','method':'post', 'message': 'invoked'")
-        self.write({'error': 'We\'ve switched over to the university login.'
-                             ' Try refreshing the page and clearing your cache to login with the new method.'
-                             ' If you\'re having more issues email aswwu.webmaster@wallawalla.edu'})
+        self.set_status(500)
+        self.write({'error': 'not implemented'})
 
 
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        # globally available parameter
-        # is the returned result of get_current_user() above
+        """
+        The verify endpoint for the front-end. This endpoint 
+        will update the user's cookie and send them info back 
+        about their account.
+        """
+        # get the users info
         user = self.current_user
-        if user:
-            # if a user exists, refresh their token for them
-            token = self.generate_token(user.wwuid)
-            self.write({'user': user.to_json(), 'token': token})
-            self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
-            # initial view
-            add_null_view('null.user', user.username)
-        else:
+        # check if the user is logged in
+        if not user:
             self.set_status(401)
             self.write({'error': 'not logged in'})
+            return
+        # if a user exists, refresh their token for them
+        token = self.generate_token(user.wwuid)
+        self.write({
+            'user': user.to_json(),
+            'token': token
+        })
+        # set the cookie header in the response
+        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+
+    def post(self):
+        """
+        The verify endpoint for SAML only. This endpoint will 
+        get or create a user's account info and send it back 
+        to the SAML container. It also sets the cookie which 
+        will login the user on the front-end.
+        """
+        # check secret key to ensure this is the SAML conatiner
+        secret_key = self.get_argument('secret_key', None)
+        if secret_key != keys["samlEndpointKey"]:
+            logger.info("Unauthorized Access Attempted")
+            self.write({'error': 'Unauthorized Access Attempted'})
+            return
+        # get the SAML data from the request
+        employee_id = self.get_argument('employee_id', None)
+        full_name = self.get_argument('full_name', None)
+        email_address = self.get_argument('email_address', None)
+        # check that the data was given in the request
+        if None in (employee_id, full_name, email_address):
+            logger.info("AccountHandler: error")
+            self.write({'error': 'invalid parameters'})
+            return
+        # get the user from the database
+        user = alchemy.query_user(employee_id)
+        # create a new user if necessary
+        if not user:
+            user = mask_model.User(wwuid=employee_id, 
+                                   username=email_address.split('@', 1)[0],
+                                   full_name=full_name,
+                                   status='Student')
+            alchemy.add_or_update(user)
+            # initial view for the new user
+            add_null_view('null.user', user.username)
+        # return the new users token and information
+        token = self.generate_token(user.wwuid)
+        self.write({
+            'user': user.to_json(),
+            'token': token
+        })
+        # set the cookie header in the response
+        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+
 
 
 def get_last_year():
