@@ -199,7 +199,15 @@ class ViewApplicationHandler(BaseHandler):
                 if 'forms-admin' in user.roles or username == user.username or 'forms' in user.roles and (form.owner == user.username or form.id == 1):
                     app = alchemy.jobs_db.query(forms_model.JobApplication)\
                         .filter_by(jobID=str(job_id), username=username).one()
-                    self.write({'application': app.serialize()})
+                    response = {'application': app.serialize()}
+                    # check if resume exists
+                    try:
+                        resume = open(glob.glob("../databases/resume/" + app.username + "_" + app.jobID + "*")[0], "r")
+                        resume.close()
+                    except:
+                        response['application']['resume'] = None
+                    # response
+                    self.write(response)
                     return
             self.set_status(404)
             self.write({"status": "Insufficient Permissions"})

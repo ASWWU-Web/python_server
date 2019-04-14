@@ -49,7 +49,8 @@ class JobApplication(JobsBase):
         for answer in self.answers:
             answers.append(answer.serialize())
         return {'jobID': self.jobID, 'answers': answers,
-                'username': self.username, 'status': self.status}
+                'username': self.username, 'status': self.status,
+                'resume': '/forms/resume/download/{}/{}'.format(self.jobID, self.username)}
 
     def min(self):
         return {'jobID': self.jobID, 'username': self.username,
