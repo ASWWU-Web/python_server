@@ -29,6 +29,7 @@ class NewFormHandler(BaseHandler):
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
+                form.featured = True if self.get_argument('featured') == 'true' else False
                 alchemy.add_or_update_form(form)
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = json.loads(self.get_argument('questions'))
@@ -105,6 +106,7 @@ class EditFormHandler(BaseHandler):
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
+                form.featured = True if self.get_argument('featured') == 'true' else False
                 alchemy.add_or_update_form(form)
                 new_questions = json.loads(self.get_argument('questions'))
                 for question in form.questions:
