@@ -6,23 +6,19 @@ import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc
 from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-# from sqlalchemy.sql import label
 
 import aswwu.models.bases as base
-
-# from aswwu.alchemy_new.elections import election_engine
 
 JobsBase = base.JobsBase
 
 logger = logging.getLogger("aswwu")
 
 jobs_engine = create_engine("sqlite:///../databases/jobs.db")
-election_engine = create_engine("sqlite:///../databases/senate_elections.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 
-# TODO: Figure out the consequences of this mistake
-JobsBase.metadata.bind = election_engine
+# somone hooked this up to the elections engine once upon a time, never forget
+JobsBase.metadata.bind = jobs_engine
 jobs_dbs = sessionmaker(bind=jobs_engine)
 jobs_db = jobs_dbs()
 
