@@ -29,6 +29,7 @@ class NewFormHandler(BaseHandler):
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
+                form.featured = True if self.get_argument('featured') == 'true' else False
                 alchemy.add_or_update_form(form)
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = json.loads(self.get_argument('questions'))
@@ -105,6 +106,7 @@ class EditFormHandler(BaseHandler):
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
+                form.featured = True if self.get_argument('featured') == 'true' else False
                 alchemy.add_or_update_form(form)
                 new_questions = json.loads(self.get_argument('questions'))
                 for question in form.questions:
@@ -199,7 +201,15 @@ class ViewApplicationHandler(BaseHandler):
                 if 'forms-admin' in user.roles or username == user.username or 'forms' in user.roles and (form.owner == user.username or form.id == 1):
                     app = alchemy.jobs_db.query(forms_model.JobApplication)\
                         .filter_by(jobID=str(job_id), username=username).one()
-                    self.write({'application': app.serialize()})
+                    response = {'application': app.serialize()}
+                    # check if resume exists
+                    try:
+                        resume = open(glob.glob("../databases/resume/" + app.username + "_" + app.jobID + "*")[0], "r")
+                        resume.close()
+                    except:
+                        response['application']['resume'] = None
+                    # response
+                    self.write(response)
                     return
             self.set_status(404)
             self.write({"status": "Insufficient Permissions"})
