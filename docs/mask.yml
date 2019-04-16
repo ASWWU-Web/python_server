@@ -1,0 +1,398 @@
+openapi: 3.0.2
+servers:
+  - url: 'https://aswwu.com/server/mask'
+  - url: 'http://localhost:8888/mask'
+info:
+  version: "1.0"
+  title: Mask API
+  description: The API for the mask project.
+paths:
+  '/search/all':
+    get:
+      summary: Retrieve all abbreviated profiles ordered by descending views.
+      description: Retrieve all abbreviated profiles ordered by descending views.
+      tags:
+        - mask
+      responses:
+        '200':
+          description: Abbreviated profiles were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Profile'
+  '/search/names':
+    get:
+      summary: Fast search for users
+      description: Fast search for users
+      tags:
+        - mask
+      parameters:
+        - name: limit
+          in: query
+          description: Number of results to return. 
+          required: false
+          schema:
+            type: integer
+        - name: full_name
+          in: query
+          description: Full name of the person being searched for. 
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The results were retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FastNames'
+  '/search/{year}/{search_query}':
+    get:
+      summary: Retrieve profiles.
+      description: Retrieve profiles.
+      tags:
+        - mask
+      parameters:
+        - name: year
+          in: path
+          description: Year to retrieve profiles from.
+          required: true
+          schema:
+            type: string
+        - name: search_query
+          in: path
+          description: Query to search database with; either username or full name.
+          required: true
+          schema: 
+            type: string
+      responses:
+        '200':
+          description: The profile was retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Profile'
+  '/update/{username}':
+    post:
+      summary: Update profile information. 
+      description: Update profile information. 
+      tags:
+        - profile
+      parameters:
+        - name: username
+          in: path
+          description: Username for the profile to be updated.
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieAuthentication: []
+      responses:
+        '201':
+          description: The profile was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullProfile'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+      requestBody:
+        $ref: '#/components/requestBodies/ProfilePOSTBody'
+  '/profile/{year}/{username}':
+    get:
+      summary: View user profile.
+      description: View user profile.
+      tags:
+        - profile
+      parameters: 
+        - name: year
+          in: path
+          description: Year for the profile year.
+          required: true
+          schema:
+            type: string
+        - name: username
+          in: path
+          description: Profile username. 
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile was found.
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullProfile'
+        '404':
+          description: No profile found/too many profiles found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/404NotFound'
+          
+components:
+  schemas:
+    FastNames:
+      type: object
+      properties:
+        username:
+          type: string
+        full_name:
+          type: string
+      example:
+        username: "Kaden.Sukachevin"
+        full_name: "Kaden Sukachevin"
+    Profile:
+      type: object
+      properties:
+        username:
+          type: string
+        photo:
+          type: string
+        email:
+          type: string
+        full_name:
+          type: string
+        views:
+          type: integer
+      example:
+        username: "Kaden.Sukachevin"
+        photo: "profiles/1819/01527-2034361.jpg"
+        email: "kaden.sukachevin@wallawalla.edu"
+        full_name: "Kaden Sukachevin"
+        views: 324
+    FullProfile:
+      type: object
+      properties:
+        username:
+          type: string
+        full_name:
+          type: string
+        photo:
+          type: string
+        gender:
+          type: string
+        birthday:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        majors:
+          type: string
+        minors:
+          type: string
+        graduate:
+          type: string
+        preprofessional:
+          type: string
+        class_standing:
+          type: string
+        high_school:
+          type: string
+        class_of:
+          type: string
+        relationship_status:
+          type: string
+        attached_to:
+          type: string
+        quote:
+          type: string
+        quote_author:
+          type: string
+        hobbies:
+          type: string
+        career_goals:
+          type: string
+        favorite_books:
+          type: string
+        favorite_movies:
+          type: string
+        favorite_music:
+          type: string
+        pet_peeves:
+          type: string
+        personality:
+          type: string
+        views:
+          type: string
+        privacy:
+          type: string
+        department:
+          type: string
+        office:
+          type: string
+        office_hours:
+          type: string
+      example:
+        website: "Ig: kaderade_"
+        minors: ""
+        office: "None"
+        photo: "profiles/1819/01527-2034361.jpg"
+        quote_author: "Darius Felder"
+        full_name: "Kaden Sukachevin"
+        hobbies: "thrifting"
+        relationship_status: "Will date for coffee"
+        majors: ""
+        favorite_books: ""
+        favorite_movies: ""
+        graduate: ""
+        department: "None"
+        favorite_music: "whatever you like"
+        personality: ""
+        username: "Kaden.Sukachevin"
+        views: "327"
+        quote: "\"I understand\""
+        preprofessional: ""
+        career_goals: "not sure yet"
+        pet_peeves: ""
+        gender: "Male"
+        privacy: "1"
+        office_hours: "None"
+        birthday: "02-27"
+        email: "Kaden.sukachevin@wallawalla.edu"
+        phone: "911"
+        class_standing: "Junior"
+        high_school: "MBHS"
+        class_of: "2020"
+        attached_to: "You"
+  securitySchemes:
+    cookieAuthentication:
+      type: apiKey
+      in: cookie
+      name: token
+  requestBodies:
+    ProfilePOSTBody:
+      description: A JSON object containing new profile information.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+              full_name:
+                type: string
+              photo:
+                type: string
+              gender:
+                type: string
+              birthday:
+                type: string
+              email:
+                type: string
+              phone:
+                type: string
+              website:
+                type: string
+              majors:
+                type: string
+              minors:
+                type: string
+              graduate:
+                type: string
+              preprofessional:
+                type: string
+              class_standing:
+                type: string
+              high_school:
+                type: string
+              class_of:
+                type: string
+              relationship_status:
+                type: string
+              attached_to:
+                type: string
+              quote:
+                type: string
+              quote_author:
+                type: string
+              hobbies:
+                type: string
+              career_goals:
+                type: string
+              favorite_books:
+                type: string
+              favorite_movies:
+                type: string
+              favorite_music:
+                type: string
+              pet_peeves:
+                type: string
+              personality:
+                type: string
+              views:
+                type: string
+              privacy:
+                type: string
+              department:
+                type: string
+              office:
+                type: string
+              office_hours:
+                type: string
+            example: 
+              website: "Ig: kaderade_"
+              minors: ""
+              office: "None"
+              photo: "profiles/1819/01527-2034361.jpg"
+              quote_author: "Darius Felder"
+              full_name: "Kaden Sukachevin"
+              hobbies: "thrifting"
+              relationship_status: "Will date for coffee"
+              majors: ""
+              favorite_books: ""
+              favorite_movies: ""
+              graduate: ""
+              department: "None"
+              favorite_music: "whatever you like"
+              personality: ""
+              username: "Kaden.Sukachevin"
+              views: "327"
+              quote: "\"I understand\""
+              preprofessional: ""
+              career_goals: "not sure yet"
+              pet_peeves: ""
+              gender: "Male"
+              privacy: "1"
+              office_hours: "None"
+              birthday: "02-27"
+              email: "Kaden.sukachevin@wallawalla.edu"
+              phone: "911"
+              class_standing: "Junior"
+              high_school: "MBHS"
+              class_of: "2020"
+              attached_to: "You"
+  responses:
+    204NoContent:
+      description: The request completed successfully and has no response body.
+    400BadRequest:
+      description: The request could not be understood by the server.
+    401NotAuthenticated:
+      description: This action requires authentication.
+    403Forbidden:
+      description: This action requires authorization or is not allowed.
+    404NotFound:
+      description: The resource could not be found.
+  
