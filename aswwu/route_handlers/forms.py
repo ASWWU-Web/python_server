@@ -145,7 +145,8 @@ class SubmitApplicationHandler(BaseHandler):
                     temp_var = True
                     app = forms_model.JobApplication()
                     app.status = "new"
-                    emailNotify(user.username, form.owner, job_id)
+                    email_notify(user.username, form.owner, job_id)
+                    email_confirm(user.username, job_id)
                 app.jobID = bleach.clean(job_id)
                 app.username = user.username
                 alchemy.add_or_update_form(app)
@@ -346,25 +347,44 @@ class ExportApplicationsHandler(BaseHandler):
             self.set_status(404)
             self.write({"status": "error"})
 
-def emailNotify(applicant, owner, job_id):
+def email_notify(applicant, owner, job_id):
+    # dont send email for generic job
     if job_id == '1':
         return
-    import smtplib
-
-    FROM = email['username']
-    TO = owner + "@wallawalla.edu"
-    SUBJECT = "New Job Application Submitted"
-    TEXT = applicant + " has submitted an application for job ID " + job_id +\
+    # construct email
+    from_address = email['username']
+    to_address = owner + "@wallawalla.edu"
+    subject = "New Job Application Submitted"
+    text = applicant + " has submitted an application for job ID " + job_id +\
         ". To view this application click here: https://aswwu.com/jobs/admin/review/" + job_id + "/" + applicant
+    # send email
+    send_email(from_address, to_address, subject, text)
 
+def email_confirm(applicant, job_id):
+    # dont send email for generic job
+    if job_id == '1':
+        return
+    # construct email
+    from_address = email['username']
+    to_address = applicant + "@wallawalla.edu"
+    subject = "Job Application Submitted"
+    text = "Thank you for submitting your job application."
+    # send email
+    send_email(from_address, to_address, subject, text)
+
+def send_email(from_address, to_address, subject, text):
+    # connect to SMTP server
+    import smtplib
     smtpsrv = "smtp.office365.com"
     smtpserver = smtplib.SMTP(smtpsrv, 587)
-
+    # send the email
     smtpserver.ehlo()
     smtpserver.starttls()
     smtpserver.ehlo()
-    smtpserver.login(FROM, email['password'])
-    header = 'To:' + TO + '\n' + 'From: ' + FROM + '\n' + 'Subject:%s \n' % SUBJECT
-    msgbody = header + '\n %s \n\n' % TEXT
-    smtpserver.sendmail(FROM, TO, msgbody)
+    smtpserver.login(from_address, email['password'])
+    header = 'To:' + to_address + '\n' + 'From: ' + from_address + '\n' + 'Subject:%s \n' % subject
+    msgbody = header + '\n %s \n\n' % text
+    smtpserver.sendmail(from_address, to_address, msgbody)
+    # close the SMTP server connection
     smtpserver.close()
+
