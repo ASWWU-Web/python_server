@@ -347,7 +347,7 @@ class ExportApplicationsHandler(BaseHandler):
             self.write({"status": "error"})
 
 def emailNotify(applicant, owner, job_id):
-    if job_id == 1:
+    if job_id == '1':
         return
     import smtplib
 
