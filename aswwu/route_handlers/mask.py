@@ -119,6 +119,9 @@ class SearchNamesFast(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
+        # cache for 24 hours
+        self.add_header('Cache-control', 'max-age=86400')
+        self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
         keys = ['username', 'full_name', 'photo', 'email', 'views']
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in profiles]})
