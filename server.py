@@ -53,6 +53,7 @@ class Application(tornado.web.Application):
             (r"/search/all", mask.SearchAllHandler),
             (r"/search/(.*)/(.*)", mask.SearchHandler),
             (r"/update/(.*)", mask.ProfileUpdateHandler),
+            (r"/update/list_photos/(.*)", mask.ListProfilePhotoHandler),
             (r"/volunteer", volunteers.VolunteerHandler),  # UNUSED
             (r"/volunteer/(.*)", volunteers.VolunteerHandler),  # UNUSED
             (r"/feed", instagram.FeedHandler),  # UNUSED
