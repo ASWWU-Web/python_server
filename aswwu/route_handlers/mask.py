@@ -1,6 +1,8 @@
 import datetime
 import json
 import logging
+import glob
+import re
 
 import bleach
 import tornado.web
@@ -255,6 +257,23 @@ class ProfileUpdateHandler(BaseHandler):
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
+
+
+class ListProfilePhotoHandler(BaseHandler):
+    '''
+    Return the authenticated user's profile pictures, example: {"photos": ["profiles/1718/12345_1234567.jpg"]}
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            wwuid = self.current_user.wwuid
+            photo_list = glob.glob('./../media/profiles/*/*_' + wwuid + '.*')
+            photo_list = [re.search(r"(.\/..\/media\/)(.*)", path).group(2) for path in photo_list]
+            self.write({'photos': photo_list})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+
 
 
 class MatcherHandler(BaseHandler):
