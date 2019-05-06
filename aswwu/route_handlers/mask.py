@@ -267,7 +267,7 @@ class ListProfilePhotoHandler(BaseHandler):
     def get(self):
         try:
             wwuid = self.current_user.wwuid
-            photo_list = glob.glob('./../media/profiles/*/*_' + wwuid + '.*')
+            photo_list = glob.glob('./../media/profiles/*/*-' + wwuid + '.*')
             photo_list = [re.search(r"(.\/..\/media\/)(.*)", path).group(2) for path in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
