@@ -102,6 +102,10 @@ def set_archive_columns(self):
     self.office_hours = Column(String(250))
 
 
+class Archive1819(ArchiveBase):
+    __tablename__ = 'profiles1819'
+    id = Column(String(50),primary_key=True)
+
 class Archive1718(ArchiveBase):
     __tablename__ = 'profiles1718'
     id = Column(String(50), primary_key=True)
@@ -187,7 +191,9 @@ def get_archive_model(archive_year):
         return Archive1617
     elif archive_year == '1718':
         return Archive1718
+    elif archive_year == '1819':
+        return Archive1819
 
 
-for year in ["1718", "1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
+for year in ["1819", "1718", "1617", "1516", "1415", "1314", "1213", "1112", "1011", "0910", "0809", "0708", "0607"]:
     set_archive_columns(get_archive_model(year))
