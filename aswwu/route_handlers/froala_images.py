@@ -15,14 +15,6 @@ class UploadHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
-            user = self.current_user
-            if not ('administrator' in user.roles or 'pages-admin' in user.roles):
-                self.write({'error': 'insufficient permissions'})
-                return
-        except:
-            self.write({'error': 'authentication error'})
-            return
-        try:
             fileinfo = self.request.files['file'][0]
             if not testing['dev']:
                 server_url = 'https://aswwu.com/server/pages/media/static/'
