@@ -17,22 +17,26 @@ class NewFormHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
+            #temp var
+            questions = []
             user = self.current_user
             if 'forms' in user.roles:
                 form = forms_model.JobForm()
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
-                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
-                    form.visibility = 1
-                else:
-                    form.visibility = 0
+#                if bleach.clean(self.get_argument('visibility')) == '1' or bleach.clean(self.get_argument('visibility').lower()) == 'true':
+#                    form.visibility = bleach.clean(self.get_argument('visibility'));
+#                else:
+#
+#                    form.visibility = "false"
+                form.visibility = True if self.get_argument('visibility') == 'true' else False
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
                 form.featured = True if self.get_argument('featured') == 'true' else False
                 alchemy.add_or_update_form(form)
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
-                questions = json.loads(self.get_argument('questions'))
+                questions.append(json.dump(self.get_argument('questions')))
                 for q in questions:
                     if 'question' in q:
                         question = forms_model.JobQuestion()
