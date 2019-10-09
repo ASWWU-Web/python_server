@@ -22,10 +22,11 @@ class NewFormHandler(BaseHandler):
                 form = forms_model.JobForm()
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
-                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
-                    form.visibility = 1
-                else:
-                    form.visibility = 0
+#                if self.get_argument('visibility') == '1' or self.get_argument('visibility').lower() == 'true':
+#                    form.visibility = 1
+#                else:
+#                    form.visibility = 0
+                form.visibility = True if self.get_argument('visibility') == 'true' else False
                 form.department = bleach.clean(self.get_argument('department'))
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
