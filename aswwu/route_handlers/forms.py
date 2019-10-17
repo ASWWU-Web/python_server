@@ -30,11 +30,13 @@ class NewFormHandler(BaseHandler):
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
                 form.featured = True if self.get_argument('featured') == 'true' else False
-                temp_list = (alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).all())
-                if len(temp_list) == 0:
+                job_list = (alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).all())
+                if len(job_list) == 0:
                     alchemy.add_or_update_form(form)
                 else:
-                    raise Exception
+                    self.set_status(400)
+                    self.write({"status": "Error: A job named " + form.job_name + " already exists."})
+                    return
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = json.loads(self.get_argument('questions'))
                 for q in questions:
