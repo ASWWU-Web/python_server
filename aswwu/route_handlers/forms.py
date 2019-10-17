@@ -18,7 +18,7 @@ class NewFormHandler(BaseHandler):
     def post(self):
         try:
             user = self.current_user
-            if 'forms' in user.roles:
+            if 'forms-admin' in user.roles:
                 form = forms_model.JobForm()
                 form.job_name = bleach.clean(self.get_argument('job_name'))
                 form.job_description = bleach.clean(self.get_argument('job_description'))
@@ -30,7 +30,13 @@ class NewFormHandler(BaseHandler):
                 form.owner = bleach.clean(self.get_argument('owner'))
                 form.image = bleach.clean(self.get_argument('image'))
                 form.featured = True if self.get_argument('featured') == 'true' else False
-                alchemy.add_or_update_form(form)
+                job_list = (alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).all())
+                if len(job_list) == 0:
+                    alchemy.add_or_update_form(form)
+                else:
+                    self.set_status(400)
+                    self.write({"status": "Error: A job named " + form.job_name + " already exists."})
+                    return
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(job_name=str(form.job_name)).one()
                 questions = json.loads(self.get_argument('questions'))
                 for q in questions:
