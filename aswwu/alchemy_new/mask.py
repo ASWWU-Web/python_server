@@ -62,7 +62,7 @@ def search_all_profiles():
         thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views)),
                                 label("last_viewed", mask_model.ProfileView.last_viewed)). \
                                 join(mask_model.Profile.views).group_by(mask_model.ProfileView.viewed). \
-                                order_by(desc("last_viewed"))
+                                order_by(func.random())
 
     except Exception as e:
         logger.info(e)
