@@ -2,7 +2,7 @@
 
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
+from sqlalchemy import create_engine, func, or_, and_, desc, asc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
@@ -58,10 +58,12 @@ def search_all_profiles():
         #                            GROUP BY viewed)
         #                            AS pv
         #                            ON profiles.username = pv.viewed)")
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
-            join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed). \
-            order_by(desc("views"))
+
+        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views)),
+                                label("last_viewed", mask_model.ProfileView.last_viewed)). \
+                                join(mask_model.Profile.views).group_by(mask_model.ProfileView.viewed). \
+                                order_by(desc("last_viewed"))
+
     except Exception as e:
         logger.info(e)
         people_db.rollback()
@@ -82,6 +84,7 @@ def search_profile_names(query, limit=0):
         logger.info(e)
         people_db.rollback()
     return thing
+
 
 def multiple_criteria_generator(key, criteria):
     for status in criteria.split(","):
