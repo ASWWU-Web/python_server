@@ -59,15 +59,14 @@ def search_all_profiles():
         #                            AS pv
         #                            ON profiles.username = pv.viewed)")
 
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views)),
-                                label("last_viewed", mask_model.ProfileView.last_viewed)). \
-                                join(mask_model.Profile.views).group_by(mask_model.ProfileView.viewed). \
-                                order_by(func.random())
+        profiles = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))).\
+            join(mask_model.Profile.views).group_by(mask_model.ProfileView.viewed).order_by(func.random())
 
     except Exception as e:
         logger.info(e)
         people_db.rollback()
-    return thing
+    return profiles
+
 
 
 def search_profile_names(query, limit=0):
