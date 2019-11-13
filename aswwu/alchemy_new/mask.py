@@ -52,30 +52,22 @@ def query_all(model):
 def search_all_profiles():
     profiles = None
     try:
-        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views
-        #                            FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views)
-        #                            AS real_views
-        #                            FROM profileviews
-        #                            GROUP BY viewed)
-        #                            AS pv
-        #                            ON profiles.username = pv.viewed)")
-
-        profiles = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
-            join(mask_model.Profile.views).group_by(mask_model.ProfileView.viewed) \
+        profiles = people_db.query(mask_model.Profile)\
+            .join(mask_model.User, mask_model.Profile.username == mask_model.User.username)\
+            .group_by(mask_model.User.username)\
             .order_by(asc(
-            sqlalchemy.sql.expression.case(
-                [
-                    (mask_model.Profile.photo == 'None', 2),
-                    (mask_model.Profile.photo == '', 2),
-                    (mask_model.Profile.photo == None, 2),
-                    (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
-                ], else_=1)), func.random())
+                sqlalchemy.sql.expression.case(
+                    [
+                        (mask_model.Profile.photo == 'None', 2),
+                        (mask_model.Profile.photo == '', 2),
+                        (mask_model.Profile.photo == None, 2),
+                        (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
+                    ], else_=1)), func.random())
 
     except Exception as e:
         logger.info(e)
         people_db.rollback()
     return profiles
-
 
 
 def search_profile_names(query, limit=0):
