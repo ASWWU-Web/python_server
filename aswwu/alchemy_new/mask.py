@@ -2,7 +2,7 @@
 
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
+from sqlalchemy import create_engine, func, or_, and_, desc, asc, case
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
@@ -49,23 +49,25 @@ def query_all(model):
 
 
 def search_all_profiles():
-    thing = None
+    profiles = None
     try:
-        # thing = people_db.execute("SELECT username, full_name, photo, email, real_views
-        #                            FROM (profiles LEFT JOIN (SELECT viewed, SUM(num_views)
-        #                            AS real_views
-        #                            FROM profileviews
-        #                            GROUP BY viewed)
-        #                            AS pv
-        #                            ON profiles.username = pv.viewed)")
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
-            join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed). \
-            order_by(desc("views"))
+        # https://stackoverflow.com/questions/28872013/how-to-order-by-case-descending
+        profiles = people_db.query(mask_model.Profile)\
+            .join(mask_model.User, mask_model.Profile.username == mask_model.User.username)\
+            .group_by(mask_model.User.username)\
+            .order_by(asc(
+                case(
+                    [
+                        (mask_model.Profile.photo == 'None', 2),
+                        (mask_model.Profile.photo == '', 2),
+                        (mask_model.Profile.photo == None, 2),
+                        (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
+                    ], else_=1)), func.random())
+
     except Exception as e:
         logger.info(e)
         people_db.rollback()
-    return thing
+    return profiles
 
 
 def search_profile_names(query, limit=0):
@@ -82,6 +84,7 @@ def search_profile_names(query, limit=0):
         logger.info(e)
         people_db.rollback()
     return thing
+
 
 def multiple_criteria_generator(key, criteria):
     for status in criteria.split(","):
