@@ -2,8 +2,7 @@
 
 import logging
 
-import sqlalchemy
-from sqlalchemy import create_engine, func, or_, and_, desc, asc
+from sqlalchemy import create_engine, func, or_, and_, desc, asc, case
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
@@ -52,11 +51,12 @@ def query_all(model):
 def search_all_profiles():
     profiles = None
     try:
+        # https://stackoverflow.com/questions/28872013/how-to-order-by-case-descending
         profiles = people_db.query(mask_model.Profile)\
             .join(mask_model.User, mask_model.Profile.username == mask_model.User.username)\
             .group_by(mask_model.User.username)\
             .order_by(asc(
-                sqlalchemy.sql.expression.case(
+                case(
                     [
                         (mask_model.Profile.photo == 'None', 2),
                         (mask_model.Profile.photo == '', 2),
