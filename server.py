@@ -21,7 +21,7 @@ import aswwu.route_handlers.homepage as homepage
 # import our super secret keys
 import imp
 try:
-    imp.find_module('eggs')
+    imp.find_module('settings')
     from settings import keys, testing
 except ImportError:
     from test_settings import keys, testing
