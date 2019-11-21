@@ -10,7 +10,12 @@ import time
 import requests
 import tornado.web
 
-from settings import testing, keys
+import imp
+try:
+    imp.find_module('eggs')
+    from settings import keys, testing
+except ImportError:
+    from test_settings import keys, testing
 
 # import models and alchemy functions as needed
 import aswwu.models.mask as mask_model
