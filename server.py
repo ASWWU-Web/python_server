@@ -18,13 +18,7 @@ import aswwu.route_handlers.volunteers as volunteers
 import aswwu.route_handlers.pages as pages
 import aswwu.route_handlers.froala_images as froala
 import aswwu.route_handlers.homepage as homepage
-# import our super secret keys
-import imp
-try:
-    imp.find_module('settings')
-    from settings import keys, testing
-except ImportError:
-    from test_settings import keys, testing
+from settings import keys, testing
 
 # import handlers as needed - here we import all of them
 

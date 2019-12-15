@@ -11,13 +11,14 @@ from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
 import aswwu.models.bases as base
 # import aswwu.models.mask as mask_model
 import aswwu.models.pages as pages_model
+from settings import database
 
 PagesBase = base.PagesBase
 
 logger = logging.getLogger("aswwu")
 
 # defines the databases URLs relative to "server.py"
-pages_engine = create_engine("sqlite:///../databases/pages.db")
+pages_engine = create_engine("sqlite:///" + database['location'] + "/pages.db")
 
 # create the model tables if they don't already exist
 PagesBase.metadata.create_all(pages_engine)

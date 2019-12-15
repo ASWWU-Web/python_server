@@ -1,6 +1,8 @@
 dist: xenial
 language: python
 python: "2.7"
+before_install:
+- cp test_settings.py settings.py
 install:
   - pip install -r requirements.txt
 script: python2 server.py

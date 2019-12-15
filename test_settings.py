@@ -10,3 +10,6 @@ email = {
     'username': 'aswwu.webmaster@wallawalla.edu',
     'password': 'aaaaaaaa'
 }
+database = {
+    'location': './test_databases'
+}
