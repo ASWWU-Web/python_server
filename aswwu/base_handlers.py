@@ -10,7 +10,7 @@ import time
 import requests
 import tornado.web
 
-from settings import testing, keys
+from settings import keys, testing
 
 # import models and alchemy functions as needed
 import aswwu.models.mask as mask_model
