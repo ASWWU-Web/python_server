@@ -5,7 +5,7 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from aswwu.archive_models import ArchiveBase
+from src.aswwu.archive_models import ArchiveBase
 from settings import database
 
 logger = logging.getLogger("aswwu")

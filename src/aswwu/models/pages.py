@@ -1,11 +1,10 @@
 import datetime
 
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # import aswwu.models.bases as base
-from aswwu.models.bases import PagesBase
+from src.aswwu.models.bases import PagesBase
 
 # PagesBase = declarative_base(cls=base.PagesBase)
 

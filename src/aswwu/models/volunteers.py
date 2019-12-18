@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
-import aswwu.models.bases as base
+import src.aswwu.models.bases as base
 
 Base = declarative_base(cls=base.Base)
 

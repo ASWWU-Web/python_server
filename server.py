@@ -8,16 +8,15 @@ import tornado.ioloop
 import tornado.web
 from tornado.options import define, options
 
-import aswwu.base_handlers as base
-import aswwu.route_handlers.ask_anything as ask_anything
-import aswwu.route_handlers.elections as elections
-import aswwu.route_handlers.forms as forms
-import aswwu.route_handlers.instagram as instagram
-import aswwu.route_handlers.mask as mask
-import aswwu.route_handlers.volunteers as volunteers
-import aswwu.route_handlers.pages as pages
-import aswwu.route_handlers.froala_images as froala
-import aswwu.route_handlers.homepage as homepage
+from src import aswwu as base
+import src.aswwu.route_handlers.elections as elections
+import src.aswwu.route_handlers.forms as forms
+import src.aswwu.route_handlers.instagram as instagram
+import src.aswwu.route_handlers.mask as mask
+import src.aswwu.route_handlers.volunteers as volunteers
+import src.aswwu.route_handlers.pages as pages
+import src.aswwu.route_handlers.froala_images as froala
+import src.aswwu.route_handlers.homepage as homepage
 from settings import keys, testing
 
 # import handlers as needed - here we import all of them

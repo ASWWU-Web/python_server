@@ -1,8 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, func
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
-import aswwu.models.bases as base
+import src.aswwu.models.bases as base
 
 Base = declarative_base(cls=base.Base)
 
@@ -53,7 +53,7 @@ class Profile(Base):
     office_hours = Column(String(250))
 
     def num_views(self):
-        from aswwu.alchemy_new.mask import num_views
+        from src.aswwu.alchemy_new.mask import num_views
         views = num_views(self.username)
         return views
 

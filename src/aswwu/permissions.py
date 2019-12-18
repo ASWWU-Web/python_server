@@ -1,8 +1,7 @@
 # sheldon woodward
 # jan 17, 2019
 
-from aswwu import exceptions
-
+from src.aswwu import exceptions
 
 admin_permission = 'administrator'
 elections_permission = 'elections-admin'

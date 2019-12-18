@@ -8,7 +8,7 @@ import glob
 
 from settings import testing
 
-from aswwu.base_handlers import BaseHandler
+from src.aswwu.base_handlers import BaseHandler
 
 
 class UploadHandler(BaseHandler):

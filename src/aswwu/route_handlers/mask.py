@@ -8,11 +8,11 @@ import bleach
 import tornado.web
 from sqlalchemy import or_
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.models.mask as mask_model
-import aswwu.archive_models as archive_model
-import aswwu.alchemy_new.mask as mask
-import aswwu.alchemy_new.archive as archive
+from src.aswwu.base_handlers import BaseHandler
+import src.aswwu.models.mask as mask_model
+from src import aswwu as archive_model
+import src.aswwu.alchemy_new.mask as mask
+import src.aswwu.alchemy_new.archive as archive
 
 logger = logging.getLogger("aswwu")
 
