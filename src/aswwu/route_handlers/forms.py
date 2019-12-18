@@ -6,10 +6,10 @@ import os
 import bleach
 import tornado.web
 
-from aswwu.base_handlers import BaseHandler
+from src.aswwu.base_handlers import BaseHandler
 from settings import email, database
-import aswwu.models.forms as forms_model
-import aswwu.alchemy_new.jobs as alchemy
+import src.aswwu.models.forms as forms_model
+import src.aswwu.alchemy_new.jobs as alchemy
 
 logger = logging.getLogger("aswwu")
 

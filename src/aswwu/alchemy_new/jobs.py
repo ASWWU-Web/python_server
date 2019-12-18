@@ -4,10 +4,10 @@
 # import ast
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc
-from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, joinedload
 
-import aswwu.models.bases as base
+import src.aswwu.models.bases as base
 from settings import database
 
 JobsBase = base.JobsBase

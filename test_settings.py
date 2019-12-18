@@ -11,5 +11,5 @@ email = {
     'password': 'aaaaaaaa'
 }
 database = {
-    'location': './test_databases'
+    'location': './travis_databases'
 }

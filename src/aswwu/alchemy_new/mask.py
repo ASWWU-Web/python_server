@@ -6,8 +6,8 @@ from sqlalchemy import create_engine, func, or_, and_, desc, asc, case
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import label
 
-import aswwu.models.bases as base
-import aswwu.models.mask as mask_model
+import src.aswwu.models.bases as base
+import src.aswwu.models.mask as mask_model
 from settings import database
 
 

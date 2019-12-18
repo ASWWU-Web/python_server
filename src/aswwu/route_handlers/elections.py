@@ -3,15 +3,15 @@ import json
 
 from datetime import datetime
 
-from aswwu.base_handlers import BaseHandler
-import aswwu.exceptions as exceptions
-from aswwu.permissions import permission_and, admin_permission, elections_permission
+from src.aswwu.base_handlers import BaseHandler
+import src.aswwu.exceptions as exceptions
+from src.aswwu.permissions import permission_and, admin_permission, elections_permission
 
-import aswwu.alchemy_new.elections as elections_alchemy
-import aswwu.alchemy_new.mask as mask_alchemy
-import aswwu.models.elections as elections_model
-import aswwu.models.mask as mask_model
-import aswwu.validators.elections as elections_validator
+from src import aswwu as elections_alchemy
+import src.aswwu.alchemy_new.mask as mask_alchemy
+import src.aswwu.models.elections as elections_model
+import src.aswwu.models.mask as mask_model
+import src.aswwu.validators.elections as elections_validator
 
 
 def build_query_params(request_arguments):

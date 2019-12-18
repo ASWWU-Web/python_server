@@ -7,16 +7,15 @@ import json
 import logging
 import time
 
-import requests
 import tornado.web
 
 from settings import keys, testing
 
 # import models and alchemy functions as needed
-import aswwu.models.mask as mask_model
-import aswwu.alchemy_new.mask as mask
-import aswwu.alchemy_new.archive as archive
-import aswwu.archive_models as archives
+import src.aswwu.models.mask as mask_model
+import src.aswwu.alchemy_new.mask as mask
+import src.aswwu.alchemy_new.archive as archive
+from src import aswwu as archives
 
 logger = logging.getLogger("aswwu")
 

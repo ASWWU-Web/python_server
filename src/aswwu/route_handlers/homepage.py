@@ -6,7 +6,7 @@ import tornado.web
 import json
 from settings import email
 
-from aswwu.base_handlers import BaseHandler
+from src.aswwu.base_handlers import BaseHandler
 
 logger = logging.getLogger("aswwu")
 
