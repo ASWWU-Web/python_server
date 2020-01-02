@@ -17,6 +17,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: Setup Settings File
+      run: |
+        cp test_settings.py settings.py
     - name: Start Server
       run: |
         python2 server.py
