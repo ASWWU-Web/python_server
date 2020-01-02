@@ -20,6 +20,6 @@ jobs:
     - name: Setup Settings File
       run: |
         cp test_settings.py settings.py
-    - name: Start Server
+    - name: Start Server in the background
       run: |
-        python2 server.py
+        nohup python /path/to/test.py > output.log &
