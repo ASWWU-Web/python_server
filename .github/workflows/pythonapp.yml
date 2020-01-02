@@ -26,3 +26,8 @@ jobs:
     - name: demo request for github actions
       run: |
         curl --location --request GET 'localhost:8888/search/all'
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: server-log
+        path: output.log
