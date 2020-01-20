@@ -11,12 +11,6 @@ from src.aswwu.route_handlers import \
 
 
 class Application(tornado.web.Application):
-    # define some global settings
-    settings = {
-        "login_url": "/login",
-        "secret_key": keys["hmac"]
-    }
-
     # list out the routes (as regex) and their corresponding handlers
     handlers = [
         # base
@@ -81,6 +75,12 @@ class Application(tornado.web.Application):
     ]
 
     def __init__(self):
+        # define some global settings
+        settings = {
+            "login_url": "/login",
+            "secret_key": keys["hmac"]
+        }
+
         # a bunch of setup stuff
         # mostly for logging and telling Tornado to start with the given settings
         self.options = options
@@ -92,5 +92,5 @@ class Application(tornado.web.Application):
         fh.setFormatter(formatter)
         logger.addHandler(fh)
         # see https://stackoverflow.com/a/11315061 for notation
-        tornado.web.Application.__init__(self, self.handlers, **self.settings)
+        tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(options.port))
