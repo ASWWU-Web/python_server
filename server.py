@@ -8,16 +8,15 @@ import tornado.ioloop
 import tornado.web
 from tornado.options import define, options
 
-import aswwu.base_handlers as base
-import aswwu.route_handlers.ask_anything as ask_anything
-import aswwu.route_handlers.elections as elections
-import aswwu.route_handlers.forms as forms
-import aswwu.route_handlers.instagram as instagram
-import aswwu.route_handlers.mask as mask
-import aswwu.route_handlers.volunteers as volunteers
-import aswwu.route_handlers.pages as pages
-import aswwu.route_handlers.froala_images as froala
-import aswwu.route_handlers.homepage as homepage
+from src.aswwu import base_handlers as base
+import src.aswwu.route_handlers.elections as elections
+import src.aswwu.route_handlers.forms as forms
+import src.aswwu.route_handlers.instagram as instagram
+import src.aswwu.route_handlers.mask as mask
+import src.aswwu.route_handlers.volunteers as volunteers
+import src.aswwu.route_handlers.pages as pages
+import src.aswwu.route_handlers.froala_images as froala
+import src.aswwu.route_handlers.homepage as homepage
 from settings import keys, testing
 
 # import handlers as needed - here we import all of them
@@ -106,7 +105,7 @@ class Application(tornado.web.Application):
         self.options = options
         logger = logging.getLogger(options.log_name)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler("aswwu/"+options.log_name+".log")
+        fh = logging.FileHandler("src/aswwu/"+options.log_name+".log")
         fh.setLevel(logging.DEBUG)
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
@@ -128,7 +127,7 @@ if __name__ == "__main__":
 
     # initiate the IO loop for Tornado
     io_loop = tornado.ioloop.IOLoop.instance()
-    tornado.options.parse_config_file("aswwu/"+conf_name+".conf")
+    tornado.options.parse_config_file("src/aswwu/"+conf_name+".conf")
     # create a new instance of our Application
     application = Application()
     application.listen(options.port)
