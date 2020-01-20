@@ -3,8 +3,8 @@ keys = {
     'samlEndpointKey': "aaaaaaaa"
 }
 testing = {
-	'dev': False,
-	'developer': 0000000
+    'dev': False,
+    'developer': 0000000
 }
 email = {
     'username': 'aswwu.webmaster@wallawalla.edu',
