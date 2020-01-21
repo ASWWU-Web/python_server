@@ -10,7 +10,7 @@ from sqlalchemy import or_
 
 from src.aswwu.base_handlers import BaseHandler
 import src.aswwu.models.mask as mask_model
-from src import aswwu as archive_model
+import src.aswwu.archive_models as archive_model
 import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
 
@@ -53,9 +53,10 @@ class AdministratorRoleHandler(BaseHandler):
 # this is the root of all searches
 class SearchHandler(BaseHandler):
     # accepts a year and a query as parameters
-    def get(self, year, query):
+    def get(self, query_year, query):
         # if searching in the current year, access the Profile model
-        if year == self.application.options.current_year:
+        server_year = self.application.options.current_year
+        if query_year == server_year:
             model = mask_model.Profile
             # results = alchemy.people_db.query(model)
 
@@ -63,7 +64,7 @@ class SearchHandler(BaseHandler):
             # results = {r[0] for r in profiles}
         # otherwise we're going old school with the Archives
         else:
-            model = archive_model.get_archive_model(year)
+            model = archive_model.get_archive_model(query_year)
             results = archive.archive_db.query(model)
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]

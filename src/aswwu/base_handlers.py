@@ -15,7 +15,7 @@ from settings import keys, testing
 import src.aswwu.models.mask as mask_model
 import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
-from src import aswwu as archives
+import src.aswwu.archive_models as archives
 
 logger = logging.getLogger("aswwu")
 

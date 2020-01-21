@@ -94,3 +94,9 @@ class Application(tornado.web.Application):
         # see https://stackoverflow.com/a/11315061 for notation
         tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(options.port))
+
+    def start_server(self):
+        self.listen(self.options.port)
+
+    def stop_server(self, io_loop):
+        io_loop.add_callback(io_loop.stop)

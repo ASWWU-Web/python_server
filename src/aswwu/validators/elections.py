@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from src import aswwu as elections_alchemy
+import src.aswwu.alchemy_new.elections as elections_alchemy
 import src.aswwu.alchemy_new.mask as mask_alchemy
 import src.aswwu.exceptions as exceptions
 

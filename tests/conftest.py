@@ -1,18 +1,23 @@
 import pytest
 import threading
 import tornado.ioloop
-import application
+from tornado.options import options
+from src import application
 from sqlalchemy import create_engine
-from settings import DATABASE
+from settings import database as DATABASE
+from src.application import Application
 from tests.utils import query_table_elections, delete_table_elections
+
 
 def start_testing_server():
     # pass in the conf default name
-    conf_name = "default"
+    conf_file = "tests/default.conf"
+    tornado.options.parse_config_file(conf_file)
 
-    # initiate the IO loop for Tornado
     io_loop = tornado.ioloop.IOLoop.instance()
-    tornado.options.parse_config_file("src/aswwu/" + conf_name + ".conf")
+
+    application = Application()
+    application.listen(options.port)
 
     # create thread for running the server
     thread = threading.Thread(
@@ -23,20 +28,18 @@ def start_testing_server():
     # allow server to start before running tests
     import time
     time.sleep(1)
-    return (io_loop, thread)
+    return io_loop
 
 
-def stop_testing_server(io_loop, thread):
+def stop_testing_server(io_loop):
     application.stop_server(io_loop)
-    # Close the thread
-    thread.join()
 
 
 @pytest.fixture()
 def testing_server():
-    (io_loop, thread) = start_testing_server()
+    io_loop = start_testing_server()
     yield
-    stop_testing_server(io_loop, thread)
+    stop_testing_server(io_loop)
 
 
 @pytest.fixture()
