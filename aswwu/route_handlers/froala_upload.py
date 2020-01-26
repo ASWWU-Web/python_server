@@ -11,7 +11,7 @@ from settings import testing
 from aswwu.base_handlers import BaseHandler
 
 
-class UploadHandler(BaseHandler):
+class UploadImage(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         try:
@@ -32,6 +32,39 @@ class UploadHandler(BaseHandler):
                 join(random.choice(string.ascii_lowercase + string.digits) for _ in range(50)) + os.path.splitext(fileinfo['filename'])[1]
             print("new filename: " + new_filename)
             extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff']
+            if os.path.splitext(fileinfo['filename'])[1] in extensions:
+                fh = open(
+                    "../media/cms/" + new_filename,
+                    'w+')
+                fh.write(fileinfo['body'])
+            response = {"link": server_url + new_filename, "media_URI": "cms/" + new_filename}
+        except Exception:
+            response = {'error': str(sys.exc_info()[1])}
+            self.set_status(500)
+        self.write(response)
+
+
+class UploadFile(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        try:
+            user = self.current_user
+            if not ('administrator' in user.roles or 'pages-admin' in user.roles):
+                self.write({'error': 'insufficient permissions'})
+                return
+        except:
+            self.write({'error': 'authentication error'})
+            return
+        try:
+            fileinfo = self.request.files['file'][0]
+            if not testing['dev']:
+                server_url = 'https://aswwu.com/server/pages/media/static/'
+            else:
+                server_url = 'http://localhost:8888/pages/media/static/'
+            new_filename = ''. \
+                join(random.choice(string.ascii_lowercase + string.digits) for _ in range(50)) + os.path.splitext(fileinfo['filename'])[1]
+            print("new filename: " + new_filename)
+            extensions = ['.doc', '.docx', '.pdf', '.txt', '.xml']
             if os.path.splitext(fileinfo['filename'])[1] in extensions:
                 fh = open(
                     "../media/cms/" + new_filename,
