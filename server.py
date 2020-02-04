@@ -1,13 +1,9 @@
-# server.py
-
 import tornado.autoreload
-import tornado.ioloop
 import tornado.web
-from tornado.options import define, options
+from tornado.options import define
 
-from src.application import Application
 from settings import testing
-
+from src.aswwu import application
 
 if __name__ == "__main__":
     # allow command line arguments e.g. `python server.py --port=8881`
@@ -16,12 +12,17 @@ if __name__ == "__main__":
     define("current_year", default="1920", help="current school year")
     tornado.options.parse_command_line()
 
-    io_loop = tornado.ioloop.IOLoop.instance()
-
-    application = Application()
-    application.start_server()
-
     # reload the server if changes are made
     if testing['dev']:
         tornado.autoreload.start()
-    io_loop.start()
+
+    server = application.start_server()
+
+    print 'services running, press ctrl+c to stop'
+    try:
+        while True:
+            raw_input('')
+    except KeyboardInterrupt:
+        print 'stopping services...'
+        application.stop_server(server)
+        exit(0)
