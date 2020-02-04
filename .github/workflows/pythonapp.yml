@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pipenv
-        pipenv install -e --ignore-pipfile
+        pipenv install --ignore-pipfile
     - name: Setup Settings File
       run: |
         cp test_settings.py settings.py
