@@ -8,7 +8,6 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
 from sqlalchemy.exc import IntegrityError
 
-from names import get_first_name, get_last_name
 
 METADATA = MetaData()
 ASKANYTHING_TABLE = Table(
