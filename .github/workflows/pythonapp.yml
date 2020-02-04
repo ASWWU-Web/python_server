@@ -23,7 +23,7 @@ jobs:
         cp test_settings.py settings.py
     - name: Start Server in the background
       run: |
-        nohup python server.py > output.log &
+        pipenv run python server.py > output.log &
     - name: demo request for github actions
       run: |
         curl --location --request GET 'localhost:8888/search/all'
