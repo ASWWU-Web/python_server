@@ -15,6 +15,7 @@ jobs:
         python-version: 2.7
     - name: Install dependencies
       run: |
+        pip install --upgrade pip
         pip install pipenv
         pipenv install --ignore-pipfile
     - name: Setup Settings File
