@@ -1,5 +1,4 @@
-import threading
-
+import time
 import pytest
 import tornado.ioloop
 from tornado.options import options, define
@@ -14,25 +13,20 @@ def start_testing_server():
     define("current_year")
     tornado.options.parse_config_file(conf_file)
 
-    io_loop = tornado.ioloop.IOLoop.instance()
-    thread = threading.Thread(
-        target=application.start_server, args=(io_loop,))
-    thread.daemon = True
-    thread.start()
+    server = application.start_server()
 
     # give the server time to start before running tests
-    import time
     time.sleep(1)
-    return io_loop, thread
+
+    return server
 
 
-def stop_testing_server(io_loop, thread):
-    application.stop_server(io_loop)
-    thread.join()
+def stop_testing_server(server):
+    application.stop_server(server)
 
 
 @pytest.fixture()
 def testing_server():
-    io_loop, thread = start_testing_server()
+    server = start_testing_server()
     yield
-    stop_testing_server(io_loop, thread)
+    stop_testing_server(server)

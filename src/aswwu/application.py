@@ -3,6 +3,8 @@ import logging
 import tornado.httpserver
 import tornado.web
 from tornado.options import options
+from tornado.ioloop import IOLoop
+import threading
 
 from settings import keys
 from src.aswwu import base_handlers as base
@@ -12,7 +14,6 @@ from src.aswwu.route_handlers import \
 
 
 class Application(tornado.web.Application):
-    # list out the routes (as regex) and their corresponding handlers
     handlers = [
         # base
         (r"/login", base.BaseLoginHandler),  # dummy route required by tornado
@@ -76,14 +77,10 @@ class Application(tornado.web.Application):
     ]
 
     def __init__(self):
-        # define some global settings
         settings = {
             "login_url": "/login",
             "secret_key": keys["hmac"]
         }
-
-        # a bunch of setup stuff
-        # mostly for logging and telling Tornado to start with the given settings
         self.options = options
         logger = logging.getLogger(options.log_name)
         logger.setLevel(logging.DEBUG)
@@ -92,19 +89,22 @@ class Application(tornado.web.Application):
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
         logger.addHandler(fh)
-        # see https://stackoverflow.com/a/11315061 for notation
         tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(options.port))
 
 
-def start_server(io_loop):
+def start_server():
     application = Application()
-    application.listen(options.port)
+    server = application.listen(options.port)
 
-    io_loop.make_current()
-    io_loop.start()
-    print 'The Tornado IOLoop has started.'
+    # https://stackoverflow.com/a/57688560
+    io_loop_thread = threading.Thread(target=IOLoop.current().start)
+    # io_loop_thread.daemon = True
+    io_loop_thread.start()
+    print 'The Tornado IOLoop thread has started.'
+    return server
 
 
-def stop_server(io_loop):
-    io_loop.add_callback(io_loop.stop)
+def stop_server(server):
+    server.stop()
+    IOLoop.current().stop()
