@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[requires]
+python_version = "2.7"
+
+[packages]
+requests = "*"
+tornado = "==5.0.2"
+bleach = "*"
+Pattern = "==2.6"
+SQLAlchemy = "*"
+
+singledispatch = "*"
+backports-abc = "*"
+futures = "*"

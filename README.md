@@ -17,7 +17,7 @@ python server.
 ```
 git clone user@aswwu.com:/data/databases
 ```
-The python library looks for the database file in `../databases` so make sure you clone the database repository into 
+The python library looks for the database file referenced in settings.py as `database['location']` so make sure you clone the database repository into 
 the correct place.
 
 ## Running
