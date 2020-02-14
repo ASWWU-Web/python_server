@@ -1,0 +1,34 @@
+name: Python application
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install pipenv
+        pipenv install --ignore-pipfile
+    - name: Setup Settings File
+      run: |
+        cp test_settings.py settings.py
+    - name: Start Server in the background
+      run: |
+        pipenv run python server.py > output.log &
+    - name: demo request for github actions
+      run: |
+        curl --location --request GET 'localhost:8888/search/all'
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: server-log
+        path: output.log
