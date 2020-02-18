@@ -94,17 +94,17 @@ class Application(tornado.web.Application):
 
 
 def start_server():
+    # https://stackoverflow.com/a/57688560
     application = Application()
     server = application.listen(options.port)
-
-    # https://stackoverflow.com/a/57688560
-    io_loop_thread = threading.Thread(target=IOLoop.current().start)
-    # io_loop_thread.daemon = True
-    io_loop_thread.start()
+    event_loop_thread = threading.Thread(target=tornado.ioloop.IOLoop.current().start)
+    event_loop_thread.daemon = True
+    event_loop_thread.start()
     print 'The Tornado IOLoop thread has started.'
-    return server
+    return server, event_loop_thread
 
 
-def stop_server(server):
+def stop_server(server, event_loop_thread):
     server.stop()
-    IOLoop.current().stop()
+    tornado.ioloop.IOLoop.current().stop()
+    event_loop_thread.join()
