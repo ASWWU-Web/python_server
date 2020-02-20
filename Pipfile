@@ -14,7 +14,7 @@ tornado = "==5.0.2"
 bleach = "*"
 Pattern = "==2.6"
 SQLAlchemy = "*"
-
 singledispatch = "*"
 backports-abc = "*"
 futures = "*"
+pytest = "*"
