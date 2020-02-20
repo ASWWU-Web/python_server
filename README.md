@@ -2,12 +2,12 @@
 ## Installation
 The following python packages need to be installed and they can be installed with the following command.
 ```
-pip install -r requirements.txt
+./scripts/startup.sh
 ```
 
 Then you need to get a copy of the settings file. To do this, run the following command:
 ```
-scp user@aswwu.com:/data/python_server/settings.py ./
+scp user@<server_ip>:/data/python_server/settings.py ./
 ```
 Once you've done this, change the `dev` parameter to `True`, and the `developer` parameter to your WWU ID is 
 settings.py.
@@ -15,7 +15,7 @@ settings.py.
 Then you need to get a copy of the database files. Run the following command from the directory one level up from the 
 python server.
 ```
-git clone user@aswwu.com:/data/databases
+scp user@<server_ip>:/data/databases ./
 ```
 The python library looks for the database file referenced in settings.py as `database['location']` so make sure you clone the database repository into 
 the correct place.
