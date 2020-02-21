@@ -15,7 +15,8 @@ settings.py.
 Then you need to get a copy of the database files. Run the following command from the directory one level up from the 
 python server.
 ```
-scp user@<server_ip>:/data/databases ./
+mkdir databases
+scp user@<server_ip>:/data/databases ./databases
 ```
 The python library looks for the database file referenced in settings.py as `database['location']` so make sure you clone the database repository into 
 the correct place.
