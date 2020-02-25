@@ -12,3 +12,10 @@ def post_verify(wwuid, full_name, email):
     }
     resp = requests.post(url, post_data)
     return resp
+
+
+def get_verify():
+    url = testing['base_url'] + testing['port'] + 'verify'
+    resp = requests.get(url)
+    assert (resp.status_code == 200)
+    return resp
