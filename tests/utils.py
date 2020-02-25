@@ -3,11 +3,23 @@
 """
 from contextlib import contextmanager
 from datetime import datetime
+import csv
 
 
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
 from sqlalchemy.exc import IntegrityError
 
+
+def load_users(users_file):
+    users_list = None
+    with open(users_file) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        users_list = [{
+            'wwuid': row[0],
+            'full_name': row[1],
+            'email': row[2]
+        } for row in csv_reader]
+    return users_list
 
 METADATA = MetaData()
 ASKANYTHING_TABLE = Table(
@@ -170,7 +182,7 @@ def gen_profiles(number=5):
                 "wwuid": 9000000 + i,
                 "photo": "profiles/00958-2019687.jpg",
                 "majors": majors[i%3],
-                "username" : username, 
+                "username" : username,
                 "gender": gender[i%2],
                 "pet_peeves": pet_peeves[i%2]
             }
