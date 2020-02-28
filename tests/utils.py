@@ -17,7 +17,8 @@ def load_users(users_file):
         users_list = [{
             'wwuid': row[0],
             'full_name': row[1],
-            'email': row[2]
+            'email': row[2],
+            'username': row[3],
         } for row in csv_reader]
     return users_list
 

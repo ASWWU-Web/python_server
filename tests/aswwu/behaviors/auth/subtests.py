@@ -1,17 +1,17 @@
-import tests.aswwu.behaviors.auth.requests as auth_requests
+import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.utils as utils
-import tests.aswwu.data.paths as paths
+from tests.aswwu.data.paths import USERS_PATH
 import json
 from settings import keys, testing
+
 
 def send_get_verify():
     resp = auth_requests.get_verify()
 
-
 def send_post_verify():
     DEFAULT_STATUS = 'Student'
     DEFAULT_ROLES = 'None'
-    users = utils.load_users(paths.USER_PATH)
+    users = utils.load_users(USERS_PATH)
     for user in users:
         resp = auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         resp_text = json.loads(resp.text)
