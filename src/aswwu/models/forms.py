@@ -70,7 +70,7 @@ class JobApplication(JobsBase):
 
     def min(self):
         return {'jobID': self.jobID, 'username': self.username,
-                'status': self.status}
+                'status': self.status, 'updated_at': self.updated_at.isoformat()}
 
 
 class JobAnswer(JobsBase):
