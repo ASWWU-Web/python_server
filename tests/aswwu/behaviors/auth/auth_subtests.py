@@ -7,6 +7,8 @@ from settings import keys, testing
 
 def send_get_verify():
     resp = auth_requests.get_verify()
+    assert(resp.status_code == 200)
+
 
 def send_post_verify():
     DEFAULT_STATUS = 'Student'

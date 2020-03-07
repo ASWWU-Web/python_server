@@ -18,5 +18,4 @@ def post_verify(wwuid, full_name, email):
 
 def get_verify():
     resp = requests.get(VERIFY_URL)
-    assert (resp.status_code == 200)
     return resp
