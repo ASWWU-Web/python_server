@@ -13,7 +13,7 @@ def send_get_verify():
 def send_post_verify():
     DEFAULT_STATUS = 'Student'
     DEFAULT_ROLES = 'None'
-    users = utils.load_users(USERS_PATH)
+    users = utils.load_csv(USERS_PATH)
     for user in users:
         resp = auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         resp_text = json.loads(resp.text)

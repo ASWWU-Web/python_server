@@ -10,17 +10,19 @@ from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integ
 from sqlalchemy.exc import IntegrityError
 
 
-def load_users(users_file):
-    users_list = None
-    with open(users_file) as csvfile:
+def load_csv(csv_file):
+    object_list = []
+    with open(csv_file) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
-        users_list = [{
-            'wwuid': row[0],
-            'full_name': row[1],
-            'email': row[2],
-            'username': row[3],
-        } for row in csv_reader]
-    return users_list
+        headers = next(csv_reader)
+        for row in csv_reader:
+            row_object = {
+                headers[header_index]: row[header_index]
+                for header_index in range(0, len(headers))
+            }
+            object_list.append(row_object)
+    return object_list
+
 
 METADATA = MetaData()
 ASKANYTHING_TABLE = Table(
