@@ -1,6 +1,0 @@
-pattern==2.6
-requests
-SQLAlchemy
-tornado
-bleach
-pytest
