@@ -34,5 +34,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: server-log
+        name: backend-artifact
         path: ../backend-artifact
