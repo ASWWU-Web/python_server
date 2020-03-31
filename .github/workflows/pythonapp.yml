@@ -13,22 +13,25 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 2.7
+
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
-        pip install pipenv
-        pipenv install --ignore-pipfile
-    - name: Setup Settings File
-      run: |
-        cp test_settings.py settings.py
+        bash scripts/pytest_setup.sh
+
     - name: Start Server in the background
       run: |
-        pipenv run python server.py > output.log &
-    - name: demo request for github actions
+        bash scripts/run_pytests.sh
+
+    - name: Prepare Artifact
       run: |
-        curl --location --request GET 'localhost:8888/search/all'
+        mkdir ../backend-artifact
+        mkdir ../backend-artifact/backend-payload
+        cp scripts/remote_deploy.sh ../backend-artifact/
+        cp scripts/server_deploy.sh ../backend-artifact/backend-payload
+        cp ./ ../backend-artifact/backend-payload/python_server
+
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: server-log
-        path: output.log
+        path: ../backend-artifact
