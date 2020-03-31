@@ -11,7 +11,7 @@ testing = {
     'current_year': '1920',
 }
 production = {
-    'port': '8888',
+    'port': 8888,
     'log_name': 'aswwu',
     'current_year': '1920',
 }

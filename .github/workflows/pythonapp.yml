@@ -18,7 +18,7 @@ jobs:
       run: |
         bash scripts/pytest_setup.sh
 
-    - name: Start Server in the background
+    - name: Run Tests
       run: |
         bash scripts/run_pytests.sh
 

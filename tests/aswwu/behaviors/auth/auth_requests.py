@@ -2,7 +2,7 @@ import requests
 from settings import keys, testing
 
 
-VERIFY_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'verify'
+VERIFY_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'verify'
 
 
 def post_verify(wwuid, full_name, email):
