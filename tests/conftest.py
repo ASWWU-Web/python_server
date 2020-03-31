@@ -10,8 +10,6 @@ from settings import testing
 define("port", default=testing['port'], type=int)
 define("log_name", default=testing['log_name'])
 define("current_year", default=testing['current_year'])
-tornado.options.parse_command_line()
-options_defined = True
 
 
 @pytest.fixture()
