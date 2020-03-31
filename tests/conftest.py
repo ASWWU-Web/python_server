@@ -5,13 +5,11 @@ from tornado.options import options, define
 import threading
 
 from src.aswwu.application import Application, start_server, stop_server
+from settings import testing
 
-conf_file = "tests/default.conf"
-define("port", type=int)
-define("log_name")
-define("current_year")
-tornado.options.parse_config_file(conf_file)
-options_defined = True
+define("port", default=testing['port'], type=int)
+define("log_name", default=testing['log_name'])
+define("current_year", default=testing['current_year'])
 
 
 @pytest.fixture()

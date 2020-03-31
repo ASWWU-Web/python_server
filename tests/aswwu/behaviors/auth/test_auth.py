@@ -7,4 +7,5 @@ def test_post_verify(testing_server):
 
 
 def test_get_verify(testing_server):
+    pass
     send_get_verify()
