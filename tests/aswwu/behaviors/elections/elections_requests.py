@@ -61,8 +61,9 @@ def post_election(election_type, name, max_votes, start, end, show_results):
         'end': end,
         'show_results': show_results,
     }
-    resp = requests.post(ELECTION_URL, post_data)
+    resp = requests.post(ELECTION_URL, json=post_data)
     return resp
+
 
 # (r"/elections/election/(.*)/count", elections.VoteCountHandler)
 # get
