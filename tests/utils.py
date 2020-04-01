@@ -3,10 +3,25 @@
 """
 from contextlib import contextmanager
 from datetime import datetime
+import csv
 
 
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
 from sqlalchemy.exc import IntegrityError
+
+
+def load_csv(csv_file):
+    object_list = []
+    with open(csv_file) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        headers = next(csv_reader)
+        for row in csv_reader:
+            row_object = {
+                headers[header_index]: row[header_index]
+                for header_index in range(0, len(headers))
+            }
+            object_list.append(row_object)
+    return object_list
 
 
 METADATA = MetaData()
@@ -170,7 +185,7 @@ def gen_profiles(number=5):
                 "wwuid": 9000000 + i,
                 "photo": "profiles/00958-2019687.jpg",
                 "majors": majors[i%3],
-                "username" : username, 
+                "username" : username,
                 "gender": gender[i%2],
                 "pet_peeves": pet_peeves[i%2]
             }
