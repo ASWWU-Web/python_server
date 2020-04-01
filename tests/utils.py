@@ -156,7 +156,7 @@ def edit(generator, changes):
 
     """
     for i, record in enumerate(generator):
-        if i in changes.iterkeys():
+        if i in changes.keys():
             record.update(changes[i])
 
         yield record
