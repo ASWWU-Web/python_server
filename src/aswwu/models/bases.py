@@ -42,7 +42,7 @@ class Base(object):
                 try:
                     if not isinstance(value, six.string_types):
                         value = str(value)
-                    obj[key] = value.encode("utf-8")
+                    obj[key] = value
                 # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
                     obj[key] = 'None'
