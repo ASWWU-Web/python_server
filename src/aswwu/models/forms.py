@@ -8,6 +8,8 @@ JobsBase = declarative_base(cls=base.JobsBase)
 
 
 class JobForm(JobsBase):
+    __tablename__ = 'jobforms'
+
     job_name = Column(String(100), nullable=False)
     job_description = Column(String(10000))
     department = Column(String(150))
@@ -47,6 +49,8 @@ class JobForm(JobsBase):
 
 
 class JobQuestion(JobsBase):
+    __tablename__ = 'jobquestions'
+
     question = Column(String(5000))
     jobID = Column(String(50), ForeignKey('jobforms.id'))
 
@@ -55,6 +59,8 @@ class JobQuestion(JobsBase):
 
 
 class JobApplication(JobsBase):
+    __tablename__ = 'jobapplications'
+
     jobID = Column(String(50), ForeignKey('jobforms.id'))
     answers = relationship("JobAnswer", backref="jobapplications", lazy="joined")
     username = Column(String(100), nullable=False)
@@ -74,6 +80,8 @@ class JobApplication(JobsBase):
 
 
 class JobAnswer(JobsBase):
+    __tablename__ = 'jobanswers'
+
     questionID = Column(String(50), ForeignKey('jobquestions.id'))
     answer = Column(String(10000))
     applicationID = Column(String(50), ForeignKey('jobapplications.id'))

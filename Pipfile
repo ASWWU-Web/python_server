@@ -6,16 +6,15 @@ verify_ssl = true
 [dev-packages]
 
 [requires]
-python_version = "2.7"
+python_version = "3.7"
 
 [packages]
+#requests = "*"
+#tornado = "==5.0.2"
+#bleach = "*"
+#SQLAlchemy = "*"
+#pytest = "*"
+#pycodestyle = "*"
 requests = "*"
 tornado = "==5.0.2"
 bleach = "*"
-Pattern = "==2.6"
-SQLAlchemy = "*"
-singledispatch = "*"
-backports-abc = "*"
-futures = "*"
-pytest = "*"
-pycodestyle = "*"

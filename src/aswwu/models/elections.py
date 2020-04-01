@@ -7,6 +7,8 @@ import src.aswwu.alchemy_new.mask as mask_alchemy
 
 
 class Election(ElectionBase):
+    __tablename__ = 'elections'
+
     election_type = Column(String(10))
     name = Column(String(100))
     max_votes = Column(Integer)
@@ -32,6 +34,8 @@ class Election(ElectionBase):
 
 
 class Position(ElectionBase):
+    __tablename__ = 'positions'
+
     position = Column(String(100))
     election_type = Column(String(10))
     active = Column(Boolean)
@@ -48,6 +52,8 @@ class Position(ElectionBase):
 
 
 class Vote(ElectionBase):
+    __tablename__ = 'votes'
+
     election = Column(String(100), ForeignKey('elections.id'))
     position = Column(String(100), ForeignKey('positions.id'))
     vote = Column(String(100))
@@ -76,6 +82,8 @@ class Vote(ElectionBase):
 
 
 class Candidate(ElectionBase):
+    __tablename__ = 'candidates'
+
     election = Column(String(100), ForeignKey('elections.id'))
     position = Column(String(100), ForeignKey('positions.id'))
     username = Column(String(100))
