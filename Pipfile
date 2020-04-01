@@ -9,12 +9,9 @@ verify_ssl = true
 python_version = "3.7"
 
 [packages]
-#requests = "*"
-#tornado = "==5.0.2"
-#bleach = "*"
-#SQLAlchemy = "*"
-#pytest = "*"
-#pycodestyle = "*"
 requests = "*"
 tornado = "==5.0.2"
 bleach = "*"
+sqlalchemy = "*"
+pytest = "*"
+pycodestyle = "*"
