@@ -30,9 +30,3 @@ jobs:
         cp scripts/remote_deploy.sh ../backend-artifact/
         cp scripts/server_deploy.sh ../backend-artifact/backend-payload
         cp -r ./* ../backend-artifact/backend-payload/python_server/
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: backend-artifact
-        path: ../backend-artifact
