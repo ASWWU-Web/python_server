@@ -189,18 +189,21 @@ class ViewApplicationHandler(BaseHandler):
             user = self.current_user
             if job_id == "all" and username == "all":
                 if 'forms-admin' in user.roles:
-                    apps = alchemy.query_all_forms(forms_model.JobApplication)
+                    apps = alchemy.query_all_forms(forms_model.JobApplication).\
+                        order_by(forms_model.JobApplication.updated_at.desc())
                     self.write({'applications': [a.min() for a in apps]})
                     return
             elif job_id == "all" and username != "all":
                 if 'forms-admin' in user.roles or username == user.username:
-                    apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(username=username)
+                    apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(username=username).\
+                        order_by(forms_model.JobApplication.updated_at.desc())
                     self.write({'applications': [a.min() for a in apps]})
                     return
             elif username == "all" and job_id != "all":
                 form = alchemy.jobs_db.query(forms_model.JobForm).filter_by(id=str(job_id)).one()
                 if 'forms-admin' in user.roles or ('forms' in user.roles and form.owner == user.username):
-                    apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id)
+                    apps = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id).\
+                        order_by(forms_model.JobApplication.updated_at.desc())
                     self.write({'applications': [a.min() for a in apps]})
                     return
             else:
