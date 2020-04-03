@@ -72,7 +72,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # creates an HMAC digest that is a hexadecimal hash based on a provided message
     def generate_hmac_digest(self, message):
         secret = self.application.settings['secret_key']
-        signature = hmac.new(secret, message, digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(secret.encode(), message.encode(), digestmod=hashlib.sha256).hexdigest()
         return signature
 
     # create a authorization token for the given WWUID based on the current time
@@ -204,10 +204,11 @@ class BaseVerifyLoginHandler(BaseHandler):
             add_null_view('null.user', user.username)
         # return the new users token and information
         token = self.generate_token(user.wwuid)
-        self.write({
+        response = {
             'user': user.to_json(),
             'token': token
-        })
+        }
+        self.write(response)
         # set the cookie header in the response
         self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
 

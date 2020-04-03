@@ -1,10 +1,11 @@
 import logging
+import time
 
 import tornado.httpserver
 import tornado.web
 from tornado.options import options
 from tornado.ioloop import IOLoop
-import threading
+from threading import Thread
 
 from settings import keys
 from src.aswwu import base_handlers as base
@@ -97,14 +98,14 @@ def start_server():
     # https://stackoverflow.com/a/57688560
     application = Application()
     server = application.listen(options.port)
-    event_loop_thread = threading.Thread(target=tornado.ioloop.IOLoop.current().start)
+    event_loop_thread = Thread(target=IOLoop.current().start)
     event_loop_thread.daemon = True
     event_loop_thread.start()
-    print 'The Tornado IOLoop thread has started.'
+    print('The Tornado IOLoop thread has started.')
     return server, event_loop_thread
 
 
 def stop_server(server, event_loop_thread):
     server.stop()
-    tornado.ioloop.IOLoop.current().stop()
+    IOLoop.current().add_callback(IOLoop.current().stop)
     event_loop_thread.join()

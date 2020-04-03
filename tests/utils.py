@@ -156,7 +156,7 @@ def edit(generator, changes):
 
     """
     for i, record in enumerate(generator):
-        if i in changes.iterkeys():
+        if i in changes.keys():
             record.update(changes[i])
 
         yield record
@@ -178,7 +178,7 @@ def gen_profiles(number=5):
         pet_peeves = ["Being tinkered with", ""]
         for i in xrange(number):
             #Generates a new username archived.profile0, archived.profile1, etc.
-            username = "test.profile" + `i`
+            username = "test.profile" + repr(i)
 
             yield {
                 "id" : 100 + i,

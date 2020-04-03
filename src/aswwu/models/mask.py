@@ -9,6 +9,8 @@ Base = declarative_base(cls=base.Base)
 
 # you guessed it, our generic User model
 class User(Base):
+    __tablename__ = 'users'
+
     wwuid = Column(String(7), unique=True)
     username = Column(String(250), nullable=False)
     full_name = Column(String(250))
@@ -18,6 +20,8 @@ class User(Base):
 
 # table for profile data
 class Profile(Base):
+    __tablename__ = 'profiles'
+
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
     full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
@@ -79,6 +83,8 @@ class Profile(Base):
 
 
 class ProfileView(Base):
+    __tablename__ = 'profileviews'
+
     viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
     viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
     last_viewed = Column(DateTime)

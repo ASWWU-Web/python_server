@@ -11,6 +11,8 @@ Base = declarative_base(cls=base.Base)
 # an unfortunately large table to hold the volunteer information
 # NOTE: this should and could probably be stored as a JSON blob
 class Volunteer(Base):
+    __tablename__ = 'volunteers'
+
     wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
     campus_ministries = Column(Boolean, default=False)
     student_missions = Column(Boolean, default=False)
