@@ -4,9 +4,7 @@
 from contextlib import contextmanager
 from datetime import datetime
 import csv
-
-
-from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
+from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select, MetaData
 from sqlalchemy.exc import IntegrityError
 
 
@@ -24,124 +22,24 @@ def load_csv(csv_file):
     return object_list
 
 
-METADATA = MetaData()
-ASKANYTHING_TABLE = Table(
-    'askanythings', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('updated_at', DateTime),
-    Column('question', String(500), nullable=False),
-    Column('reviewed', Boolean),
-    Column('authorized', Boolean))
+def reset_databases():
+    # https://stackoverflow.com/a/5003705/11021067
+    from contextlib import closing
+    from src.aswwu.alchemy_new.archive import archive_engine
+    from src.aswwu.alchemy_new.elections import election_engine
+    from src.aswwu.alchemy_new.jobs import jobs_engine
+    from src.aswwu.alchemy_new.mask import engine as mask_engine
+    from src.aswwu.alchemy_new.pages import pages_engine
 
-ASKANYTHING_VOTE_TABLE = Table(
-    'askanythingvotes', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('question_id', String(50), nullable=False),
-    Column('voter', String(75)))
+    engines = (archive_engine, election_engine, jobs_engine, mask_engine, pages_engine)
+    meta = MetaData()
 
-PROFILES_TABLE = Table(
-    'profiles', METADATA,
-    Column('id', String(50), primary_key=True),
-    Column('wwuid', String(10), nullable=False),
-    Column('photo', String(250)),
-    Column('majors', String(500)),
-    Column('username', String(105)),
-    Column('gender', String(250)))
-
-PROFILES1617_TABLE = Table(
-    'profiles1617', METADATA,
-    Column('id', String(50), primary_key=True),
-    Column('wwuid', String(10), nullable=False),
-    Column('photo', String(250)),
-    Column('majors', String(500)),
-    Column('username', String(105)),
-    Column('gender', String(250)))
-
-JOB_POSTING_TABLE = Table(
-    'jobforms', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('job_name', String(100), nullable=False),
-    Column('job_description', String(10000)),
-    Column('department', String(150)),
-    Column('visibility', Boolean, default=False),
-    Column('owner', String(100), nullable=False),
-    Column('image', String(100), nullable=False)
-)
-
-JOB_QUESTION_TABLE = Table(
-    'jobquestions', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('question', String(5000)),
-    Column('jobID', String(50), ForeignKey('jobforms.id'))
-)
-
-JOB_APPLICATION_TABLE = Table(
-    'jobapplications', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('jobID', String(50), ForeignKey('jobforms.id')),
-    Column('username', String(100), nullable=False),
-    Column('status', String(50))
-)
-
-JOB_ANSWER_TABLE = Table(
-    'jobanswers', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('questionID', String(50), ForeignKey('jobquestions.id')),
-    Column('answer', String(10000)),
-    Column('applicationID', String(50), ForeignKey('jobapplications.id'))
-)
-
-ELECTION_TABLE = Table(
-    'elections', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('wwuid', String(7), nullable=False),
-    Column('candidate_one', String(50)),
-    Column('candidate_two', String(50)),
-    Column('sm_one', String(50)),
-    Column('sm_two', String(50)),
-    Column('new_department', String(150)),
-    Column('district', String(50)),
-    Column('updated_at', DateTime)
-)
-
-
-def gen_askanythings(number=5):
-    """Generate askanythings
-
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
-
-    Yields:
-    dict        -- Record information
-
-    """
-    for i in xrange(number):
-        yield {
-            "id": i,
-            "updated_at": datetime.now(),
-            "question": "Something_{}".format(i),
-            "reviewed": True,
-            "authorized": True
-        }
-
-
-def gen_askanythingvotes(number=5):
-    """Generate askanything votes
-
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
-
-    Yields:
-    dict        -- Record information
-
-    """
-    for i in xrange(number):
-        yield {
-            "id": i,
-            "updated_at": datetime.now(),
-            "question_id": 1,
-            "voter": get_first_name() + '.' + get_last_name()
-        }
+    for engine in engines:
+        with closing(engine.connect()) as con:
+            trans = con.begin()
+            for table in reversed(meta.sorted_tables):
+                con.execute(table.delete())
+            trans.commit()
 
 
 def edit(generator, changes):
