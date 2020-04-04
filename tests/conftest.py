@@ -18,6 +18,7 @@ define("current_year", default=testing['current_year'])
 @pytest.fixture()
 def testing_server():
     server, event_loop_thread = start_server()
+    reset_databases()
     yield
     reset_databases()
     stop_server(server, event_loop_thread)

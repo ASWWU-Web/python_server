@@ -25,19 +25,32 @@ def load_csv(csv_file):
 def reset_databases():
     # https://stackoverflow.com/a/5003705/11021067
     from contextlib import closing
+
+    from src.aswwu.archive_models import ArchiveBase
+    from src.aswwu.models.elections import ElectionBase
+    from src.aswwu.models.forms import JobsBase
+    from src.aswwu.models.mask import Base as MaskBase
+    from src.aswwu.models.pages import PagesBase
+
     from src.aswwu.alchemy_new.archive import archive_engine
     from src.aswwu.alchemy_new.elections import election_engine
     from src.aswwu.alchemy_new.jobs import jobs_engine
     from src.aswwu.alchemy_new.mask import engine as mask_engine
     from src.aswwu.alchemy_new.pages import pages_engine
 
-    engines = (archive_engine, election_engine, jobs_engine, mask_engine, pages_engine)
+    databases = (
+        (archive_engine, ArchiveBase),
+        (election_engine, ElectionBase),
+        (jobs_engine, JobsBase),
+        (mask_engine, MaskBase),
+        (pages_engine, PagesBase),
+    )
     meta = MetaData()
 
-    for engine in engines:
-        with closing(engine.connect()) as con:
+    for database in databases:
+        with closing(database[0].connect()) as con:
             trans = con.begin()
-            for table in reversed(meta.sorted_tables):
+            for table in reversed(database[1].metadata.sorted_tables):
                 con.execute(table.delete())
             trans.commit()
 
