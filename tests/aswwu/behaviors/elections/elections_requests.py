@@ -4,6 +4,7 @@ from settings import keys, testing
 VOTE_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/vote'
 ELECTION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/election'
 CURRENT_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/current'
+POSITION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/position'
 
 # (r"/elections/vote", elections.VoteHandler)
 def post_vote(election, position, vote):
@@ -14,6 +15,7 @@ def post_vote(election, position, vote):
     }
     resp = requests.post(VOTE_URL, post_data)
     return resp
+
 
 def get_vote():
     resp = requests.get(VOTE_URL)
@@ -42,6 +44,20 @@ def get_vote():
 
 # (r"/elections/position", elections.PositionHandler)
 # get, post
+def get_position():
+    pass
+
+
+def post_position(position, election_type, active, order):
+    post_data = {
+      'position': position,
+      'election_type': election_type,
+      'active': active == 'True',
+      'order': int(order)
+    }
+    resp = requests.post(POSITION_URL, json=post_data)
+    return resp
+
 
 # (r"/elections/position/(.*)", elections.SpecifiedPositionHandler)
 # get, put

@@ -1,7 +1,7 @@
 import json
 import tests.aswwu.behaviors.elections.elections_requests as elections_requests
 from tests.utils import load_csv
-from tests.aswwu.data.paths import ELECTIONS_PATH
+from tests.aswwu.data.paths import ELECTIONS_PATH, POSITIONS_PATH
 
 from datetime import datetime
 
@@ -41,3 +41,16 @@ def send_get_current():
     resp_text = json.loads(resp.text)
     assert(resp.status_code == 200)
     assert(datetime.strptime(resp_text['end'], "%Y-%m-%d %H:%M:%S.%f") >= datetime.now())
+
+
+def send_post_position():
+    positions = load_csv(POSITIONS_PATH)
+    for position in positions:
+        resp = elections_requests.post_position(position['position'], position['election_type'], position['active'],
+                                                position['order'])
+        resp_text = json.loads(resp.text)
+        assert (resp.status_code == 201)
+        assert(resp_text['position'] == position['position'])
+        assert(resp_text['election_type'] == position['election_type'])
+        assert(str(resp_text['active']) == position['active'])
+        assert(str(resp_text['order']) == position['order'])
