@@ -3,6 +3,8 @@ import tests.aswwu.behaviors.elections.elections_requests as elections_requests
 from tests.utils import load_csv
 from tests.aswwu.data.paths import ELECTIONS_PATH
 
+from datetime import datetime
+
 
 def send_get_election():
     resp = elections_requests.get_election()
@@ -34,3 +36,8 @@ def send_post_election():
         assert (resp_text['show_results'] == election['show_results'])
 
 
+def send_get_current():
+    resp = elections_requests.get_current()
+    resp_text = json.loads(resp.text)
+    assert(resp.status_code == 200)
+    assert(datetime.strptime(resp_text['end'], "%Y-%m-%d %H:%M:%S.%f") >= datetime.now())

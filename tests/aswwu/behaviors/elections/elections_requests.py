@@ -3,6 +3,7 @@ from settings import keys, testing
 
 VOTE_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/vote'
 ELECTION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/election'
+CURRENT_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/current'
 
 # (r"/elections/vote", elections.VoteHandler)
 def post_vote(election, position, vote):
@@ -48,11 +49,13 @@ def get_vote():
 # (r"/elections/election", elections.ElectionHandler)
 # get, post
 def get_election():
+    """elections/election"""
     resp = requests.get(ELECTION_URL)
     return resp
 
 
 def post_election(election_type, name, max_votes, start, end, show_results):
+    """elections/election"""
     post_data = {
         'election_type': election_type,
         'name': name,
@@ -68,8 +71,8 @@ def post_election(election_type, name, max_votes, start, end, show_results):
 # (r"/elections/election/(.*)/count", elections.VoteCountHandler)
 # get
 
-# (r"/elections/election/(.*)", elections.SpecifiedElectionHandler)
-# get, put
 
-# (r"/elections/current", elections.CurrentHandler)
-# get
+def get_current():
+    """elections/current"""
+    resp = requests.get(CURRENT_URL)
+    return resp
