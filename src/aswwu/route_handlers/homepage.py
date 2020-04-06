@@ -11,6 +11,32 @@ from src.aswwu.base_handlers import BaseHandler
 logger = logging.getLogger("aswwu")
 
 
+def
+
+
+class NotificationHandler(BaseHandler):
+    """
+    List and create endpoints for elections.
+    """
+
+    def get(self):
+        # build query parameter dict
+        search_criteria = build_query_params(self.request.arguments)
+
+        # get the notification
+        notification = _alchemy.query_notification(notification_text=search_criteria.get('notification_text', None),
+                                                     notification_links=search_criteria.get('links', None),
+                                                     start_time=search_criteria.get('start_time', None),
+                                                     end_time=search_criteria.get('end_time', None),
+                                                     severity=search_criteria.get('severity', None),
+                                                     visible=search_criteria.get('visible', None),
+                                                     notification_owners=search_criteria.get('notification_owners', None))
+        # response
+        self.set_status(200)
+        self.write('Hello World')
+
+
+
 class OpenForumHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
