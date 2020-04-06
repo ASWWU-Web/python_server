@@ -43,10 +43,6 @@ class Application(tornado.web.Application):
         (r"/forms/resume/upload", forms.ResumeUploadHandler),
         (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
         (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
-        # notifications
-        (r"/notifications/get", notifications.GetNotification),
-        (r"/notifications/post", notifications.NewNotification),
-        (r"/notifications/patch", notifications.UpdateNotification),
         # pages
         (r"/pages", pages.GetAllHandler),
         (r"/pages/search", pages.SearchHandler),
@@ -65,6 +61,7 @@ class Application(tornado.web.Application):
         (r"/pages/(.*)", pages.GetHandler),
         # homepage
         (r"/homepage/open_forum", homepage.OpenForumHandler),
+        (r"/homepage/notifications", homepage.NotificationHandler),
         # elections
         (r"/elections/vote", elections.VoteHandler),
         (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
