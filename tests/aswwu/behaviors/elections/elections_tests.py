@@ -16,3 +16,7 @@ def test_get_current(testing_server):
 
 def test_post_position(testing_server):
     send_post_position()
+
+
+def test_get_position(testing_server):
+    send_get_position()

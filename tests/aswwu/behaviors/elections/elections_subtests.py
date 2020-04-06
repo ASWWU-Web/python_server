@@ -43,6 +43,12 @@ def send_get_current():
     assert(datetime.strptime(resp_text['end'], "%Y-%m-%d %H:%M:%S.%f") >= datetime.now())
 
 
+def send_get_position():
+    resp = elections_requests.get_position()
+    resp_text = json.loads(resp.text)
+    assert(resp.status_code == 200)
+
+
 def send_post_position():
     positions = load_csv(POSITIONS_PATH)
     for position in positions:
@@ -54,3 +60,4 @@ def send_post_position():
         assert(resp_text['election_type'] == position['election_type'])
         assert(str(resp_text['active']) == position['active'])
         assert(str(resp_text['order']) == position['order'])
+

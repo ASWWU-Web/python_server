@@ -6,6 +6,7 @@ ELECTION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/el
 CURRENT_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/current'
 POSITION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/position'
 
+
 # (r"/elections/vote", elections.VoteHandler)
 def post_vote(election, position, vote):
     post_data = {
@@ -42,10 +43,15 @@ def get_vote():
 # (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler)
 # get, put, delete
 
-# (r"/elections/position", elections.PositionHandler)
-# get, post
-def get_position():
-    pass
+
+def get_position(position=None, election_type=None, active=None):
+    optional_parameters = {
+        'position': position,
+        'election_type': election_type,
+        'active': active
+    }
+    resp = requests.get(POSITION_URL, optional_parameters)
+    return resp
 
 
 def post_position(position, election_type, active, order):
@@ -62,11 +68,20 @@ def post_position(position, election_type, active, order):
 # (r"/elections/position/(.*)", elections.SpecifiedPositionHandler)
 # get, put
 
-# (r"/elections/election", elections.ElectionHandler)
-# get, post
-def get_election():
+
+def get_election(election_type=None, name=None, max_votes=None, start_before=None, start_after=None, end_before=None,
+                 end_after=None):
     """elections/election"""
-    resp = requests.get(ELECTION_URL)
+    optional_parameters = {
+        'election_type': election_type,
+        'name': name,
+        'max_votes': max_votes,
+        'start_before': start_before,
+        'start_after': start_after,
+        'end_before': end_before,
+        'end_after': end_after
+    }
+    resp = requests.get(ELECTION_URL, params=optional_parameters)
     return resp
 
 
