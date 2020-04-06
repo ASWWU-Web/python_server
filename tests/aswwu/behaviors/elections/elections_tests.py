@@ -19,4 +19,5 @@ def test_post_position(testing_server):
 
 
 def test_get_position(testing_server):
+    send_post_dynamic_election()
     send_get_position()

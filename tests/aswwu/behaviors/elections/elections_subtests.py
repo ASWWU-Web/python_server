@@ -3,7 +3,7 @@ import tests.aswwu.behaviors.elections.elections_requests as elections_requests
 from tests.utils import load_csv
 from tests.aswwu.data.paths import ELECTIONS_PATH, POSITIONS_PATH
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def send_get_election():
@@ -21,19 +21,36 @@ def send_get_election():
         assert (resp_text['elections'][i]['show_results'] == elections_csv[i]['show_results'])
 
 
+def _post_election(election):
+    resp = elections_requests.post_election(election['election_type'], election['name'], election['max_votes'],
+                                            election['start'], election['end'], election['show_results'])
+    resp_text = json.loads(resp.text)
+    assert (resp.status_code == 201)
+    assert (resp_text['election_type'] == election['election_type'])
+    assert (resp_text['name'] == election['name'])
+    assert (int(resp_text['max_votes']) == int(election['max_votes']))
+    assert (resp_text['start'] == election['start'])
+    assert (resp_text['end'] == election['end'])
+    assert (resp_text['show_results'] == election['show_results'])
+
+
 def send_post_election():
     elections = load_csv(ELECTIONS_PATH)
     for election in elections:
-        resp = elections_requests.post_election(election['election_type'], election['name'], election['max_votes'],
-                                                election['start'], election['end'], election['show_results'])
-        resp_text = json.loads(resp.text)
-        assert (resp.status_code == 201)
-        assert (resp_text['election_type'] == election['election_type'])
-        assert (resp_text['name'] == election['name'])
-        assert (int(resp_text['max_votes']) == int(election['max_votes']))
-        assert (resp_text['start'] == election['start'])
-        assert (resp_text['end'] == election['end'])
-        assert (resp_text['show_results'] == election['show_results'])
+        _post_election(election)
+
+
+def send_post_dynamic_election():
+    """For use with testing elections/current"""
+    new_election = {
+        'election_type': 'aswwu',
+        'name': 'General Election Test',
+        'max_votes': 2,
+        'start': datetime.now(),
+        'end': datetime.now() + timedelta(days=1),
+        'show_results': datetime.now() + timedelta(days=1),
+    }
+    _post_election(new_election)
 
 
 def send_get_current():
