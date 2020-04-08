@@ -1,6 +1,3 @@
-"""This module contains convenience functions for creating data and inserting it into the databases
-   for testing
-"""
 from contextlib import contextmanager
 from datetime import datetime
 import csv
@@ -35,40 +32,6 @@ def replace_databases(from_path, to_path):
         os.makedirs(to_path)
     for database in glob.glob(from_path + '/*.db'):
         shutil.copy(database, to_path)
-
-    # # https://stackoverflow.com/a/5003705/11021067
-    # from contextlib import closing
-    #
-    # from src.aswwu.archive_models import ArchiveBase
-    # from src.aswwu.models.elections import ElectionBase
-    # from src.aswwu.models.forms import JobsBase
-    # from src.aswwu.models.mask import Base as MaskBase
-    # from src.aswwu.models.pages import PagesBase
-    #
-    # from src.aswwu.alchemy_new.archive import archive_engine
-    # from src.aswwu.alchemy_new.elections import election_engine
-    # from src.aswwu.alchemy_new.jobs import jobs_engine
-    # from src.aswwu.alchemy_new.mask import engine as mask_engine
-    # from src.aswwu.alchemy_new.pages import pages_engine
-    #
-    # databases = (
-    #     (archive_engine, ArchiveBase),
-    #     (election_engine, ElectionBase),
-    #     (jobs_engine, JobsBase),
-    #     (mask_engine, MaskBase),
-    #     (pages_engine, PagesBase),
-    # )
-    # meta = MetaData()
-
-    # for database in databases:
-    #     with closing(database[0].connect()) as con:
-    #         trans = con.begin()
-    #         for table in reversed(database[1].metadata.sorted_tables):
-    #             con.execute(table.delete())
-    #         trans.commit()
-
-
-
 
 
 def edit(generator, changes):
