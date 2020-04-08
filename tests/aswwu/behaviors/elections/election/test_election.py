@@ -7,9 +7,15 @@ def test_post_election(testing_server):
 
 
 def test_get_election(testing_server):
-    send_get_election()
+    election_data = send_post_election()
+    send_get_election(election_data)
 
 
 def test_get_current(testing_server):
-    send_post_dynamic_election()
-    send_get_current()
+    election_data = send_post_dynamic_election()
+    send_get_current(election_data)
+
+
+def test_get_specified_election(testing_server):
+    election_data = send_post_election()
+    send_get_specified_election(election_data)

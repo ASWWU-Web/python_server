@@ -6,33 +6,40 @@ from tests.aswwu.data.paths import ELECTIONS_PATH
 from datetime import datetime, timedelta
 
 
-def send_get_election():
+def send_get_election(elections):
+    """elections is a dictionary with the id as the key and the value the rest of the election data"""
     resp = election_requests.get_election()
     assert (resp.status_code == 200)
-    resp_text = json.loads(resp.text)
-    elections_csv = load_csv(ELECTIONS_PATH)
+    resp_data = json.loads(resp.text)['elections']
 
-    for i in range(len(resp_text['elections'])):
-        assert (resp_text['elections'][i]['election_type'] == elections_csv[i]['election_type'])
-        assert (resp_text['elections'][i]['name'] == elections_csv[i]['name'])
-        assert (int(resp_text['elections'][i]['max_votes']) == int(elections_csv[i]['max_votes']))
-        assert (resp_text['elections'][i]['start'] == elections_csv[i]['start'])
-        assert (resp_text['elections'][i]['end'] == elections_csv[i]['end'])
-        assert (resp_text['elections'][i]['show_results'] == elections_csv[i]['show_results'])
+    for data in resp_data:
+        _verify_election_data(data, elections[data['id']])
+
+
+def send_get_specified_election(elections):
+    for key, election in elections.items():
+        resp = election_requests.get_specified_election(key)
+        assert(resp.status_code == 200)
+        resp_data = json.loads(resp.text)
+        _verify_election_data(resp_data, election)
+
+
+def _verify_election_data(resp_data, election_data):
+    assert (resp_data['election_type'] == election_data['election_type'])
+    assert (resp_data['name'] == election_data['name'])
+    assert (int(resp_data['max_votes']) == int(election_data['max_votes']))
+    assert (resp_data['start'] == election_data['start'])
+    assert (resp_data['end'] == election_data['end'])
+    assert (resp_data['show_results'] == election_data['show_results'])
 
 
 def _post_election(election):
     resp = election_requests.post_election(election['election_type'], election['name'], election['max_votes'],
                                            election['start'], election['end'], election['show_results'])
-    resp_text = json.loads(resp.text)
+    resp_data = json.loads(resp.text)
     assert (resp.status_code == 201)
-    assert (resp_text['election_type'] == election['election_type'])
-    assert (resp_text['name'] == election['name'])
-    assert (int(resp_text['max_votes']) == int(election['max_votes']))
-    assert (resp_text['start'] == election['start'])
-    assert (resp_text['end'] == election['end'])
-    assert (resp_text['show_results'] == election['show_results'])
-    return resp_text
+    _verify_election_data(resp_data, election)
+    return resp_data
 
 
 def send_post_election():
@@ -54,11 +61,12 @@ def send_post_dynamic_election():
         'end': datetime.strftime(datetime.now() + timedelta(days=1), '%Y-%m-%d %H:%M:%S.%f'),
         'show_results': datetime.strftime(datetime.now() + timedelta(days=1), '%Y-%m-%d %H:%M:%S.%f'),
     }
-    _post_election(new_election)
+    return _post_election(new_election)
 
 
-def send_get_current():
+def send_get_current(election_data):
     resp = election_requests.get_current()
-    resp_text = json.loads(resp.text)
+    resp_data = json.loads(resp.text)
     assert(resp.status_code == 200)
-    assert(datetime.strptime(resp_text['end'], "%Y-%m-%d %H:%M:%S.%f") >= datetime.now())
+    assert(datetime.strptime(resp_data['end'], "%Y-%m-%d %H:%M:%S.%f") >= datetime.now())
+    _verify_election_data(resp_data, election_data)

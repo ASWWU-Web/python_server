@@ -27,6 +27,13 @@ def get_election(election_type=None, name=None, max_votes=None, start_before=Non
     return resp
 
 
+def get_specified_election(election_id):
+    """elections/election/{election_id}"""
+    url = ELECTION_URL + '/' + election_id
+    resp = requests.get(url)
+    return resp
+
+
 def post_election(election_type, name, max_votes, start, end, show_results):
     """elections/election"""
     post_data = {
