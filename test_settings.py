@@ -1,6 +1,6 @@
 keys = {
-    'hmac':"aaaaaaaa",
-    'samlEndpointKey': "aaaaaaaa"
+    'hmac':"fakekeystring",
+    'samlEndpointKey': "fakekeystring"
 }
 testing = {
     'dev': False,
@@ -9,6 +9,7 @@ testing = {
     'port': 8888,
     'log_name': 'aswwu_test',
     'current_year': '1920',
+    'database': './testing_databases',
 }
 production = {
     'port': 8888,
@@ -17,7 +18,7 @@ production = {
 }
 email = {
     'username': 'aswwu.webmaster@wallawalla.edu',
-    'password': 'aaaaaaaa'
+    'password': 'fakepassword'
 }
 database = {
     'location': './testing_databases'
