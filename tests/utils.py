@@ -32,7 +32,7 @@ def replace_databases(from_path, to_path):
     :param to_path:
     """
     if not os.path.isdir(to_path):
-        makedirs(to_path)
+        os.makedirs(to_path)
     for database in glob.glob(from_path + '/*.db'):
         shutil.copy(database, to_path)
 
