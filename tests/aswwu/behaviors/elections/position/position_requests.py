@@ -24,5 +24,20 @@ def post_position(position, election_type, active, order):
     resp = requests.post(POSITION_URL, json=post_data)
     return resp
 
-# (r"/elections/position/(.*)", elections.SpecifiedPositionHandler)
-# get, put
+
+def get_specified_position(position_id):
+    url = POSITION_URL + '/' + position_id
+    resp = requests.get(url)
+    return resp
+
+
+def put_specified_position(position_id, position, election_type, active, order):
+    url = POSITION_URL + '/' + position_id
+    put_data = {
+        'position': position,
+        'election_type': election_type,
+        'active': active == 'True',
+        'order': int(order)
+    }
+    resp = requests.put(url, put_data)
+    return resp

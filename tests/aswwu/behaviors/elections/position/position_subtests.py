@@ -25,6 +25,10 @@ def send_post_position():
     return positions_data
 
 
+def send_get_specified_position(position_id):
+    pass
+
+
 def _verify_position_data(resp_data, position_data):
     assert (resp_data['position'] == position_data['position'])
     assert (resp_data['election_type'] == position_data['election_type'])
