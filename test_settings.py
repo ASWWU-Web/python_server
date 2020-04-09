@@ -3,7 +3,8 @@ keys = {
     'samlEndpointKey': "fakekeystring"
 }
 testing = {
-    'dev': False,
+    'pytest': True,  # enables access to roles endpoint, set to false in production
+    'dev': False,  # bypasses authentication and logs in `developer`
     'developer': 0000000,
     'base_url': 'http://127.0.0.1',
     'port': 8888,

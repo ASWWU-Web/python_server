@@ -18,3 +18,16 @@ def test_get_verify(testing_server):
     users = load_csv(USERS_PATH)
     for user in users:
         assert_verify_login(user)
+
+
+def test_post_roles(testing_server):
+    users = load_csv(USERS_PATH)
+    for user in users:
+        assert_verify_login(user)
+        roles = ['demo_role_1', 'demo_role_2']
+        response = auth_requests.post_roles(user['wwuid'], roles)
+        assert (response.status_code == 200)
+        response_roles_data = json.loads(response.text)['user']['roles']
+        expected_roles_data = ','.join(roles)
+        assert (response_roles_data == expected_roles_data)
+
