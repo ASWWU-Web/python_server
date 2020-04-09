@@ -177,3 +177,43 @@ class JobsBase(object):
 
 
 JobsBase = declarative_base(cls=JobsBase)
+
+
+
+class NotificationsBase(object):
+    @declared_attr
+    def __tablename__(self):
+        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
+        return pluralize(self.__name__.lower())
+
+    # every model should also have an ID as a primary key
+    # as well as a column indicated when the data was last updated
+    id = Column(Integer, primary_key=True)
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now, default=datetime.datetime.now)
+
+    # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
+    # TODO: Make this properly print multilevel lists. (ex. tags, editors)
+    def to_json(self, **kwargs):
+        obj = {}
+        # get the column names of the table
+        columns = [str(key).split(".")[1] for key in self.__table__.columns]
+        # if called with `model.to_json(skipList=["something"])`
+        # then "something" will be added to the list of columns to skip
+        skip_list = ['id'] + kwargs.get('skip_list', [])
+        # if called similarly to skipList, then only those columns will even be checked
+        # by default we check all of the table's columns
+        limit_list = kwargs.get('limit_list', columns)
+        for key in limit_list:
+            if key not in skip_list:
+                # fancy way of saying "self.key"
+                value = getattr(self, key)
+                # try to set the value as a string, but that doesn't always work
+                # NOTE: this should be encoded more properly sometime
+                try:
+                    obj[key] = str(value)
+                except Exception as e:
+                    pass
+        return obj
+
+
+NotificationsBase = declarative_base(cls=NotificationsBase)
