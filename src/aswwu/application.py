@@ -18,6 +18,7 @@ class Application(tornado.web.Application):
         # base
         (r"/login", base.BaseLoginHandler),  # dummy route required by tornado
         (r"/verify", base.BaseVerifyLoginHandler),
+        (r"/roles/(.*)", base.RoleHandler),
         # mask
         (r"/profile/(.*)/(.*)", mask.ProfileHandler),
         (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
