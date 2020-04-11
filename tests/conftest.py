@@ -3,7 +3,7 @@ import pytest
 import tornado.options
 import threading
 
-from utils import replace_databases
+import utils
 from settings import database, testing
 
 
@@ -15,10 +15,12 @@ temp_databases_path = testing['database'] + '/temp_dbs'
 database['location'] = temp_databases_path
 testing['dev'] = False
 
+utils.setup_temp_databases(testing['database'], temp_databases_path)
+
 
 @pytest.fixture()
 def testing_server():
-    replace_databases(testing['database'], temp_databases_path)
+    utils.reset_databases()
 
     # application must be imported after databases are setup
     from src.aswwu.application import start_server, stop_server
