@@ -1,4 +1,6 @@
 from tests.aswwu.behaviors.elections.election.election_subtests import *
+import tests.aswwu.behaviors.auth.auth_requests as auth_requests
+import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
 from tests.conftest import testing_server
 
 
