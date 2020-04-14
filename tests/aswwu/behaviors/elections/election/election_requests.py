@@ -1,8 +1,8 @@
 import requests
 from settings import keys, testing
 
-ELECTION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/election'
-CURRENT_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/current'
+ELECTION_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/election'
+CURRENT_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/current'
 
 # (r"/elections/election/(.*)/ballot", elections.BallotHandler)
 # get, post
@@ -34,7 +34,7 @@ def get_specified_election(election_id):
     return resp
 
 
-def post_election(election_type, name, max_votes, start, end, show_results):
+def post_election(session, election_type, name, max_votes, start, end, show_results):
     """elections/election"""
     post_data = {
         'election_type': election_type,
@@ -44,7 +44,7 @@ def post_election(election_type, name, max_votes, start, end, show_results):
         'end': end,
         'show_results': show_results,
     }
-    resp = requests.post(ELECTION_URL, json=post_data)
+    resp = session.post(ELECTION_URL, json=post_data)
     return resp
 
 
