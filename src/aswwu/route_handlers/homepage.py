@@ -8,11 +8,20 @@ from settings import email
 
 from src.aswwu.base_handlers import BaseHandler
 
+import src.aswwu.alchemy_new.notifications as notifications_alchemy
+import src.aswwu.models.notifications as notifications_model
+
 logger = logging.getLogger("aswwu")
 
 
-def
-
+def build_query_params(request_arguments):
+    search_criteria = {}
+    for key, value in request_arguments.items():
+        if key in ('start_time', 'end_time'):
+            search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            search_criteria[key] = value[0]
+    return search_criteria
 
 class NotificationHandler(BaseHandler):
     """
@@ -24,7 +33,7 @@ class NotificationHandler(BaseHandler):
         search_criteria = build_query_params(self.request.arguments)
 
         # get the notification
-        notification = _alchemy.query_notification(notification_text=search_criteria.get('notification_text', None),
+        notification = notifications_alchemy.query_notifications(notification_text=search_criteria.get('notification_text', None),
                                                      notification_links=search_criteria.get('links', None),
                                                      start_time=search_criteria.get('start_time', None),
                                                      end_time=search_criteria.get('end_time', None),
@@ -33,9 +42,31 @@ class NotificationHandler(BaseHandler):
                                                      notification_owners=search_criteria.get('notification_owners', None))
         # response
         self.set_status(200)
-        self.write('Hello World')
+        self.write(notification.serialize())
 
+    def post(self):
+        # load request body
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
 
+        # validate parameters
+        required_parameters = ('notifications_text', 'start_time', 'end_time', 'severity', 'visible')
+#        elections_validator.validate_parameters(body_json, required_parameters)
+#        elections_validator.validate_election(body_json)
+
+        # create new election
+        notification = notifications_model.Notification()
+        for parameter in required_parameters:
+            if parameter in ('start_time', 'end_time'):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(notification, parameter, d)
+            else:
+                setattr(notification, parameter, body_json[parameter])
+        notifications_alchemy.add_or_update(notification)
+
+        # response
+        self.set_status(201)
+        self.write(notification.serialize())
 
 class OpenForumHandler(BaseHandler):
     @tornado.web.authenticated
