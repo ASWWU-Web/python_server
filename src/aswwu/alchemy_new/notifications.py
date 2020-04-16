@@ -35,7 +35,7 @@ def add_or_update(thing):
         notifications_db.rollback()
 
 def query_notifications(notification_text=None, notification_links=None, start_time=None, end_time=None,
-                   severity=None, visible=None):
+                        severity=None, visible=None):
     """
     Queries the database for notifications matching the specified parameters.
     :param
