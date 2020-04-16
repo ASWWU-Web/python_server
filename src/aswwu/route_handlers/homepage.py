@@ -6,6 +6,8 @@ import tornado.web
 import json
 from settings import email
 
+from datetime import datetime
+
 from src.aswwu.base_handlers import BaseHandler
 
 import src.aswwu.alchemy_new.notifications as notifications_alchemy
@@ -25,7 +27,7 @@ def build_query_params(request_arguments):
 
 class NotificationHandler(BaseHandler):
     """
-    List and create endpoints for elections.
+    List and create endpoints for notifications.
     """
 
     def get(self):
@@ -34,12 +36,12 @@ class NotificationHandler(BaseHandler):
 
         # get the notification
         notification = notifications_alchemy.query_notifications(notification_text=search_criteria.get('notification_text', None),
-                                                     notification_links=search_criteria.get('links', None),
+                                                     notification_links=search_criteria.get('notification_links', None),
                                                      start_time=search_criteria.get('start_time', None),
                                                      end_time=search_criteria.get('end_time', None),
                                                      severity=search_criteria.get('severity', None),
-                                                     visible=search_criteria.get('visible', None),
-                                                     notification_owners=search_criteria.get('notification_owners', None))
+                                                     visible=search_criteria.get('visible', None))
+                                                     #notification_owners=search_criteria.get('notification_owners', None))
         # response
         self.set_status(200)
         self.write(notification.serialize())
@@ -50,7 +52,9 @@ class NotificationHandler(BaseHandler):
         body_json = json.loads(body)
 
         # validate parameters
-        required_parameters = ('notifications_text', 'start_time', 'end_time', 'severity', 'visible')
+        required_parameters = ('notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
+
+        # TODO create a notifications validator
 #        elections_validator.validate_parameters(body_json, required_parameters)
 #        elections_validator.validate_election(body_json)
 
