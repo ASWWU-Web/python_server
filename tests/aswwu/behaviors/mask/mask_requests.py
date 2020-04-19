@@ -86,5 +86,5 @@ def post_update_profile(username, session=requests.Session(), **kwargs):
     :return: the request response object
     """
     request_url = URLS["update"] + "/" + username
-    resp = session.post(request_url, post_data)
+    resp = session.post(request_url, kwargs)
     return resp
