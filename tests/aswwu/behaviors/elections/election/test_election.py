@@ -45,7 +45,7 @@ def test_get_current(testing_server):
         'end': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), '%Y-%m-%d %H:%M:%S.%f'),
         'show_results': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), '%Y-%m-%d %H:%M:%S.%f'),
     }
-    election = election_subtests.post_election(session, dynamic_election)
+    election = election_subtests.assert_post_election(session, dynamic_election)
 
     resp = election_requests.get_current()
     resp_data = json.loads(resp.text)
@@ -74,6 +74,8 @@ def _create_elections(session):
     # Populate elections database
     elections = utils.load_csv(paths.ELECTIONS_PATH)
     for election in elections:
-        resp_data = election_subtests.post_election(session, election)
+        resp_data = election_subtests.assert_post_election(session, election)
         election_data[resp_data['id']] = resp_data
     return election_data
+
+

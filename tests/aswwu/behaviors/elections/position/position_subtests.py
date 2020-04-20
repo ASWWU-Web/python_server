@@ -4,15 +4,15 @@ from tests.utils import load_csv
 from tests.aswwu.data.paths import POSITIONS_PATH
 
 
-def send_get_position(positions_data):
-    resp = position_requests.get_position()
-    assert (resp.status_code == 200)
-    resp_data = json.loads(resp.text)['positions']
-    for data in resp_data:
-        _verify_position_data(data, positions_data[data['id']])
+def send_post_position(session):
+    resp = position_requests.post_position(session, position['position'], position['election_type'], position['active'],
+                                           position['order'])
+    resp_data = json.loads(resp.text)
+    assert (resp.status_code == 201)
+    position_subtests.verify_position_data(resp_data, position)
 
 
-def send_post_position():
+
     positions = load_csv(POSITIONS_PATH)
     positions_data = {}
     for position in positions:
@@ -20,7 +20,7 @@ def send_post_position():
                                                position['order'])
         resp_data = json.loads(resp.text)
         assert (resp.status_code == 201)
-        _verify_position_data(resp_data, position)
+        verify_position_data(resp_data, position)
         positions_data[resp_data['id']] = resp_data
     return positions_data
 
@@ -29,7 +29,7 @@ def send_get_specified_position(position_id):
     pass
 
 
-def _verify_position_data(resp_data, position_data):
+def verify_position_data(resp_data, position_data):
     assert (resp_data['position'] == position_data['position'])
     assert (resp_data['election_type'] == position_data['election_type'])
     assert (str(resp_data['active']) == str(position_data['active']))
