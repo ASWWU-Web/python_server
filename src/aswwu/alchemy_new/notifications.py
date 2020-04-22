@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, joinedload
 
 import src.aswwu.models.bases as base
+import src.aswwu.models.notifications as notifications_model
 from settings import database
 
 NotificationsBase = base.NotificationsBase
@@ -52,17 +53,17 @@ def query_notifications(notification_text=None, notification_links=None, start_t
     try:
         thing = notifications_db.query(notifications_model.Notification)
         if notification_text is not None:
-            thing = thing.filter_by(text=str(text))
+            thing = thing.filter_by(notification_text=str(notification_text))
         if notification_links is not None:
-            thing = thing.filter_by(links=str(links))
+            thing = thing.filter_by(notification_links=str(notification_links))
         if start_time is not None:
-            thing = thing.filter_by(notifications_model.Notification.start <= start_before)
+            thing = thing.filter_by(notifications_model.Notification.start_time <= start_time)
         if end_time is not None:
-            thing = thing.filter_by(notifications_model.Notification.start >= start_before)
+            thing = thing.filter_by(notifications_model.Notification.start_time >= start_time)
         if severity is not None:
-            thing = thing.filter(severity=int(severity))
+            thing = thing.filter(severity=severity)
         if visible is not None:
-            thing = thing.filter(visible=int(visible))
+            thing = thing.filter(visible=visible)
         thing = thing.all()
     except Exception as e:
         logger.info(e)
