@@ -34,10 +34,11 @@ def get_specified_position(position_id):
 def put_specified_position(session, position_id, position, election_type, active, order):
     url = POSITION_URL + '/' + position_id
     put_data = {
+        'id': position_id,
         'position': position,
         'election_type': election_type,
-        'active': active == 'True',
+        'active': str(active) == 'True',
         'order': int(order)
     }
-    resp = session.put(url, put_data)
+    resp = session.put(url, json=put_data)
     return resp
