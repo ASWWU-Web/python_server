@@ -27,5 +27,13 @@ def test_put_position(testing_server):
     for key, value in position_data.items():
         resp = position_requests.put_specified_position(session, key, value['position'], value['election_type'], value['active'], value['order'])
         assert(resp.status_code == 200)
-        resp_data = json.loads(resp.text)
-        position_subtests.assert_position_data(resp_data, value)
+        position_subtests.assert_position_data(json.loads(resp.text), value)
+
+
+def test_get_specified_position(testing_server):
+    session = election_subtests.create_elections_admin()
+    position_data = position_subtests.create_positions(session)
+    for key, position in position_data.items():
+        resp = position_requests.get_specified_position(key)
+        assert (resp.status_code == 200)
+        position_subtests.assert_position_data(json.loads(resp.text), position)
