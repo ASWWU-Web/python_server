@@ -21,7 +21,7 @@ def test_get_position(testing_server):
         position_subtests.assert_position_data(data, position_data[data['id']])
 
 
-def test_put_position(testing_server):
+def test_put_specified_position(testing_server):
     session = election_subtests.create_elections_admin()
     position_data = position_subtests.create_positions(session)
     for key, value in position_data.items():

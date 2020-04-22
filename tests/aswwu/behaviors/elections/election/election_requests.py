@@ -34,6 +34,22 @@ def get_specified_election(election_id):
     return resp
 
 
+def put_specified_election(session, election_id, election_type, name, max_votes, start, end, show_results):
+    """elections/election/{election_id}"""
+    post_data = {
+        'id': election_id,
+        'election_type': election_type,
+        'name': name,
+        'max_votes': max_votes,
+        'start': start,
+        'end': end,
+        'show_results': show_results,
+    }
+    url = ELECTION_URL + '/' + election_id
+    resp = session.put(url, json=post_data)
+    return resp
+
+
 def post_election(session, election_type, name, max_votes, start, end, show_results):
     """elections/election"""
     post_data = {

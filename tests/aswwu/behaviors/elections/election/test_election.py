@@ -5,23 +5,6 @@ import datetime as dt
 from tests.conftest import testing_server
 
 
-def test_post_election(testing_server):
-    session = election_subtests.create_elections_admin()
-    election_subtests.create_elections(session)
-
-
-def test_get_election(testing_server):
-    session = election_subtests.create_elections_admin()
-    election_data = election_subtests.create_elections(session)
-
-    resp = election_requests.get_election()
-    assert (resp.status_code == 200)
-    resp_data = json.loads(resp.text)['elections']
-
-    for data in resp_data:
-        election_subtests.assert_election_data(data, election_data[data['id']])
-
-
 def test_get_current(testing_server):
     session = election_subtests.create_elections_admin()
     dynamic_election = {
@@ -41,6 +24,23 @@ def test_get_current(testing_server):
     election_subtests.assert_election_data(resp_data, election)
 
 
+def test_get_election(testing_server):
+    session = election_subtests.create_elections_admin()
+    election_data = election_subtests.create_elections(session)
+
+    resp = election_requests.get_election()
+    assert (resp.status_code == 200)
+    resp_data = json.loads(resp.text)['elections']
+
+    for data in resp_data:
+        election_subtests.assert_election_data(data, election_data[data['id']])
+
+
+def test_post_election(testing_server):
+    session = election_subtests.create_elections_admin()
+    election_subtests.create_elections(session)
+
+
 def test_get_specified_election(testing_server):
     session = election_subtests.create_elections_admin()
     election_data = election_subtests.create_elections(session)
@@ -48,3 +48,17 @@ def test_get_specified_election(testing_server):
         resp = election_requests.get_specified_election(key)
         assert(resp.status_code == 200)
         election_subtests.assert_election_data(json.loads(resp.text), election)
+
+
+def test_put_specified_election(testing_server):
+    session = election_subtests.create_elections_admin()
+    election_data = election_subtests.create_elections(session)
+    for key, election in election_data.items():
+        resp = election_requests.put_specified_election(session, key, election['election_type'], election['name'], election['max_votes'],
+                                           election['start'], election['end'], election['show_results'])
+        assert (resp.status_code == 200)
+        election_subtests.assert_election_data(json.loads(resp.text), election)
+
+
+def test_get_count(testing_server):
+    pass
