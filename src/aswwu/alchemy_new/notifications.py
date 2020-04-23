@@ -35,7 +35,7 @@ def add_or_update(thing):
         logger.info(e)
         notifications_db.rollback()
 
-def query_notifications(notification_text=None, notification_links=None, start_time=None, end_time=None,
+def query_notifications(notification_id=None, notification_text=None, notification_links=None, start_time=None, end_time=None,
                         severity=None, visible=None):
     """
     Queries the database for notifications matching the specified parameters.
@@ -52,6 +52,8 @@ def query_notifications(notification_text=None, notification_links=None, start_t
     thing = None
     try:
         thing = notifications_db.query(notifications_model.Notification)
+        if notification_id is not None:
+            thing = thing.filter_by(id=notification_id)
         if notification_text is not None:
             thing = thing.filter_by(notification_text=str(notification_text))
         if notification_links is not None:
@@ -61,9 +63,9 @@ def query_notifications(notification_text=None, notification_links=None, start_t
         if end_time is not None:
             thing = thing.filter_by(notifications_model.Notification.start_time >= start_time)
         if severity is not None:
-            thing = thing.filter(severity=severity)
+            thing = thing.filter_by(severity=int(severity))
         if visible is not None:
-            thing = thing.filter(visible=visible)
+            thing = thing.filter_by(visible=int(visible))
         thing = thing.all()
     except Exception as e:
         logger.info(e)
