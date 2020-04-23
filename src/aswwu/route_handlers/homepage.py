@@ -35,7 +35,7 @@ class NotificationHandler(BaseHandler):
         search_criteria = build_query_params(self.request.arguments)
 
         # get the notification
-        notification = notifications_alchemy.query_notifications(notification_text=search_criteria.get('notification_text', None),
+        notifications = notifications_alchemy.query_notifications(notification_text=search_criteria.get('notification_text', None),
                                                      notification_links=search_criteria.get('notification_links', None),
                                                      start_time=search_criteria.get('start_time', None),
                                                      end_time=search_criteria.get('end_time', None),
@@ -44,7 +44,7 @@ class NotificationHandler(BaseHandler):
                                                      #notification_owners=search_criteria.get('notification_owners', None))
         # response
         self.set_status(200)
-        self.write(notification.serialize())
+        self.write({'notifications': [notification.serialize() for notification in notifications]})
 
     def post(self):
         # load request body
@@ -71,6 +71,57 @@ class NotificationHandler(BaseHandler):
         # response
         self.set_status(201)
         self.write(notification.serialize())
+
+class SpecifiedNotificationHandler(BaseHandler):
+    """
+    Read and update endpoints for notifications.
+    """
+
+    def get(self, election_id):
+        # get election
+        notifications = notifications_alchemy.query_notifications(notification_id=str(notification_id))
+        if notifications == list():
+            raise notifications.NotFound404Exception('notification with specified ID not found')
+        notification = notifications[0]
+
+        # response
+        self.set_status(200)
+        self.write(notification.serialize())
+
+    # TODO add notification decorators
+    #@tornado.web.authenticated
+    #@permission_and(elections_permission)
+
+    def put(self, election_id):
+        # load request body
+        body = self.request.body.decode('utf-8')
+        body_json = json.loads(body)
+
+        # get current election
+        notifications = notifications_alchemy.query_notifications(notification_id=str(notification_id))
+        if notifications == list():
+            raise notifications.NotFound404Exception('notification with specified ID not found')
+        notification = notifications[0]
+
+        # validate parameters
+        required_parameters = ('id', 'notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
+
+        # TODO add notification validators
+        #elections_validator.validate_parameters(body_json, required_parameters)
+        #elections_validator.validate_election(body_json, election)
+
+        # update election
+        for parameter in required_parameters:
+            if parameter in ('start_time', 'end_time'):
+                d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
+                setattr(notification, parameter, d)
+            else:
+                setattr(notification, parameter, body_json[parameter])
+        notifications_alchemy.add_or_update(notification)
+
+        # response
+        self.set_status(200)
+        self.write(election.serialize())
 
 class OpenForumHandler(BaseHandler):
     @tornado.web.authenticated
