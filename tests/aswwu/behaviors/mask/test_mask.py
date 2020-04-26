@@ -46,23 +46,11 @@ BASE_PROFILE = {
     }
 
 
-def build_profile(user, custom_fields={}):
-    """
-    Starts with a base profile with filled fields, and replaces any keys also found in user or custom_fields with their
-    corresponding values.
-    :param user: user object loaded from the users.csv file
-    :param custom_fields: fields to be updated or added to the profile.
-    :return: the combined dictionaries profile, user, and custom_fields
-    """
-    profile = dict()
-    profile.update(BASE_PROFILE)
-    profile.update(user)
-    profile.update(custom_fields)
-    return profile
-
-
-def assert_update_profile(user, session):
-    profile_fields = build_profile(user)
+def assert_update_profile(user, session, custom_fields={}):
+    profile_fields = dict()
+    profile_fields.update(BASE_PROFILE)
+    profile_fields.update(user)
+    profile_fields.update(custom_fields)
     update_response = mask_requests.post_update_profile(user["username"], profile_fields, session)
     assert update_response.status_code == 200
     assert json.loads(update_response.text) == "success"
@@ -94,3 +82,23 @@ def test_search_all(testing_server):
     actual_results = sorted(json.loads(all_response.text)[u"results"], key=lambda user: user[u"username"])
     assert all_response.status_code == 200
     assert actual_results == expected_results
+
+
+def test_profile_handler(testing_server):
+    users = utils.load_csv(USERS_PATH, use_unicode=True)
+    for user in users:
+        login_response_text, session = assert_verify_login(user)
+        assert_update_profile(user, session)
+
+    viewing_user = users[0]
+    session = assert_verify_login(viewing_user)[1]
+    for user in users:
+        profile_response = mask_requests.get_profile(testing["current_year"], user["username"], session)
+        expected_profile = dict()
+        expected_profile.update(BASE_PROFILE)
+        expected_profile.update(user)
+        del(expected_profile[u"wwuid"])
+        del(expected_profile[u"favorite_food"])
+        actual_profile = json.loads(profile_response.text)
+        assert profile_response.status_code == 200
+        utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
