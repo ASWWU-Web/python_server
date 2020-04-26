@@ -16,7 +16,7 @@ if __name__ == "__main__":
     if testing['dev']:
         tornado.autoreload.start()
 
-    server, event_loop_thread = application.start_server()
+    server, event_loop_thread, ioloop = application.start_server()
 
     print 'services running, press ctrl+c to stop'
     try:
@@ -24,5 +24,5 @@ if __name__ == "__main__":
             raw_input('')
     except KeyboardInterrupt:
         print 'stopping services...'
-        application.stop_server(server, event_loop_thread)
+        application.stop_server(server, event_loop_thread, ioloop)
         exit(0)
