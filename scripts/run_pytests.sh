@@ -1,2 +1,2 @@
 #!/bin/bash
-pipenv run pytest
+pipenv run pytest --cov-report=xml --cov=src tests/
