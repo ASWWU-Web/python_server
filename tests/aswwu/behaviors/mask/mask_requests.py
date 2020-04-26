@@ -77,14 +77,14 @@ def get_list_profile_photos(session=requests.Session()):
     return resp
 
 
-def post_update_profile(username, session=requests.Session(), **kwargs):
+def post_update_profile(username, profile_fields, session=requests.Session()):
     """
     (r"/update/(.*)", mask.ProfileUpdateHandler)
     :param username: the case-sensitive username of the test user whose profile is being updated
     :param session: optional, an authenticated session if available.
-    :param kwargs: a dictionary containing mask fields (i.e. "full_name", "photo", "gender", "birthday", "email", etc.)
+    :param profile_fields: a dictionary containing mask fields (i.e. "full_name", "photo", "gender", "birthday", "email", etc.)
     :return: the request response object
     """
     request_url = URLS["update"] + "/" + username
-    resp = session.post(request_url, kwargs)
+    resp = session.post(request_url, profile_fields)
     return resp
