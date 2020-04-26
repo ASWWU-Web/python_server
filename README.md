@@ -1,5 +1,7 @@
 # The ASWWU Server
 
+![Python application](https://github.com/ASWWU-Web/python_server/workflows/Python%20application/badge.svg) [![codecov](https://codecov.io/gh/ASWWU-Web/python_server/branch/develop/graph/badge.svg)](https://codecov.io/gh/ASWWU-Web/python_server)
+
 
 ## Setup
 
