@@ -13,7 +13,7 @@ def assert_verify_login(user):
     Use this function to make sure a test user is logged in on the server.
     Tests whether a user that authenticated with SAML can use the verify endpoint.
     :param user: a user object loaded from a csv file
-    :return: (text, user) the text of the get verify response as an associative array
+    :return: (text, session) the text of the get verify response as an associative array
     and the authenticated session for subsequent requests
     """
     post_response = auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
