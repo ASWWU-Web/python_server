@@ -77,7 +77,7 @@ class SpecifiedNotificationHandler(BaseHandler):
     Read and update endpoints for notifications.
     """
 
-    def get(self, election_id):
+    def get(self, notification_id):
         # get election
         notifications = notifications_alchemy.query_notifications(notification_id=str(notification_id))
         if notifications == list():
@@ -92,7 +92,7 @@ class SpecifiedNotificationHandler(BaseHandler):
     #@tornado.web.authenticated
     #@permission_and(elections_permission)
 
-    def put(self, election_id):
+    def put(self, notification_id):
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
