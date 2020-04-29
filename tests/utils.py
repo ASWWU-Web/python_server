@@ -1,132 +1,73 @@
-"""This module contains convenience functions for creating data and inserting it into the databases
-   for testing
-"""
 from contextlib import contextmanager
 from datetime import datetime
-
-
-from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
+import csv
+from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select, MetaData
 from sqlalchemy.exc import IntegrityError
+import os
+import shutil
+import glob
 
 
-METADATA = MetaData()
-ASKANYTHING_TABLE = Table(
-    'askanythings', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('updated_at', DateTime),
-    Column('question', String(500), nullable=False),
-    Column('reviewed', Boolean),
-    Column('authorized', Boolean))
-
-ASKANYTHING_VOTE_TABLE = Table(
-    'askanythingvotes', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('question_id', String(50), nullable=False),
-    Column('voter', String(75)))
-
-PROFILES_TABLE = Table(
-    'profiles', METADATA,
-    Column('id', String(50), primary_key=True),
-    Column('wwuid', String(10), nullable=False),
-    Column('photo', String(250)),
-    Column('majors', String(500)),
-    Column('username', String(105)),
-    Column('gender', String(250)))
-
-PROFILES1617_TABLE = Table(
-    'profiles1617', METADATA,
-    Column('id', String(50), primary_key=True),
-    Column('wwuid', String(10), nullable=False),
-    Column('photo', String(250)),
-    Column('majors', String(500)),
-    Column('username', String(105)),
-    Column('gender', String(250)))
-
-JOB_POSTING_TABLE = Table(
-    'jobforms', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('job_name', String(100), nullable=False),
-    Column('job_description', String(10000)),
-    Column('department', String(150)),
-    Column('visibility', Boolean, default=False),
-    Column('owner', String(100), nullable=False),
-    Column('image', String(100), nullable=False)
-)
-
-JOB_QUESTION_TABLE = Table(
-    'jobquestions', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('question', String(5000)),
-    Column('jobID', String(50), ForeignKey('jobforms.id'))
-)
-
-JOB_APPLICATION_TABLE = Table(
-    'jobapplications', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('jobID', String(50), ForeignKey('jobforms.id')),
-    Column('username', String(100), nullable=False),
-    Column('status', String(50))
-)
-
-JOB_ANSWER_TABLE = Table(
-    'jobanswers', METADATA,
-    Column('id', Integer(), nullable=False),
-    Column('questionID', String(50), ForeignKey('jobquestions.id')),
-    Column('answer', String(10000)),
-    Column('applicationID', String(50), ForeignKey('jobapplications.id'))
-)
-
-ELECTION_TABLE = Table(
-    'elections', METADATA,
-    Column('id', String(50), nullable=False),
-    Column('wwuid', String(7), nullable=False),
-    Column('candidate_one', String(50)),
-    Column('candidate_two', String(50)),
-    Column('sm_one', String(50)),
-    Column('sm_two', String(50)),
-    Column('new_department', String(150)),
-    Column('district', String(50)),
-    Column('updated_at', DateTime)
-)
+def load_csv(csv_file):
+    object_list = []
+    with open(csv_file) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        headers = next(csv_reader)
+        for row in csv_reader:
+            row_object = {
+                headers[header_index]: row[header_index]
+                for header_index in range(0, len(headers))
+            }
+            object_list.append(row_object)
+    return object_list
 
 
-def gen_askanythings(number=5):
-    """Generate askanythings
-
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
-
-    Yields:
-    dict        -- Record information
-
+def setup_temp_databases(from_path, to_path):
     """
-    for i in xrange(number):
-        yield {
-            "id": i,
-            "updated_at": datetime.now(),
-            "question": "Something_{}".format(i),
-            "reviewed": True,
-            "authorized": True
-        }
+        copies clean testing databases into a temporary directory.
+        :param from_path:
+        :param to_path:
+        """
+    if not os.path.isdir(to_path):
+        os.makedirs(to_path)
+    else:
+        shutil.rmtree(to_path)
+        os.makedirs(to_path)
+    for database in glob.glob(from_path + '/*.db'):
+        shutil.copy(database, to_path)
 
 
-def gen_askanythingvotes(number=5):
-    """Generate askanything votes
+def reset_databases():
+    # https://stackoverflow.com/a/5003705/11021067
+    from contextlib import closing
 
-    Keyword Arguments:
-    number(int) -- The upper limit of generated records (default 5)
+    from src.aswwu.archive_models import ArchiveBase
+    from src.aswwu.models.elections import ElectionBase
+    from src.aswwu.models.forms import JobsBase
+    from src.aswwu.models.mask import Base as MaskBase
+    from src.aswwu.models.pages import PagesBase
 
-    Yields:
-    dict        -- Record information
+    from src.aswwu.alchemy_new.archive import archive_engine
+    from src.aswwu.alchemy_new.elections import election_engine
+    from src.aswwu.alchemy_new.jobs import jobs_engine
+    from src.aswwu.alchemy_new.mask import engine as mask_engine
+    from src.aswwu.alchemy_new.pages import pages_engine
 
-    """
-    for i in xrange(number):
-        yield {
-            "id": i,
-            "updated_at": datetime.now(),
-            "question_id": 1,
-            "voter": get_first_name() + '.' + get_last_name()
-        }
+    databases = (
+        (archive_engine, ArchiveBase),
+        (election_engine, ElectionBase),
+        (jobs_engine, JobsBase),
+        (mask_engine, MaskBase),
+        (pages_engine, PagesBase),
+    )
+    meta = MetaData()
+
+    for database in databases:
+        with closing(database[0].connect()) as con:
+            trans = con.begin()
+            for table in reversed(database[1].metadata.sorted_tables):
+                con.execute(table.delete())
+            trans.commit()
 
 
 def edit(generator, changes):
@@ -170,7 +111,7 @@ def gen_profiles(number=5):
                 "wwuid": 9000000 + i,
                 "photo": "profiles/00958-2019687.jpg",
                 "majors": majors[i%3],
-                "username" : username, 
+                "username" : username,
                 "gender": gender[i%2],
                 "pet_peeves": pet_peeves[i%2]
             }

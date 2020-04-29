@@ -6,3 +6,4 @@ settings.py
 .DS_Store
 adminLog
 *.env
+testing_databases/temp_dbs/

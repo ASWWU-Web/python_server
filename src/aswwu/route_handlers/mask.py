@@ -122,7 +122,7 @@ class SearchNamesFast(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        # cache for 24 hours
+        # cache client side for 24 hours, server side caching in nginx
         self.add_header('Cache-control', 'max-age=86400')
         self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
@@ -147,7 +147,8 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            if "mask" in self.request.headers.get('Referer'):
+            referer = self.request.headers.get('Referer')
+            if referer is not None and "mask" in referer:
                 update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:

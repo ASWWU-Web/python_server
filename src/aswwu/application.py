@@ -1,9 +1,8 @@
 import logging
 
-import tornado.httpserver
 import tornado.web
-from tornado.options import options
-from tornado.ioloop import IOLoop
+import tornado.options
+import tornado.ioloop
 import threading
 
 from settings import keys
@@ -18,6 +17,7 @@ class Application(tornado.web.Application):
         # base
         (r"/login", base.BaseLoginHandler),  # dummy route required by tornado
         (r"/verify", base.BaseVerifyLoginHandler),
+        (r"/roles/(.*)", base.RoleHandler),
         # mask
         (r"/profile/(.*)/(.*)", mask.ProfileHandler),
         (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
@@ -83,30 +83,30 @@ class Application(tornado.web.Application):
             "login_url": "/login",
             "secret_key": keys["hmac"]
         }
-        self.options = options
-        logger = logging.getLogger(options.log_name)
+        self.options = tornado.options.options
+        logger = logging.getLogger(tornado.options.options.log_name)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler("src/aswwu/"+options.log_name+".log")
+        fh = logging.FileHandler("src/aswwu/"+tornado.options.options.log_name+".log")
         fh.setLevel(logging.DEBUG)
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
         logger.addHandler(fh)
         tornado.web.Application.__init__(self, self.handlers, **settings)
-        logger.info("Application started on port " + str(options.port))
+        logger.info("Application started on port " + str(tornado.options.options.port))
 
 
 def start_server():
-    application = Application()
-    server = application.listen(options.port)
-
     # https://stackoverflow.com/a/57688560
-    io_loop_thread = threading.Thread(target=IOLoop.current().start)
-    # io_loop_thread.daemon = True
-    io_loop_thread.start()
+    application = Application()
+    server = application.listen(tornado.options.options.port)
+    event_loop_thread = threading.Thread(target=tornado.ioloop.IOLoop.current().start)
+    event_loop_thread.daemon = True
+    event_loop_thread.start()
     print 'The Tornado IOLoop thread has started.'
-    return server
+    return server, event_loop_thread, tornado.ioloop.IOLoop.current()
 
 
-def stop_server(server):
+def stop_server(server, event_loop_thread, ioloop):
     server.stop()
-    IOLoop.current().stop()
+    ioloop.stop()
+    event_loop_thread.join()

@@ -16,6 +16,7 @@ import src.aswwu.models.mask as mask_model
 import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
 import src.aswwu.archive_models as archives
+import src.aswwu.exceptions as exceptions
 
 logger = logging.getLogger("aswwu")
 
@@ -210,6 +211,27 @@ class BaseVerifyLoginHandler(BaseHandler):
         })
         # set the cookie header in the response
         self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+
+
+class RoleHandler(BaseHandler):
+    def post(self, wwuid):
+        """
+        Modify roles in the users table, accessible only in a testing environment.
+        Writes the modified user object.
+        """
+        if not testing['pytest']:
+            raise exceptions.Forbidden403Exception('Method Forbidden')
+        else:
+            user = mask.query_user(wwuid)
+            if user == list():
+                exceptions.NotFound404Exception('user with specified wwuid not found')
+            else:
+                body = self.request.body.decode('utf-8')
+                body_json = json.loads(body)
+                user.roles = ','.join(body_json['roles'])
+                mask.add_or_update(user)
+                self.set_status(200)
+                self.write({'user': user.to_json()})
 
 
 def get_last_year():

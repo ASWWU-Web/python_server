@@ -1,34 +1,23 @@
 # The ASWWU Server
-## Installation
-The following python packages need to be installed and they can be installed with the following command.
-```
-pip install -r requirements.txt
-```
 
-Then you need to get a copy of the settings file. To do this, run the following command:
-```
-scp user@aswwu.com:/data/python_server/settings.py ./
-```
-Once you've done this, change the `dev` parameter to `True`, and the `developer` parameter to your WWU ID is 
-settings.py.
+![Python application](https://github.com/ASWWU-Web/python_server/workflows/Python%20application/badge.svg) [![codecov](https://codecov.io/gh/ASWWU-Web/python_server/branch/develop/graph/badge.svg)](https://codecov.io/gh/ASWWU-Web/python_server)
 
-Then you need to get a copy of the database files. Run the following command from the directory one level up from the 
-python server.
-```
-git clone user@aswwu.com:/data/databases
-```
-The python library looks for the database file referenced in settings.py as `database['location']` so make sure you clone the database repository into 
-the correct place.
 
-## Running
+## Setup
 
-Now run the server by calling.
-```
-python server.py
-```
-You can test the connection by opening `http://localhost:8888/search/all`.
+- `pipenv install`
+- `cp test_settings.py settings.py`
+- in `settings.py`
+    - set `testing['dev']` to `True`
+    - set `testing['developer']` to your WWU ID
 
-Congrats! You now have a clone of the backend server running locally.
+If you need to use the current databases, they can be accessed with `scp` 
+at the relative path indicated in the `settings.py` file on the server.
+
+## Run in Development
+
+- `pipenv run python server.py`
+- test your connection with `curl -X GET http://localhost:8888/search/all`
 
 **Note:** The live server is available at `https://aswwu.com/server/`
 
