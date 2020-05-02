@@ -89,3 +89,14 @@ def assert_is_equal_sub_dict(expected, actual):
             assert_is_equal_sub_dict(expected_value, actual[expected_key])
         else:
             assert actual[expected_key] == expected_value
+
+
+def assert_does_not_contain_keys(dictionary, keys):
+    """
+    given a dictionary and a set of string keys, assert that none of the keys are present in the dictionary.
+
+    :param dictionary: a python dictionary
+    :param keys: a python set of string keys
+    """
+    dict_keys = set(dictionary.keys())
+    assert dict_keys.intersection(keys) == set()
