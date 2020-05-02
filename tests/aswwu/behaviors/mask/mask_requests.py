@@ -13,13 +13,15 @@ URLS = {
 URLS = {key : BASE_URL + "/" + URLS[key] for key in URLS.keys()}
 
 
-def get_profile(year, username, session=requests.Session()):
+def get_profile(year, username, session=None):
     """
     (r"/profile/(.*)/(.*)", mask.ProfileHandler)
     :param year: the school year from which to query the student (i.e. '1718', '1819', '1920', etc.)
     :param username: the case-sensitive username of the test user whose profile is being queried
     :return:
     """
+    if session is None:
+        session = requests.Session()
     request_url = URLS["profile"] + "/" + year + "/" + username
     resp = session.get(request_url)
     return resp
