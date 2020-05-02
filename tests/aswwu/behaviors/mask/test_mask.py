@@ -93,6 +93,28 @@ SELF_FIELDS = {
     "wwuid",
     "favorite_food",  # change this, these regression tests are being written for current behavior, not desired
 }
+
+
+def build_profile_dict(user, update_dict, remove_keys, base_dict=BASE_PROFILE):
+    """
+    given a user, start with the BASE_PROFILE, or base_dict if provided, and construct a user object,
+    adding or updating fields in update_dict, and removing fields listed in remove keys.
+    :param user: a user for which to build the profile
+    :param update_dict: a python dictionary of items to be added or updated
+    :param remove_keys: a python set of string keys to be removed
+    :param base_dict: (optional) an alternative base profile dictionary
+    :return:
+    """
+    new_profile = dict()
+    new_profile.update(base_dict)
+    new_profile.update(user)
+    new_profile.update(update_dict)
+    remove_keys = remove_keys.intersection(set(new_profile.keys()))
+    for remove_key in remove_keys:
+        del new_profile[remove_key]
+    return new_profile
+
+
 def assert_update_profile(user, session, custom_fields={}):
     profile_fields = dict()
     profile_fields.update(BASE_PROFILE)
