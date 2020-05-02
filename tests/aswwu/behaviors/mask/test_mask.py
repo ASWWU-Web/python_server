@@ -9,40 +9,40 @@ from settings import testing
 
 
 BASE_PROFILE = {
+        u'attached_to': u'Some Name',
+        u'birthday': u'01-01',
+        u'career_goals': u'Web Development',
+        u'class_of': u'2020',
+        u'class_standing': u'Senior',
+        u'department': u'None',
+        u'email': u'armanda.Woolston@wallawalla.edu',
+        u'favorite_books': u'Clean Architecture',
+        u'favorite_food': u'Byte size snacks',
+        u'favorite_movies': u'Some Movie',
+        u'favorite_music': u'Some Music',
+        u'gender': u'Other',
+        u'graduate': u'No',
+        u'high_school': u'SomePlace High',
+        u'hobbies': u'Test Driven Development',
+        u'majors': u'Computer Science',
         u'minors': u'Web Design and Development',
         u'office': u'None',
-        u'photo': u'images/default_mask/default.jpg',
-        u'class_of': u'2020',
-        u'quote_author': u'Stephen Ermshar',
-        u'hobbies': u'Test Driven Development',
-        u'relationship_status': u'In engineering...',
-        u'majors': u'Computer Science',
-        u'favorite_books': u'Clean Architecture',
-        u'favorite_movies': u'Some Movie',
-        u'class_standing': u'Senior',
-        u'graduate': u'No',
-        u'department': u'None',
-        u'high_school': u'SomePlace High',
-        u'email': u'armanda.Woolston@wallawalla.edu',
-        u'favorite_music': u'Some Music',
+        u'office_hours': u'None',
         u'personality': u'ABCD',
-        u'website': u'aswwu.com',
+        u'pet_peeves': u'Broken Code',
+        u'phone': u'111-111-1111',
+        u'photo': u'images/default_mask/default.jpg',
+        u'preprofessional': u'No',
+        u'privacy': u'1',
         u'quote': u'A looooooooooooooooooooooooooooooooooooooooooooooooo'
                   u'ooooooooooooooooooooooooooooonnnnnnnnnnnnnnnnnnnnnnn'
                   u'nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnngg'
                   u'ggggggggggggggggggggggg string of text with some wei'
                   u'rd chars !@#$%&amp;*()_+-=`~?&gt;&lt;|}{\\][\';": an'
                   u'd a second " plus a newline\n\nand a\t tab',
-        u'preprofessional': u'No',
-        u'career_goals': u'Web Development',
-        u'phone': u'111-111-1111',
-        u'birthday': u'01-01',
-        u'favorite_food': u'Byte size snacks',
-        u'attached_to': u'Some Name',
-        u'pet_peeves': u'Broken Code',
-        u'gender': u'Other',
-        u'privacy': u'1',
-        u'office_hours': u'None'
+        u'quote_author': u'Stephen Ermshar',
+        u'relationship_status': u'In engineering...',
+        u'website': u'aswwu.com',
     }
 
 
