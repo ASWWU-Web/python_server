@@ -45,7 +45,54 @@ BASE_PROFILE = {
         u'website': u'aswwu.com',
     }
 
+# fields that should be visible regardless of the viewer's status
+BASE_FIELDS = {
+    "email",  # email is visible to not logged in users for individuals with privacy==0, but not for privacy==1, yikes..
+    "full_name",
+    "photo",
+    "username",
+    "views",
+}
 
+# fields that should only be visible to logged out users if the profile's privacy is "1"
+IMPERSONAL_FIELDS = {
+    'career_goals',
+    'department',
+    'favorite_books',
+    'favorite_movies',
+    'favorite_music',
+    'gender',
+    'graduate',
+    'hobbies',
+    'majors',
+    'minors',
+    'office',
+    'office_hours',
+    'personality',
+    'pet_peeves',
+    'preprofessional',
+    'privacy',
+    'quote',
+    'quote_author',
+    'relationship_status',
+    'website',
+}
+
+# fields that should only be visible to logged in users
+PERSONAL_FIELDS = {
+    'attached_to',
+    'birthday',
+    'class_of',
+    'class_standing',
+    'high_school',
+    'phone',
+}
+
+# fields that should only be visible to a profile's owner
+SELF_FIELDS = {
+    "wwuid",
+    "favorite_food",  # change this, these regression tests are being written for current behavior, not desired
+}
 def assert_update_profile(user, session, custom_fields={}):
     profile_fields = dict()
     profile_fields.update(BASE_PROFILE)
