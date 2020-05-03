@@ -205,15 +205,13 @@ def test_profile_auth_self(testing_server):
     If a viewer is logged in and views their own profile they should receive the whole profile model.
     :return:
     """
-    viewee, viewer = utils.load_csv(USERS_PATH, use_unicode=True)[0:2]
-    viewee_session = assert_verify_login(viewee)[1]
-    assert_update_profile(viewee, viewee_session)
+    user = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    user_session = assert_verify_login(user)[1]
+    assert_update_profile(user, user_session)
 
-    viewer_session = assert_verify_login(viewee)[1]
+    profile_response = mask_requests.get_profile(testing["current_year"], user["username"], user_session)
 
-    profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"], viewer_session)
-
-    expected_profile = build_profile_dict(viewee, {}, set())
+    expected_profile = build_profile_dict(user, {}, set())
     actual_profile = json.loads(profile_response.text)
 
     assert profile_response.status_code == 200
