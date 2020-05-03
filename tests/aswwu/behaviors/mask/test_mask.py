@@ -96,13 +96,13 @@ SELF_FIELDS = {
 }
 
 
-def build_profile_dict(user, update_dict, remove_keys, base_dict=BASE_PROFILE):
+def build_profile_dict(user, update_dict=dict(), remove_keys=set(), base_dict=BASE_PROFILE):
     """
     given a user, start with the BASE_PROFILE, or base_dict if provided, and construct a user object,
     adding or updating fields in update_dict, and removing fields listed in remove keys.
     :param user: a user for which to build the profile
-    :param update_dict: a python dictionary of items to be added or updated
-    :param remove_keys: a python set of string keys to be removed
+    :param update_dict: (optional) a python dictionary of items to be added or updated
+    :param remove_keys: (optional) a python set of string keys to be removed
     :param base_dict: (optional) an alternative base profile dictionary
     :return:
     """
@@ -116,37 +116,32 @@ def build_profile_dict(user, update_dict, remove_keys, base_dict=BASE_PROFILE):
     return new_profile
 
 
-def assert_update_profile(user, session, custom_fields={}):
-    profile_fields = dict()
-    profile_fields.update(BASE_PROFILE)
-    profile_fields.update(user)
-    profile_fields.update(custom_fields)
-    update_response = mask_requests.post_update_profile(user["username"], profile_fields, session)
+def assert_update_profile(user, session, profile_dict):
+    update_response = mask_requests.post_update_profile(user["username"], profile_dict, session)
     assert update_response.status_code == 200
     assert json.loads(update_response.text) == "success"
-    profile_response = mask_requests.get_profile(testing["current_year"], user["username"], session)
-    assert profile_response.status_code == 200
-    utils.assert_is_equal_sub_dict(profile_fields, json.loads(profile_response.text))
 
 
 def test_update_profile(testing_server):
     users = utils.load_csv(USERS_PATH, use_unicode=True)
     for user in users:
         login_response_text, session = assert_verify_login(user)
-        assert_update_profile(user, session)
+        profile_data = build_profile_dict(user)
+        assert_update_profile(user, session, profile_data)
 
 
 def test_search_all(testing_server):
     users = utils.load_csv(USERS_PATH, use_unicode=True)
     expected_results = []
     for user in users:
-        login_response_text, session = assert_verify_login(user)
-        assert_update_profile(user, session)
-        updated_user = dict()
-        updated_user.update(user)
-        updated_user.update({u"photo": BASE_PROFILE[u"photo"]})
-        del(updated_user[u"wwuid"])
-        expected_results.append(updated_user)
+        user_session = assert_verify_login(user)[1]
+        profile_data = build_profile_dict(user)
+        assert_update_profile(user, user_session, profile_data)
+        expected_result = dict()
+        expected_result.update(user)
+        expected_result.update({u"photo": BASE_PROFILE[u"photo"]})
+        del(expected_result[u"wwuid"])
+        expected_results.append(expected_result)
     all_response = mask_requests.get_search_all()
     expected_results = sorted(expected_results, key=lambda user: user[u"username"])
     actual_results = sorted(json.loads(all_response.text)[u"results"], key=lambda user: user[u"username"])
@@ -160,8 +155,10 @@ def test_profile_noauth_private(testing_server):
     :return:
     """
     viewee = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    profile_data = build_profile_dict(viewee, {"privacy": "0"})
+
     viewee_session = assert_verify_login(viewee)[1]
-    assert_update_profile(viewee, viewee_session, {"privacy": "0"})
+    assert_update_profile(viewee, viewee_session, profile_data)
 
     profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"])
     expected_profile = {
@@ -185,8 +182,10 @@ def test_profile_noauth_public(testing_server):
     :return:
     """
     viewee = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    profile_data = build_profile_dict(viewee, {"privacy": "1"})
+
     viewee_session = assert_verify_login(viewee)[1]
-    assert_update_profile(viewee, viewee_session, {"privacy": "1"})
+    assert_update_profile(viewee, viewee_session, profile_data)
 
     profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"])
 
@@ -206,16 +205,16 @@ def test_profile_auth_other(testing_server):
     :return:
     """
     viewee, viewer = utils.load_csv(USERS_PATH, use_unicode=True)[0:2]
-    viewee_session = assert_verify_login(viewee)[1]
-    assert_update_profile(viewee, viewee_session)
+    profile_data = build_profile_dict(viewee)
 
+    viewee_session = assert_verify_login(viewee)[1]
+    assert_update_profile(viewee, viewee_session, profile_data)
     viewer_session = assert_verify_login(viewer)[1]
 
     profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"], viewer_session)
 
     hidden_keys = SELF_FIELDS
-    expected_profile = build_profile_dict(viewee, {}, hidden_keys)
-
+    expected_profile = build_profile_dict(viewee, remove_keys=hidden_keys)
     actual_profile = json.loads(profile_response.text)
 
     assert profile_response.status_code == 200
@@ -229,12 +228,13 @@ def test_profile_auth_self(testing_server):
     :return:
     """
     user = utils.load_csv(USERS_PATH, use_unicode=True)[0]
-    user_session = assert_verify_login(user)[1]
-    assert_update_profile(user, user_session)
+    profile_data = build_profile_dict(user)
 
+    user_session = assert_verify_login(user)[1]
+    assert_update_profile(user, user_session, profile_data)
     profile_response = mask_requests.get_profile(testing["current_year"], user["username"], user_session)
 
-    expected_profile = build_profile_dict(user, {}, set())
+    expected_profile = build_profile_dict(user)
     actual_profile = json.loads(profile_response.text)
 
     assert profile_response.status_code == 200
