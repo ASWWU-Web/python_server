@@ -200,24 +200,6 @@ def test_profile_noauth_public(testing_server):
     utils.assert_does_not_contain_keys(actual_profile, hidden_keys)
 
 
-def test_profile_auth_self(testing_server):
-    """
-    If a viewer is logged in and views their own profile they should receive the whole profile model.
-    :return:
-    """
-    user = utils.load_csv(USERS_PATH, use_unicode=True)[0]
-    user_session = assert_verify_login(user)[1]
-    assert_update_profile(user, user_session)
-
-    profile_response = mask_requests.get_profile(testing["current_year"], user["username"], user_session)
-
-    expected_profile = build_profile_dict(user, {}, set())
-    actual_profile = json.loads(profile_response.text)
-
-    assert profile_response.status_code == 200
-    utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
-
-
 def test_profile_auth_other(testing_server):
     """
     If a viewer is logged in and views someone else's profile they should receive the view_other model.
@@ -239,3 +221,21 @@ def test_profile_auth_other(testing_server):
     assert profile_response.status_code == 200
     utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
     utils.assert_does_not_contain_keys(actual_profile, hidden_keys)
+
+
+def test_profile_auth_self(testing_server):
+    """
+    If a viewer is logged in and views their own profile they should receive the whole profile model.
+    :return:
+    """
+    user = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    user_session = assert_verify_login(user)[1]
+    assert_update_profile(user, user_session)
+
+    profile_response = mask_requests.get_profile(testing["current_year"], user["username"], user_session)
+
+    expected_profile = build_profile_dict(user, {}, set())
+    actual_profile = json.loads(profile_response.text)
+
+    assert profile_response.status_code == 200
+    utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
