@@ -1,4 +1,3 @@
-import requests
 from tests.conftest import testing_server
 import tests.utils as utils
 from tests.aswwu.data.paths import USERS_PATH
@@ -6,7 +5,6 @@ from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
 from settings import testing
-import requests
 
 
 BASE_PROFILE = {

@@ -6,7 +6,9 @@ VERIFY_URL = '/'.join([BASE_URL, 'verify'])
 ROLES_URL = '/'.join([BASE_URL, 'roles'])
 
 
-def post_verify(wwuid, full_name, email, session=requests.Session()):
+def post_verify(wwuid, full_name, email, session=None):
+    session = requests.Session() if session is None else session
+
     post_data = {
         'secret_key': keys["samlEndpointKey"],
         'employee_id': wwuid,
@@ -17,7 +19,9 @@ def post_verify(wwuid, full_name, email, session=requests.Session()):
     return resp
 
 
-def get_verify(session=requests.Session()):
+def get_verify(session=None):
+    session = requests.Session() if session is None else session
+
     resp = session.get(VERIFY_URL)
     return resp
 
