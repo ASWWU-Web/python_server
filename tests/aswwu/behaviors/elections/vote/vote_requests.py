@@ -1,16 +1,16 @@
 import requests
 from settings import keys, testing
 
-VOTE_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/vote'
+VOTE_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/vote'
 
 
-def post_vote(election, position, vote):
+def post_vote(session, election, position, vote):
     post_data = {
         'election': election,
         'position': position,
         'vote': vote,
     }
-    resp = requests.post(VOTE_URL, json=post_data)
+    resp = session.post(VOTE_URL, json=post_data)
     return resp
 
 
