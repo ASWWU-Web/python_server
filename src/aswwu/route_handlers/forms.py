@@ -10,6 +10,7 @@ from src.aswwu.base_handlers import BaseHandler
 from settings import email, database
 import src.aswwu.models.forms as forms_model
 import src.aswwu.alchemy_new.jobs as alchemy
+import datetime
 
 logger = logging.getLogger("aswwu")
 
@@ -147,6 +148,9 @@ class SubmitApplicationHandler(BaseHandler):
                 try:
                     app = alchemy.jobs_db.query(forms_model.JobApplication).filter_by(jobID=job_id,
                                                                                       username=user.username).one()
+                    # the onupdate callable parameter in the column definition of updated_at fails to update this value
+                    # for this endpoint, possibly because the row is not being modified, so update it manually here.
+                    app.updated_at = datetime.datetime.now()
                 except:
                     temp_var = True
                     app = forms_model.JobApplication()
