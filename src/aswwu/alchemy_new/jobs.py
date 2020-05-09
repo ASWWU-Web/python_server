@@ -8,13 +8,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, joinedload
 
 import src.aswwu.models.bases as base
-from settings import database
+# from settings import database
+from settings import environment
 
 JobsBase = base.JobsBase
 
 logger = logging.getLogger("aswwu")
 
-jobs_engine = create_engine("sqlite:///" + database['location'] + "/jobs.db")
+jobs_engine = create_engine("sqlite:///" + environment['databases_location'] + "/jobs.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 

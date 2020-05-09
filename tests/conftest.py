@@ -4,18 +4,20 @@ import tornado.options
 import threading
 
 import utils
-from settings import database, testing
+# from settings import database, testing
+from settings import environment, pytest_environment
 
+environment = pytest_environment
 
-tornado.options.define("port", default=testing['port'], type=int)
-tornado.options.define("log_name", default=testing['log_name'])
-tornado.options.define("current_year", default=testing['current_year'])
+tornado.options.define("port", default=environment["port"], type=int)
+tornado.options.define("log_name", default=environment["log_name"])
+tornado.options.define("current_year", default=environment["current_year"])
 
-temp_databases_path = testing['database'] + '/temp_dbs'
-database['location'] = temp_databases_path
-testing['dev'] = False
+# temp_databases_path = testing['database'] + '/temp_dbs'
+# database['location'] = temp_databases_path
+# testing['dev'] = False
 
-utils.setup_temp_databases(testing['database'], temp_databases_path)
+utils.setup_temp_databases(environment['databases_location'], environment['temporary_databases_path'])
 
 
 @pytest.fixture()

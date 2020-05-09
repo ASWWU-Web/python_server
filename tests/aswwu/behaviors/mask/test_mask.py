@@ -163,3 +163,11 @@ def test_search_names(testing_server):
     assert unique_query_response.status_code == 200
     assert len(actual_unique_response) == 1
     assert actual_unique_response == expected_unique_response
+
+
+def test_search_profiles(testing_server):
+    pass
+
+
+def test_list_photos(testing_server):
+    pass

@@ -7,12 +7,15 @@ import bleach
 import tornado.web
 
 from src.aswwu.base_handlers import BaseHandler
-from settings import email, database
+# from settings import email, database
+from settings import email, environment
 import src.aswwu.models.forms as forms_model
 import src.aswwu.alchemy_new.jobs as alchemy
 import datetime
 
 logger = logging.getLogger("aswwu")
+resumes_location = environment['databases_location'] + '/resume'
+
 
 class NewFormHandler(BaseHandler):
     @tornado.web.authenticated
@@ -218,7 +221,7 @@ class ViewApplicationHandler(BaseHandler):
                     response = {'application': app.serialize()}
                     # check if resume exists
                     try:
-                        resume = open(glob.glob(database['location'] + "/resume/" + app.username + "_" + app.jobID + "*")[0], "r")
+                        resume = open(glob.glob(resumes_location + "/" + app.username + "_" + app.jobID + "*")[0], "r")
                         resume.close()
                     except:
                         response['application']['resume'] = None
@@ -270,11 +273,11 @@ class ResumeUploadHandler(BaseHandler):
                 self.write({"status": "Error", "message": "Job doesn't exist"})
             fileinfo = self.request.files['file'][0]
             if os.path.splitext(fileinfo['filename'])[1] in ['.pdf', '.docx', '.doc', '.zip', '.odt']:
-                for f in glob.glob(database['location'] + "/resume/" + user.username + "_"
+                for f in glob.glob(resumes_location + "/" + user.username + "_"
                                    + job_id.replace("/", "").replace("..",  "") + "*"):
                     os.remove(f)
                 fh = open(
-                    database['location'] + "/resume/" + user.username + "_" + job_id + os.path.splitext(fileinfo['filename'])[1],
+                    resumes_location + "/" + user.username + "_" + job_id + os.path.splitext(fileinfo['filename'])[1],
                     'w+')
                 fh.write(fileinfo['body'])
                 self.set_status(201)
@@ -301,7 +304,7 @@ class ViewResumeHandler(BaseHandler):
                 self.write({"status": "Unauthorized"})
                 return
             try:
-                resume = open(glob.glob(database['location'] + "/resume/" + uname + "_" + job_id + "*")[0], "r")
+                resume = open(glob.glob(resumes_location + "/" + uname + "_" + job_id + "*")[0], "r")
                 self.set_status(200)
                 self.set_header("Content-type", "application/" + os.path.splitext(resume.name)[1].replace(".", ""))
                 self.set_header('Content-Disposition', 'inline; filename=' + os.path.basename(resume.name) + '')
@@ -345,8 +348,8 @@ class ExportApplicationsHandler(BaseHandler):
                     applicant_answers.append('"' + answer.answer.replace('"', "'") + '"')
                 for answer in app.answers:
                     applicant_answers.append('"' + answer.answer.replace('"', "'") + '"')
-                applicant_answers.append("Yes" if len(glob.glob(database['location'] + '/resume/' + app.username + "_" + job_id + "*")) > 0 else "No")
-                applicant_answers.append("https://aswwu.com/server/forms/resume/download/" + job_id + "/" + app.username if len(glob.glob(database['location'] + '/resume/' + app.username + "_" + job_id + "*")) > 0 else "")
+                applicant_answers.append("Yes" if len(glob.glob(resumes_location + "/" + app.username + "_" + job_id + "*")) > 0 else "No")
+                applicant_answers.append("https://aswwu.com/server/forms/resume/download/" + job_id + "/" + app.username if len(glob.glob(resumes_location + "/" + app.username + "_" + job_id + "*")) > 0 else "")
                 applicants.append(applicant_answers)
 
             self.set_header('Content-Type', 'text/csv')

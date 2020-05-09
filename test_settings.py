@@ -2,25 +2,44 @@ keys = {
     'hmac':"fakekeystring",
     'samlEndpointKey': "fakekeystring"
 }
-testing = {
-    'pytest': True,  # enables access to roles endpoint, set to false in production
-    'dev': False,  # bypasses authentication and logs in `developer`
-    'developer': 0000000,
-    'base_url': 'http://127.0.0.1',
-    'port': 8888,
-    'log_name': 'aswwu_test',
-    'current_year': '1920',
-    'database': './testing_databases',
-}
-production = {
-    'port': 8888,
-    'log_name': 'aswwu',
-    'current_year': '1920',
-}
+
 email = {
     'username': 'aswwu.webmaster@wallawalla.edu',
     'password': 'fakepassword'
 }
-database = {
-    'location': './testing_databases'
+
+# bypasses authentication and login `developer`
+local_dev_environment = {
+    'environment_name': 'Local Development',
+    'pytest': False,
+    'dev': True,
+    'developer': 2029909,
+    'port': 8888,
+    'log_name': 'local_aswwu',
+    'current_year': '1920',
+    'databases_location': '../databases',
 }
+
+pytest_environment = {
+    'environment_name': 'Pytest Automated Testing',
+    'pytest': True,
+    'dev': False,
+    'base_url': 'http://127.0.0.1',
+    'port': 8888,
+    'log_name': 'aswwu_test',
+    'current_year': '1920',
+    'databases_location': './testing_databases',
+    'temporary_databases_path': './testing_databases/temp_dbs',
+}
+
+production_environment = {
+    'environment_name': 'Production and Deployment',
+    'pytest': False,
+    'dev': False,
+    'port': 8888,
+    'log_name': 'aswwu',
+    'current_year': '1920',
+    'databases_location': '../databases',
+}
+
+environment = production_environment
