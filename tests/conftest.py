@@ -5,9 +5,9 @@ import threading
 
 import utils
 # from settings import database, testing
-from settings import environment, pytest_environment
+from settings import environment
 
-environment = pytest_environment
+assert environment["pytest"]  # make sure the pytest environment has been set
 
 tornado.options.define("port", default=environment["port"], type=int)
 tornado.options.define("log_name", default=environment["log_name"])
@@ -17,7 +17,7 @@ tornado.options.define("current_year", default=environment["current_year"])
 # database['location'] = temp_databases_path
 # testing['dev'] = False
 
-utils.setup_temp_databases(environment['databases_location'], environment['temporary_databases_path'])
+utils.setup_temp_databases(environment['testing_databases_location'], environment['databases_location'])
 
 
 @pytest.fixture()

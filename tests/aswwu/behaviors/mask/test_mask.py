@@ -5,7 +5,8 @@ from tests.aswwu.data.paths import USERS_PATH
 from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
-from settings import testing
+# from settings import testing
+from settings import environment
 import settings
 
 CURRENT_YEAR = settings.environment['current_year']
@@ -49,7 +50,7 @@ def test_profile_noauth_private(testing_server):
     viewee_session = assert_verify_login(viewee)[1]
     assert_update_profile(viewee, viewee_session, profile_data)
 
-    profile_response = mask_requests.get_profile(current_year, viewee["username"])
+    profile_response = mask_requests.get_profile(CURRENT_YEAR, viewee["username"])
     expected_profile = {
         "email": viewee["email"],
         "full_name": viewee["full_name"],

@@ -42,4 +42,4 @@ production_environment = {
     'databases_location': '../databases',
 }
 
-environment = production_environment
+environment = pytest_environment
