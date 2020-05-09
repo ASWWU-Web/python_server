@@ -28,8 +28,8 @@ pytest_environment = {
     'port': 8888,
     'log_name': 'aswwu_test',
     'current_year': '1920',
-    'databases_location': './testing_databases',
-    'temporary_databases_path': './testing_databases/temp_dbs',
+    'testing_databases_location': './testing_databases',
+    'databases_location': './testing_databases/temp_dbs',
 }
 
 production_environment = {
