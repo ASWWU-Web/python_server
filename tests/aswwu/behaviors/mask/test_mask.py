@@ -136,6 +136,8 @@ def test_search_names(testing_server):
     expected_empty_response = []
     empty_query_response = mask_requests.get_search_names_fast(name_query=empty_response_query)
     actual_empty_response = json.loads(empty_query_response.text)["results"]
+    assert empty_query_response.status_code == 200
+    assert len(actual_empty_response) == 0
     assert actual_empty_response == expected_empty_response
 
     many_response_query = "e"
@@ -148,6 +150,7 @@ def test_search_names(testing_server):
     ]
     many_query_response = mask_requests.get_search_names_fast(name_query=many_response_query)
     actual_many_response = json.loads(many_query_response.text)["results"]
+    assert many_query_response.status_code == 200
     assert len(actual_many_response) == len(expected_many_response)
     expected_many_response = sorted(expected_many_response, key=lambda user: user["username"])
     actual_many_response = sorted(actual_many_response, key=lambda user: user["username"])
@@ -157,5 +160,6 @@ def test_search_names(testing_server):
     expected_unique_response = [{"username": "armanda.Woolston", "full_name": "Armanda Woolston"}]
     unique_query_response = mask_requests.get_search_names_fast(name_query=unique_response_query)
     actual_unique_response = json.loads(unique_query_response.text)["results"]
+    assert unique_query_response.status_code == 200
     assert len(actual_unique_response) == 1
     assert actual_unique_response == expected_unique_response
