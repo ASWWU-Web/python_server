@@ -13,11 +13,7 @@ tornado.options.define("port", default=environment["port"], type=int)
 tornado.options.define("log_name", default=environment["log_name"])
 tornado.options.define("current_year", default=environment["current_year"])
 
-# temp_databases_path = testing['database'] + '/temp_dbs'
-# database['location'] = temp_databases_path
-# testing['dev'] = False
-
-utils.setup_temp_databases(environment['testing_databases_location'], environment['databases_location'])
+utils.setup_temp_databases(environment['original_testing_databases'], environment['databases_location'])
 
 
 @pytest.fixture()

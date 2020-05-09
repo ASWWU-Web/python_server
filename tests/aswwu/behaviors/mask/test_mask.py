@@ -9,7 +9,8 @@ import json
 from settings import environment
 import settings
 
-CURRENT_YEAR = settings.environment['current_year']
+CURRENT_YEAR = settings.environment["current_year"]
+PROFILE_PHOTOS_LOCATION = settings.environment["profile_photos_location"]
 
 
 def test_update_profile(testing_server):

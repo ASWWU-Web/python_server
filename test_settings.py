@@ -8,7 +8,7 @@ email = {
     'password': 'fakepassword'
 }
 
-# bypasses authentication and login `developer`
+# this environment will bypass authentication and login `developer`
 local_dev_environment = {
     'environment_name': 'Local Development',
     'pytest': False,
@@ -18,6 +18,8 @@ local_dev_environment = {
     'log_name': 'local_aswwu',
     'current_year': '1920',
     'databases_location': '../databases',
+    'profile_photos_location': '../media/profiles',
+    'resumes_location': '../databases/resume',
 }
 
 pytest_environment = {
@@ -28,8 +30,10 @@ pytest_environment = {
     'port': 8888,
     'log_name': 'aswwu_test',
     'current_year': '1920',
-    'testing_databases_location': './testing_databases',
-    'databases_location': './testing_databases/temp_dbs',
+    'original_testing_databases': './testing_databases',
+    'databases_location': './testing_databases/temp',
+    'profile_photos_location': './testing_databases/temp/profile_photos',
+    'resumes_location': './testing_databases/resume',
 }
 
 production_environment = {
@@ -40,6 +44,8 @@ production_environment = {
     'log_name': 'aswwu',
     'current_year': '1920',
     'databases_location': '../databases',
+    'profile_photos_location': '../media/profiles',  # TODO: (stephen) implement
+    'resumes_location': '../databases/resume',  # TODO: (stephen) implement
 }
 
 environment = pytest_environment

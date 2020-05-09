@@ -16,6 +16,8 @@ import src.aswwu.alchemy_new.archive as archive
 from settings import environment
 
 logger = logging.getLogger(environment["log_name"])
+PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
+# PROFILE_PHOTOS_LOCATION = './../media/profiles'
 
 
 # administrative role handler
@@ -270,8 +272,9 @@ class ListProfilePhotoHandler(BaseHandler):
     def get(self):
         try:
             wwuid = self.current_user.wwuid
-            photo_list = glob.glob('./../media/profiles/*/*-' + wwuid + '.*')
-            photo_list = [re.search(r"(.\/..\/media\/)(.*)", path).group(2) for path in photo_list]
+            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*'
+            photo_list = glob.glob(glob_pattern)
+            photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
