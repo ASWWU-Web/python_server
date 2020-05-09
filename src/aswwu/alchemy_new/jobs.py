@@ -13,9 +13,9 @@ from settings import environment
 
 JobsBase = base.JobsBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
-jobs_engine = create_engine("sqlite:///" + environment['databases_location'] + "/jobs.db")
+jobs_engine = create_engine("sqlite:///" + environment["databases_location"] + "/jobs.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 

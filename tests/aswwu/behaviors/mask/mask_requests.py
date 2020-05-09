@@ -1,7 +1,8 @@
 import requests
-from settings import keys, testing
+# from settings import keys, testing
+import settings
 
-BASE_URL = testing['base_url'] + ':' + str(testing['port'])
+BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
 URLS = {
     "profile": "profile",
     "search_fast": "search/names",

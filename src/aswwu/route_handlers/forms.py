@@ -13,7 +13,7 @@ import src.aswwu.models.forms as forms_model
 import src.aswwu.alchemy_new.jobs as alchemy
 import datetime
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 resumes_location = environment['databases_location'] + '/resume'
 
 

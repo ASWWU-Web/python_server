@@ -16,7 +16,7 @@ from settings import environment
 
 PagesBase = base.PagesBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 # defines the databases URLs relative to "server.py"
 pages_engine = create_engine("sqlite:///" + environment['databases_location'] + "/pages.db")

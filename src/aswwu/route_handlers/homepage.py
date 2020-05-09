@@ -4,11 +4,11 @@ import bleach
 import datetime
 import tornado.web
 import json
-from settings import email
+from settings import email, environment
 
 from src.aswwu.base_handlers import BaseHandler
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 class OpenForumHandler(BaseHandler):

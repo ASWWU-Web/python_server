@@ -17,7 +17,7 @@ ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 # defines the databases URLs relative to "server.py"
 engine = create_engine("sqlite:///" + environment['databases_location'] + "/people.db")

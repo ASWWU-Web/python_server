@@ -6,7 +6,8 @@ import random
 import string
 import glob
 
-from settings import testing
+# from settings import testing
+from settings import environment
 
 from src.aswwu.base_handlers import BaseHandler
 
@@ -24,7 +25,7 @@ class UploadHandler(BaseHandler):
             return
         try:
             fileinfo = self.request.files['file'][0]
-            if not testing['dev']:
+            if not environment['dev']:
                 server_url = 'https://aswwu.com/server/pages/media/static/'
             else:
                 server_url = 'http://localhost:8888/pages/media/static/'
@@ -47,7 +48,7 @@ class UploadHandler(BaseHandler):
 class LoadAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        if not testing['dev']:
+        if not environment['dev']:
             server_url = 'https://aswwu.com/server/pages/media/static/'
         else:
             server_url = 'http://localhost:8888/pages/media/static/'

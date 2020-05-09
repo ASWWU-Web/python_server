@@ -1,8 +1,10 @@
 import requests
-from settings import keys, testing
+# from settings import keys, testing
+import settings  # TODO: (kadensu) check this file for errors, it's been updated to use new environment settings
 
-VOTE_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/vote'
-ELECTION_URL = testing['base_url'] + ':' + testing['port'] + '/' + 'elections/election'
+BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
+VOTE_URL = BASE_URL + '/' + 'elections/vote'
+ELECTION_URL = BASE_URL + '/' + 'elections/election'
 
 # (r"/elections/vote", elections.VoteHandler)
 def post_vote(election, position, vote):

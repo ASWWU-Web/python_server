@@ -13,7 +13,7 @@ from settings import environment
 
 ElectionBase = base.ElectionBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 # defines the databases URLs relative to "server.py"
 election_engine = create_engine("sqlite:///" + environment['databases_location'] + "/elections.db")

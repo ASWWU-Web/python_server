@@ -6,6 +6,9 @@ from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
 from settings import testing
+import settings
+
+CURRENT_YEAR = settings.environment['current_year']
 
 
 def test_update_profile(testing_server):
@@ -46,7 +49,7 @@ def test_profile_noauth_private(testing_server):
     viewee_session = assert_verify_login(viewee)[1]
     assert_update_profile(viewee, viewee_session, profile_data)
 
-    profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"])
+    profile_response = mask_requests.get_profile(current_year, viewee["username"])
     expected_profile = {
         "email": viewee["email"],
         "full_name": viewee["full_name"],
@@ -73,7 +76,7 @@ def test_profile_noauth_public(testing_server):
     viewee_session = assert_verify_login(viewee)[1]
     assert_update_profile(viewee, viewee_session, profile_data)
 
-    profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"])
+    profile_response = mask_requests.get_profile(CURRENT_YEAR, viewee["username"])
 
     hidden_keys = SELF_FIELDS.union(PERSONAL_FIELDS).union({"email"})
     expected_profile = build_profile_dict(viewee, {"privacy": "1"}, hidden_keys)
@@ -97,7 +100,7 @@ def test_profile_auth_other(testing_server):
     assert_update_profile(viewee, viewee_session, profile_data)
     viewer_session = assert_verify_login(viewer)[1]
 
-    profile_response = mask_requests.get_profile(testing["current_year"], viewee["username"], viewer_session)
+    profile_response = mask_requests.get_profile(CURRENT_YEAR, viewee["username"], viewer_session)
 
     hidden_keys = SELF_FIELDS
     expected_profile = build_profile_dict(viewee, remove_keys=hidden_keys)
@@ -118,7 +121,7 @@ def test_profile_auth_self(testing_server):
 
     user_session = assert_verify_login(user)[1]
     assert_update_profile(user, user_session, profile_data)
-    profile_response = mask_requests.get_profile(testing["current_year"], user["username"], user_session)
+    profile_response = mask_requests.get_profile(CURRENT_YEAR, user["username"], user_session)
 
     expected_profile = build_profile_dict(user)
     actual_profile = json.loads(profile_response.text)

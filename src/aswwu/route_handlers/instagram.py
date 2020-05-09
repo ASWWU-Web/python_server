@@ -3,8 +3,9 @@ import logging
 from tornado.httpclient import HTTPClient
 
 from src.aswwu.base_handlers import BaseHandler
+from settings import environment
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 # This is the instagram handler for the atlas (I did this to hide the access token).

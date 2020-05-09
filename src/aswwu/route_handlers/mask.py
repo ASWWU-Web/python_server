@@ -13,8 +13,9 @@ import src.aswwu.models.mask as mask_model
 import src.aswwu.archive_models as archive_model
 import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
+from settings import environment
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 # administrative role handler
