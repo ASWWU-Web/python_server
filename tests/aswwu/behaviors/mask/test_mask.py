@@ -125,3 +125,37 @@ def test_profile_auth_self(testing_server):
 
     assert profile_response.status_code == 200
     utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
+
+
+def test_search_names(testing_server):
+    users = utils.load_csv(USERS_PATH)
+    for user in users:
+        assert_verify_login(user)
+
+    empty_response_query = "abcd"
+    expected_empty_response = []
+    empty_query_response = mask_requests.get_search_names_fast(name_query=empty_response_query)
+    actual_empty_response = json.loads(empty_query_response.text)["results"]
+    assert actual_empty_response == expected_empty_response
+
+    many_response_query = "e"
+    expected_many_response = [
+        {'username': 'delcie.Lauer',    'full_name': 'Delcie Lauer'},
+        {'username': 'Eugene.burnette', 'full_name': 'Eugene Burnette'},
+        {'username': 'Lashay.Semien',   'full_name': 'Lashay Semien'},
+        {'username': 'Melva.woullard',  'full_name': 'Melva Woullard'},
+        {'username': 'raeann.Castor',   'full_name': 'Raeann Castor'},
+    ]
+    many_query_response = mask_requests.get_search_names_fast(name_query=many_response_query)
+    actual_many_response = json.loads(many_query_response.text)["results"]
+    assert len(actual_many_response) == len(expected_many_response)
+    expected_many_response = sorted(expected_many_response, key=lambda user: user["username"])
+    actual_many_response = sorted(actual_many_response, key=lambda user: user["username"])
+    assert actual_many_response == expected_many_response
+
+    unique_response_query = "arm"
+    expected_unique_response = [{"username": "armanda.Woolston", "full_name": "Armanda Woolston"}]
+    unique_query_response = mask_requests.get_search_names_fast(name_query=unique_response_query)
+    actual_unique_response = json.loads(unique_query_response.text)["results"]
+    assert len(actual_unique_response) == 1
+    assert actual_unique_response == expected_unique_response
