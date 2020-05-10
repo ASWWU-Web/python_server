@@ -39,12 +39,14 @@ def test_put_specified_election(testing_server):
     session = election_subtests.create_elections_admin()
     election_data = election_subtests.create_elections(session)
     for election_id, election in election_data.items():
-        updated_election_data = {'election_type': 'aswwu' if election['election_type'] == 'senate' else 'senate',
-                                'name': election['name'] + '_updated',
-                                'max_votes': election['max_votes']+1,
-                                'start': election_subtests.add_hour_dt(election['start']),
-                                'end': election_subtests.add_hour_dt(election['end']),
-                                'show_results': election_subtests.add_hour_dt(election['show_results'])}
+        updated_election_data = {
+            'election_type': 'aswwu' if election['election_type'] == 'senate' else 'senate',
+            'name': election['name'] + '_updated',
+            'max_votes': election['max_votes'] + 1,
+            'start': election_subtests.add_hour_dt(election['start']),
+            'end': election_subtests.add_hour_dt(election['end']),
+            'show_results': election_subtests.add_hour_dt(election['show_results'])
+        }
         resp = election_requests.put_specified_election(session, election_id, updated_election_data['election_type'], updated_election_data['name'],
                                                         updated_election_data['max_votes'], updated_election_data['start'], updated_election_data['end'],
                                                         updated_election_data['show_results'])

@@ -25,9 +25,17 @@ def test_put_specified_position(testing_server):
     session = election_subtests.create_elections_admin()
     position_data = position_subtests.create_positions(session)
     for key, value in position_data.items():
-        resp = position_requests.put_specified_position(session, key, value['position'], value['election_type'], value['active'], value['order'])
+        updated_position_data = {
+            'id': key,
+            'position': value['position'] + '_updated',
+            'election_type': 'senate' if value['election_type'] == 'aswwu' else 'aswwu',
+            'active': value['active'] == 'True',
+            'order': int(value['order']) + 1
+        }
+        resp = position_requests.put_specified_position(session, key, obj_data=updated_position_data)
         assert(resp.status_code == 200)
-        position_subtests.assert_position_data(json.loads(resp.text), value)
+        print(updated_position_data)
+        position_subtests.assert_position_data(json.loads(resp.text), updated_position_data)
 
 
 def test_get_specified_position(testing_server):
