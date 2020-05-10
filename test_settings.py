@@ -31,9 +31,10 @@ pytest_environment = {
     'log_name': 'aswwu_test',
     'current_year': '1920',
     'original_testing_databases': './testing_databases',
-    'databases_location': './testing_databases/temp',
-    'profile_photos_location': './testing_databases/temp/profile_photos',
-    'resumes_location': './testing_databases/resume',
+    'temporary_files': './tmp',
+    'databases_location': './tmp/databases',
+    'profile_photos_location': './tmp/profile_photos',
+    'resumes_location': './tmp/resume',
 }
 
 production_environment = {
