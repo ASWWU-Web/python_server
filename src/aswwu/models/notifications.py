@@ -21,6 +21,6 @@ class Notification(NotificationsBase):
             'notification_links': self.notification_links,
             'start_time': datetime.strftime(self.start_time, '%Y-%m-%d %H:%M:%S.%f'),
             'end_time': datetime.strftime(self.end_time, '%Y-%m-%d %H:%M:%S.%f'),
-            'severity': self.visible,
+            'severity': self.severity,
             'visible': self.visible
         }

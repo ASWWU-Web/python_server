@@ -9,9 +9,12 @@ from settings import email
 from datetime import datetime
 
 from src.aswwu.base_handlers import BaseHandler
+from src.aswwu.permissions import permission_and, admin_permission, notifications_permission
+
 
 import src.aswwu.alchemy_new.notifications as notifications_alchemy
 import src.aswwu.models.notifications as notifications_model
+#import src.aswwu.validators.notifications as notifications_validator
 
 logger = logging.getLogger("aswwu")
 
@@ -20,7 +23,7 @@ def build_query_params(request_arguments):
     search_criteria = {}
     for key, value in request_arguments.items():
         if key in ('start_time', 'end_time'):
-            search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
+            search_criteria[key] = datetime.strptime(value[0], '%Y-%m-%d %H:%M:%S.%f')
         else:
             search_criteria[key] = value[0]
     return search_criteria
@@ -55,8 +58,8 @@ class NotificationHandler(BaseHandler):
         required_parameters = ('notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
 
         # TODO create a notifications validator
-#        elections_validator.validate_parameters(body_json, required_parameters)
-#        elections_validator.validate_election(body_json)
+#        notifications_validator.validate_parameters(body_json, required_parameters)
+#        notifications_validator.validate_notification(body_json)
 
         # create new election
         notification = notifications_model.Notification()
@@ -88,10 +91,8 @@ class SpecifiedNotificationHandler(BaseHandler):
         self.set_status(200)
         self.write(notification.serialize())
 
-    # TODO add notification decorators
-    #@tornado.web.authenticated
-    #@permission_and(elections_permission)
-
+    @tornado.web.authenticated
+#    @permission_and(notifications_permission)
     def put(self, notification_id):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -107,7 +108,7 @@ class SpecifiedNotificationHandler(BaseHandler):
         required_parameters = ('id', 'notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
 
         # TODO add notification validators
-        #elections_validator.validate_parameters(body_json, required_parameters)
+        #notifications_validator.validate_parameters(body_json, required_parameters)
         #elections_validator.validate_election(body_json, election)
 
         # update election
@@ -121,7 +122,7 @@ class SpecifiedNotificationHandler(BaseHandler):
 
         # response
         self.set_status(200)
-        self.write(election.serialize())
+        self.write(notification.serialize())
 
 class OpenForumHandler(BaseHandler):
     @tornado.web.authenticated

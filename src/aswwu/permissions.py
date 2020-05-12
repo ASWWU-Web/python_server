@@ -5,6 +5,7 @@ from src.aswwu import exceptions
 
 admin_permission = 'administrator'
 elections_permission = 'elections-admin'
+notifications_permission = 'notifications-admin'
 
 
 def permission_or(*perm_args):
