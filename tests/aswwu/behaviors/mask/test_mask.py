@@ -1,4 +1,4 @@
-from tests.aswwu.behaviors.mask.mask_data import BASE_PROFILE, IMPERSONAL_FIELDS, PERSONAL_FIELDS, SELF_FIELDS
+from tests.aswwu.behaviors.mask.mask_data import BASE_PROFILE, IMPERSONAL_FIELDS, PERSONAL_FIELDS, SELF_FIELDS, DEFAULT_MASK_PHOTO
 import tests.utils as utils
 from tests.aswwu.behaviors.mask.mask_utils import build_profile_dict, assert_update_profile
 from tests.aswwu.data.paths import USERS_PATH
@@ -6,7 +6,6 @@ from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
 import distutils.dir_util
-# from settings import testing
 from settings import environment
 import settings
 
@@ -171,10 +170,6 @@ def test_search_names(testing_server):
     assert actual_unique_response == expected_unique_response
 
 
-def test_search_profiles(testing_server):
-    pass
-
-
 def test_list_photos(testing_server):
     users = utils.load_csv(USERS_PATH)[0:3]
 
@@ -202,3 +197,37 @@ def test_list_photos(testing_server):
     assert many_response.status_code == 200
     assert len(actual_many_response) == 2
     assert set(actual_many_response) == set(expected_many_photos)
+
+
+def test_search_profiles(testing_server):
+    users = utils.load_csv(USERS_PATH, use_unicode=True)
+    for user in users[0:4]:
+        session = assert_verify_login(user)[1]
+        profile_data = build_profile_dict(user)
+        assert_update_profile(user, session, profile_data)
+
+    for user in users[4:8]:
+        session = assert_verify_login(user)[1]
+        profile_data = build_profile_dict(user)
+        profile_data.update({"majors": "Physics"})
+        assert_update_profile(user, session, profile_data)
+
+    physics_nursing_user = users[8]
+    session = assert_verify_login(physics_nursing_user)[1]
+    profile_data = build_profile_dict(physics_nursing_user)
+    profile_data.update({"majors": "Physics,Nursing"})
+    assert_update_profile(physics_nursing_user, session, profile_data)
+
+    expected_search_response = [{
+        "username": user["username"],
+        "photo": DEFAULT_MASK_PHOTO,
+        "email": user["email"],
+        "full_name": user["full_name"],
+        "views": "0",
+    } for user in users[4:9]]
+    search_response = mask_requests.get_profile_search(CURRENT_YEAR, dictionary_query={"majors": "physics"})
+    assert search_response.status_code == 200
+    actual_search_response = json.loads(search_response.text)["results"]
+    for result in actual_search_response:
+        assert result in expected_search_response
+    assert len(actual_search_response) == len(expected_search_response)

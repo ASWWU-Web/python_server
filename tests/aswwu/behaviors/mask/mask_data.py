@@ -1,3 +1,5 @@
+DEFAULT_MASK_PHOTO = u'images/default_mask/default.jpg'
+
 BASE_PROFILE = {
         u'attached_to': u'Some Name',
         u'birthday': u'01-01',
@@ -21,7 +23,7 @@ BASE_PROFILE = {
         u'personality': u'ABCD',
         u'pet_peeves': u'Broken Code',
         u'phone': u'111-111-1111',
-        u'photo': u'images/default_mask/default.jpg',
+        u'photo': DEFAULT_MASK_PHOTO,
         u'preprofessional': u'No',
         u'privacy': u'1',
         u'quote': u'A looooooooooooooooooooooooooooooooooooooooooooooooo'
