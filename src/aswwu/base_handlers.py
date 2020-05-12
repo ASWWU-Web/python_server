@@ -230,7 +230,7 @@ class RoleHandler(BaseHandler):
                 body_json = json.loads(body)
                 user.roles = ','.join(body_json['roles'])
                 mask.add_or_update(user)
-                self.set_status(200)
+                self.set_status(201)
                 self.write({'user': user.to_json()})
 
 

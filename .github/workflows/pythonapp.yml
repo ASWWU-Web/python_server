@@ -22,7 +22,11 @@ jobs:
       run: |
         bash scripts/run_pytests.sh
 
-    - name: Prepare Artifact
+    - name: upload coverage
+      run: |
+        bash <(curl -s https://codecov.io/bash)
+
+    - name: Prepare Artifact (not in use)
       run: |
         mkdir ../backend-artifact
         mkdir ../backend-artifact/backend-payload
