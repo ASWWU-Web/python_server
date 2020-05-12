@@ -24,7 +24,6 @@ POSITION_DATA = [
 
 def create_candidates(session, election=None):
     candidate_data = {}
-    user_data = []
     if not election:
         election_id = election_subtests.assert_post_dynamic_election(session)['id']
     else:
@@ -39,15 +38,13 @@ def create_candidates(session, election=None):
         response = auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         response_txt = json.loads(response.text)['user']
         response_txt['email'] = user['email']
-        print("RSP", response_txt)
-        user_data.append(response_txt)
         resp = candidate_requests.post_candidate(session, election_id, position_ids[count % 2], user['username'], user['full_name'])
         resp_data = json.loads(resp.text)
         candidate = {'position': position_ids[count % 2], 'username': user['username'], 'display_name': user['full_name']}
         assert (resp.status_code == 201)
         assert_candidate_data(resp_data, candidate)
         candidate_data[resp_data['id']] = resp_data
-    return candidate_data, election_id, position_ids, user_data
+    return candidate_data, election_id, position_ids
 
 
 def assert_candidate_data(resp, candidate):

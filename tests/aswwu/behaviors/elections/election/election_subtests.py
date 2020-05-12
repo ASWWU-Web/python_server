@@ -38,7 +38,7 @@ def assert_post_dynamic_election(session):
         'election_type': 'aswwu',
         'name': 'General Election Test',
         'max_votes': 2,
-        'start': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(seconds=3), DATETIME_FORMAT),
+        'start': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(seconds=2), DATETIME_FORMAT),
         'end': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), DATETIME_FORMAT),
         'show_results': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), DATETIME_FORMAT),
     }

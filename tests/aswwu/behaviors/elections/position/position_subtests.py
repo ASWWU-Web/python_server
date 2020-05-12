@@ -23,7 +23,6 @@ def create_positions(session):
                                                position['active'],
                                                position['order'])
         resp_data = json.loads(resp.text)
-        print(resp_data)
         assert (resp.status_code == 201)
         assert_position_data(resp_data, position)
         position_data[resp_data['id']] = resp_data
