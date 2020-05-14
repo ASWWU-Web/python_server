@@ -14,7 +14,7 @@ from src.aswwu.permissions import permission_and, admin_permission, notification
 
 import src.aswwu.alchemy_new.notifications as notifications_alchemy
 import src.aswwu.models.notifications as notifications_model
-#import src.aswwu.validators.notifications as notifications_validator
+import src.aswwu.validators.notifications as notifications_validator
 
 logger = logging.getLogger("aswwu")
 
@@ -49,6 +49,8 @@ class NotificationHandler(BaseHandler):
         self.set_status(200)
         self.write({'notifications': [notification.serialize() for notification in notifications]})
 
+    @tornado.web.authenticated
+    @permission_and(notifications_permission)
     def post(self):
         # load request body
         body = self.request.body.decode('utf-8')
@@ -57,11 +59,10 @@ class NotificationHandler(BaseHandler):
         # validate parameters
         required_parameters = ('notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
 
-        # TODO create a notifications validator
-#        notifications_validator.validate_parameters(body_json, required_parameters)
-#        notifications_validator.validate_notification(body_json)
+        notifications_validator.validate_parameters(body_json, required_parameters)
+        notifications_validator.validate_notification(body_json)
 
-        # create new election
+        # create new notification
         notification = notifications_model.Notification()
         for parameter in required_parameters:
             if parameter in ('start_time', 'end_time'):
@@ -81,7 +82,7 @@ class SpecifiedNotificationHandler(BaseHandler):
     """
 
     def get(self, notification_id):
-        # get election
+        # get notification
         notifications = notifications_alchemy.query_notifications(notification_id=str(notification_id))
         if notifications == list():
             raise notifications.NotFound404Exception('notification with specified ID not found')
@@ -92,13 +93,13 @@ class SpecifiedNotificationHandler(BaseHandler):
         self.write(notification.serialize())
 
     @tornado.web.authenticated
-#    @permission_and(notifications_permission)
+    @permission_and(notifications_permission)
     def put(self, notification_id):
         # load request body
         body = self.request.body.decode('utf-8')
         body_json = json.loads(body)
 
-        # get current election
+        # get current notification
         notifications = notifications_alchemy.query_notifications(notification_id=str(notification_id))
         if notifications == list():
             raise notifications.NotFound404Exception('notification with specified ID not found')
@@ -108,10 +109,10 @@ class SpecifiedNotificationHandler(BaseHandler):
         required_parameters = ('id', 'notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
 
         # TODO add notification validators
-        #notifications_validator.validate_parameters(body_json, required_parameters)
-        #elections_validator.validate_election(body_json, election)
+        notifications_validator.validate_parameters(body_json, required_parameters)
+        notifications_validator.validate_notification(body_json)
 
-        # update election
+        # update notification
         for parameter in required_parameters:
             if parameter in ('start_time', 'end_time'):
                 d = datetime.strptime(body_json[parameter], '%Y-%m-%d %H:%M:%S.%f')
