@@ -108,7 +108,6 @@ class SpecifiedNotificationHandler(BaseHandler):
         # validate parameters
         required_parameters = ('id', 'notification_text', 'notification_links', 'start_time', 'end_time', 'severity', 'visible')
 
-        # TODO add notification validators
         notifications_validator.validate_parameters(body_json, required_parameters)
         notifications_validator.validate_notification(body_json)
 
