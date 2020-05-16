@@ -1,7 +1,7 @@
 import requests
 import settings
 
-BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + 'forms'
+BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/forms'
 URLS = {
     "new": "job/new",
     "job_view": "job/view",
@@ -18,8 +18,12 @@ URLS = {key : BASE_URL + "/" + URLS[key] for key in URLS.keys()}
 
 
 # "new": "job/new",
-def post_job_new():
-    pass
+def post_job_new(data, session=None):
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["new"]
+    resp = session.post(request_url, json=data)
+    return resp
 
 
 # "job_view": "job/view",
