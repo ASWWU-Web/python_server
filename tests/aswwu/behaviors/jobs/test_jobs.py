@@ -9,8 +9,6 @@ import distutils.dir_util
 from settings import environment
 import settings
 
-CURRENT_YEAR = settings.environment["current_year"]
-
 
 # "new": "job/new",
 def test_new_job():
