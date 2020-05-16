@@ -1,14 +1,11 @@
 # jobs.py
 
-# import and set up the logging
-# import ast
 import logging
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, joinedload
 
 import src.aswwu.models.bases as base
-# from settings import database
 from settings import environment
 
 JobsBase = base.JobsBase

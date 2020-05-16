@@ -6,7 +6,6 @@ import random
 import string
 import glob
 
-# from settings import testing
 from settings import environment
 
 from src.aswwu.base_handlers import BaseHandler

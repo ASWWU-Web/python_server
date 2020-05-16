@@ -1,5 +1,4 @@
 import requests
-# from settings import keys, testing
 import settings
 
 BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])

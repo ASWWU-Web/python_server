@@ -7,7 +7,6 @@ import bleach
 import tornado.web
 
 from src.aswwu.base_handlers import BaseHandler
-# from settings import email, database
 from settings import email, environment
 import src.aswwu.models.forms as forms_model
 import src.aswwu.alchemy_new.jobs as alchemy

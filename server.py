@@ -2,7 +2,6 @@ import tornado.autoreload
 import tornado.web
 from tornado.options import define
 
-# from settings import testing, production
 from settings import environment
 from src.aswwu import application
 

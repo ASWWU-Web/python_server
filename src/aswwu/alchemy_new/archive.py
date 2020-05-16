@@ -6,7 +6,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.aswwu.archive_models import ArchiveBase
-# from settings import database
 from settings import environment
 
 logger = logging.getLogger(environment["log_name"])

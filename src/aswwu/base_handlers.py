@@ -9,7 +9,6 @@ import time
 
 import tornado.web
 
-# from settings import keys, testing
 from settings import keys, environment
 
 # import models and alchemy functions as needed

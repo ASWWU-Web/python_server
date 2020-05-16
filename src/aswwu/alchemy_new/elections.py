@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker
 import src.aswwu.models.bases as base
 import src.aswwu.models.elections as elections_model
 from datetime import datetime
-# from settings import database
 from settings import environment
 
 ElectionBase = base.ElectionBase

@@ -8,7 +8,6 @@ from sqlalchemy.sql import label
 
 import src.aswwu.models.bases as base
 import src.aswwu.models.mask as mask_model
-# from settings import database
 from settings import environment
 
 
