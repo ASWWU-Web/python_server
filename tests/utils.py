@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 import os
 import shutil
 import glob
+import settings
 
 
 def load_csv(csv_file, use_unicode=False):
@@ -28,19 +29,30 @@ def load_csv(csv_file, use_unicode=False):
     return object_list
 
 
-def setup_temp_databases(from_path, to_path):
-    """
-        copies clean testing databases into a temporary directory.
-        :param from_path:
-        :param to_path:
-        """
-    if not os.path.isdir(to_path):
-        os.makedirs(to_path)
+def clean_temporary_folder(folder_path=None):
+    if folder_path is None:
+        folder_path = settings.environment["temporary_files"]
     else:
-        shutil.rmtree(to_path)
-        os.makedirs(to_path)
+        assert folder_path.split('/')[0:2] == settings.environment["temporary_files"].split('/')
+
+    if not os.path.isdir(folder_path):
+        os.makedirs(folder_path)
+    else:
+        shutil.rmtree(folder_path)
+        os.makedirs(folder_path)
+
+
+def setup_databases():
+    from_path, to_path = settings.environment['original_testing_databases'], settings.environment['databases_location']
+    clean_temporary_folder(folder_path=to_path)
+    assert os.path.isdir(from_path) and os.path.isdir(to_path)
     for database in glob.glob(from_path + '/*.db'):
         shutil.copy(database, to_path)
+
+
+def touch(filename):
+    # https://stackoverflow.com/questions/1158076/implement-touch-using-python#comment977269_1158096
+    open(filename, 'wa').close()
 
 
 def reset_databases():

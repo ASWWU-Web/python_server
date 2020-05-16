@@ -1,7 +1,7 @@
 import requests
-from settings import keys, testing
+import settings
 
-BASE_URL = testing['base_url'] + ':' + str(testing['port'])
+BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
 URLS = {
     "profile": "profile",
     "search_fast": "search/names",
@@ -54,7 +54,7 @@ def get_search_all(session=None):
     return resp
 
 
-def get_profile_search(year, session=None, string_query=None, **kwargs):
+def get_profile_search(year, session=None, string_query=None, dictionary_query=None):
     """
     (r"/search/(.*)/(.*)", mask.SearchHandler)
     :param year: the school year from which to query the students (i.e. '1718', '1819', '1920', etc.)
@@ -67,8 +67,10 @@ def get_profile_search(year, session=None, string_query=None, **kwargs):
 
     if string_query is not None:
         query = string_query
+    elif dictionary_query is not None:
+        query = ";".join([key + "=" + value for key, value in dictionary_query.items()])
     else:
-        query = [key + "=" + value for key, value in kwargs.items()].join(";")
+        assert False  # you must provide a string query or a dictionary query
     request_url = URLS["search"] + "/" + year + "/" + query
     resp = session.get(request_url)
     return resp

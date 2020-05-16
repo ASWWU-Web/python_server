@@ -8,8 +8,11 @@
 - `pipenv install`
 - `cp test_settings.py settings.py`
 - in `settings.py`
-    - set `testing['dev']` to `True`
-    - set `testing['developer']` to your WWU ID
+    - set `testing['dev']` to `True` to bypass authentication
+    - set `testing['developer']` to your WWU ID, to make yourself the current user locally.
+    - when running pytests
+        - set `testing['pytest']` to `True`, and
+        - set `testing['dev']` to `False`
 
 If you need to use the current databases, they can be accessed with `scp` 
 at the relative path indicated in the `settings.py` file on the server.

@@ -4,11 +4,12 @@
 """Custom exceptions for HTTP requests and other things."""
 
 import logging
-
 from tornado.web import HTTPError
 
+from settings import environment
 
-logger = logging.getLogger("aswwu")
+
+logger = logging.getLogger(environment["log_name"])
 
 
 class BadRequest400Exception(HTTPError):

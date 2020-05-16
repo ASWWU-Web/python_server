@@ -8,7 +8,7 @@ from sqlalchemy.sql import label
 
 import src.aswwu.models.bases as base
 import src.aswwu.models.mask as mask_model
-from settings import database
+from settings import environment
 
 
 Base = base.Base
@@ -16,10 +16,10 @@ ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///" + database['location'] + "/people.db")
+engine = create_engine("sqlite:///" + environment['databases_location'] + "/people.db")
 
 # bind instances of the databases to corresponding variables
 Base.metadata.bind = engine

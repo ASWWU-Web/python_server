@@ -1,24 +1,21 @@
 # pages.py
 
-# import and set up the logging
 import ast
 import logging
 
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker, joinedload, class_mapper
-# from sqlalchemy.sql import label
 
 import src.aswwu.models.bases as base
-# import aswwu.models.mask as mask_model
 import src.aswwu.models.pages as pages_model
-from settings import database
+from settings import environment
 
 PagesBase = base.PagesBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 # defines the databases URLs relative to "server.py"
-pages_engine = create_engine("sqlite:///" + database['location'] + "/pages.db")
+pages_engine = create_engine("sqlite:///" + environment['databases_location'] + "/pages.db")
 
 # create the model tables if they don't already exist
 PagesBase.metadata.create_all(pages_engine)
