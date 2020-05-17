@@ -27,8 +27,18 @@ def post_job_new(data, session=None):
 
 
 # "job_view": "job/view",
-def get_job_view():
-    pass
+def get_job_view(job_id=None, session=None):
+    """
+    :param job_id: an integer job id, or None for all jobs
+    :param session:
+    :return:
+    """
+    job_id = "all" if job_id is None else str(job_id)
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["job_view"] + "/" + job_id
+    resp = session.get(request_url)
+    return resp
 
 
 # "job_delete": "job/delete",
