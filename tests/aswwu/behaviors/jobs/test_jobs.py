@@ -69,8 +69,20 @@ def test_job_edit(testing_server):
 
 
 # "app_submit": "application/submit",
-def test_app_submit():
-    pass
+def test_app_submit(testing_server):
+    new_job_owner, applicant = utils.load_csv(USERS_PATH)[0:2]
+    create_job_permissions = ["forms-admin"]
+    session = assert_verify_login(new_job_owner)[1]
+    post_roles(new_job_owner["wwuid"], create_job_permissions)
+    assert_new_job_success(session, new_job_owner)
+
+    applicant_session = assert_verify_login(applicant)[1]
+    application_submission_data = jobs_data.APP_DATA_POST
+    app_submit_response = jobs_requests.post_app_submit(application_submission_data, applicant_session)
+    actual_app_submit_response = json.loads(app_submit_response.text)
+
+    assert app_submit_response.status_code == 201
+    assert actual_app_submit_response["status"] == "submitted"
 
 
 # "app_view": "application/view",

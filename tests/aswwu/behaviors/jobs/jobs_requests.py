@@ -61,8 +61,12 @@ def post_job_edit(job_id, data, session=None):
 
 
 # "app_submit": "application/submit",
-def post_app_submit():
-    pass
+def post_app_submit(data, session=None):
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["app_submit"]
+    resp = session.post(request_url, json=data)
+    return resp
 
 
 # "app_view": "application/view",
