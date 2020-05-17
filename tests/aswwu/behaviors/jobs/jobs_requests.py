@@ -47,8 +47,17 @@ def post_job_delete():
 
 
 # "job_edit": "job/edit",
-def post_job_edit():
-    pass
+def post_job_edit(job_id, data, session=None):
+    """
+    :param job_id: an integer job id
+    :param session:
+    :return:
+    """
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["job_edit"] + "/" + str(job_id)
+    resp = session.post(request_url, json=data)
+    return resp
 
 
 # "app_submit": "application/submit",
