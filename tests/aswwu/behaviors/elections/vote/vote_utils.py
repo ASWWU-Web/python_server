@@ -7,7 +7,7 @@ import json
 import time
 
 
-def create_votes(session, election_id, position_id):
+def create_votes(election_id, position_id):
     time.sleep(3)
     vote_data = {}
 

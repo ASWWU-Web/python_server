@@ -1,4 +1,5 @@
 import settings
+import requests
 
 VOTE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/vote'
 
@@ -19,6 +20,18 @@ def get_vote(session, position_id, username):
         'vote': username
     }
     resp = session.get(VOTE_URL, params=parameters)
+    return resp
+
+
+def get_specified_vote(session, vote_id):
+    """
+    GET (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
+    :param session: elections-admin session
+    :param vote_id: vote id
+    :return: the request response object
+    """
+    url = VOTE_URL + '/' + vote_id
+    resp = session.get(url)
     return resp
 
 # (r"/elections/vote/(.*)", elections.SpecificVoteHandler)

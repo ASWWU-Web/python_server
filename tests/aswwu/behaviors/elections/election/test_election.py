@@ -73,7 +73,7 @@ def test_get_count(testing_server):
     position_id = json.loads(position_resp.text)['id']
 
     # post votes in election
-    expected_vote_data = vote_utils.create_votes(session, election_id, position_id)
+    expected_vote_data = vote_utils.create_votes(election_id, position_id)
 
     # manually count votes
     vote_counts = {}
