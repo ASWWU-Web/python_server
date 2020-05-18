@@ -1,18 +1,18 @@
 import tests.aswwu.behaviors.elections.candidate.candidate_requests as candidate_requests
 import tests.aswwu.behaviors.elections.candidate.candidate_utils as candidate_utils
-import tests.aswwu.behaviors.elections.election.election_subtests as election_subtests
+import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import json
 from tests.conftest import testing_server
 
 
 def test_post_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_utils.create_candidates(session, election_id, position_ids)
 
 
 def test_get_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -25,7 +25,7 @@ def test_get_candidate(testing_server):
 
 
 def test_get_specified_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -37,7 +37,7 @@ def test_get_specified_candidate(testing_server):
 
 
 def test_put_specified_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 

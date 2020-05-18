@@ -1,4 +1,4 @@
-import tests.aswwu.behaviors.elections.election.election_subtests as election_subtests
+import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
 import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
 import tests.aswwu.behaviors.elections.vote.vote_utils as vote_utils
@@ -17,8 +17,8 @@ POSITION_DATA = {
 
 
 def test_post_vote(testing_server):
-    admin_session = election_subtests.create_elections_admin()
-    election_id = election_subtests.assert_post_dynamic_election(admin_session)['id']
+    admin_session = election_utils.create_elections_admin()
+    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
     position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
                                                     POSITION_DATA['election_type'],
                                                     POSITION_DATA['active'], POSITION_DATA['order'])
@@ -31,8 +31,8 @@ def test_post_vote_candidates(testing_server):
 
 
 def test_get_vote(testing_server):
-    admin_session = election_subtests.create_elections_admin()
-    election_id = election_subtests.assert_post_dynamic_election(admin_session)['id']
+    admin_session = election_utils.create_elections_admin()
+    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
     position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
                                                     POSITION_DATA['election_type'],
                                                     POSITION_DATA['active'], POSITION_DATA['order'])
