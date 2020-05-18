@@ -51,8 +51,6 @@ def validate_election(parameters, existing_election=None):
         raise exceptions.Forbidden403Exception('election takes place during the past')
 
     # check that end time isn't less than start time
-    print(parameters['start'])
-    print(parameters['end'])
     if parameters['start'] > parameters['end']:
         raise exceptions.Forbidden403Exception('start time is after end time')
 

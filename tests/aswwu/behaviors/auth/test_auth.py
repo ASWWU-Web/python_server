@@ -30,4 +30,3 @@ def test_post_roles(testing_server):
         response_roles_data = json.loads(response.text)['user']['roles']
         expected_roles_data = ','.join(roles)
         assert (response_roles_data == expected_roles_data)
-
