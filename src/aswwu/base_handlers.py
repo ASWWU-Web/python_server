@@ -9,7 +9,7 @@ import time
 
 import tornado.web
 
-from settings import keys, testing
+from settings import keys, environment
 
 # import models and alchemy functions as needed
 import src.aswwu.models.mask as mask_model
@@ -18,7 +18,7 @@ import src.aswwu.alchemy_new.archive as archive
 import src.aswwu.archive_models as archives
 import src.aswwu.exceptions as exceptions
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 # model used only in this file
@@ -93,7 +93,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # global hook that allows the @tornado.web.authenticated decorator to function
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
-        if not testing['dev']:
+        if not environment['dev']:
             try:
                 if not self.get_cookie("token"):
                     user = None
@@ -114,7 +114,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
             return user
         else:
-            return LoggedInUser(testing['developer'])
+            return LoggedInUser(environment['developer'])
 
     def prepare(self):
         # some modern JS frameworks force data to be sent as JSON
@@ -219,7 +219,7 @@ class RoleHandler(BaseHandler):
         Modify roles in the users table, accessible only in a testing environment.
         Writes the modified user object.
         """
-        if not testing['pytest']:
+        if not environment['pytest']:
             raise exceptions.Forbidden403Exception('Method Forbidden')
         else:
             user = mask.query_user(wwuid)
