@@ -10,10 +10,12 @@ CURRENT_URL = settings.environment['base_url'] + ':' + str(settings.environment[
 # (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler)
 # get, delete
 
+
 def get_current():
     """elections/current"""
     resp = requests.get(CURRENT_URL)
     return resp
+
 
 def get_election(election_type=None, name=None, max_votes=None, start_before=None, start_after=None, end_before=None,
                  end_after=None):
@@ -69,5 +71,12 @@ def put_specified_election(session, election_id, election_type, name, max_votes,
 
 
 def get_count(session, election_id):
-    """elections/election/{election_id}/count"""
-    pass
+    """
+    (r"/elections/election/(.*)/count", elections.VoteCountHandler)
+    :param session: admin session to query votes
+    :param election_id: id of election to get votes from
+    :return: the request response object
+    """
+    url = ELECTION_URL + '/' + election_id + '/count'
+    resp = session.get(url)
+    return resp
