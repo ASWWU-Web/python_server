@@ -15,6 +15,7 @@ POST_ELECTIONS_USER = {
 }
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
+
 def assert_election_data(resp_data, election):
     assert (resp_data['election_type'] == election['election_type'])
     assert (resp_data['name'] == election['name'])

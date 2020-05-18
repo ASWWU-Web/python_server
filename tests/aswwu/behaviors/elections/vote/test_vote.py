@@ -28,32 +28,6 @@ def test_post_vote(testing_server):
 
 def test_post_vote_candidates(testing_server):
     pass
-    # response_txt = json.loads(response.text)['user']
-    # response_txt['email'] = user['email']
-    # user_data.append(response_txt)
-
-    # resp = candidate_requests.post_candidate(session, election_id, position_ids[count % 2], user['username'],
-    #                                          user['full_name'])
-    # resp_data = json.loads(resp.text)
-    # candidate = {'position': position_ids[count % 2], 'username': user['username'],
-    #              'display_name': user['full_name']}
-    # assert (resp.status_code == 201)
-    # assert_candidate_data(resp_data, candidate)
-    # candidate_data[resp_data['id']] = resp_data
-
-    # users = utils.load_csv(paths.USERS_PATH)
-    # i = 0
-    # for candidate_id, candidate in candidate_data.items():
-    #     user_session = auth_subtests.assert_verify_login(user_data[i])[1]
-    #     i += 1
-    #     print(candidate)
-    #     vote = candidate['username']
-    #     resp = vote_requests.post_vote(user_session, election_id, position_ids[1], vote)
-    #     assert (resp.status_code == 201)
-    #     resp_data = json.loads(resp.text)
-    #     print(resp_data)
-    #     vote_data = {'vote': vote, 'position': position_ids[1], 'election': election_id}
-    #     vote_subtests.assert_vote_data(resp_data, vote_data)
 
 
 def test_get_vote(testing_server):

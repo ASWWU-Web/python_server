@@ -32,9 +32,12 @@ def test_put_specified_position(testing_server):
             'active': value['active'] == 'True',
             'order': int(value['order']) + 1
         }
-        resp = position_requests.put_specified_position(session, key, obj_data=updated_position_data)
+        resp = position_requests.put_specified_position(session, position_id=key,
+                                                        position=updated_position_data['position'],
+                                                        election_type=updated_position_data['election_type'],
+                                                        active=updated_position_data['active'],
+                                                        order=updated_position_data['order'])
         assert(resp.status_code == 200)
-        print(updated_position_data)
         position_subtests.assert_position_data(json.loads(resp.text), updated_position_data)
 
 

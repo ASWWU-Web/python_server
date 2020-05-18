@@ -1,6 +1,4 @@
-import tests.aswwu.behaviors.elections.election.election_subtests as election_subtests
 import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
-import tests.aswwu.behaviors.elections.position.position_requests as position_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
 import tests.utils as utils
@@ -8,12 +6,6 @@ import tests.aswwu.data.paths as paths
 import json
 import time
 
-POSITION_DATA = {
-    'position': 'Senator',
-    'election_type': 'aswwu',
-    'active': 'True',
-    'order': 1
-}
 
 def create_votes(session, election_id, position_id):
     time.sleep(3)
@@ -28,7 +20,7 @@ def create_votes(session, election_id, position_id):
             'position': position_id,
             "vote": user['username']
         }
-        resp = vote_requests.post_vote(user_session, obj_data=vote)
+        resp = vote_requests.post_vote(user_session, election=election_id, position=position_id, vote=user['username'])
         resp_text = json.loads(resp.text)
         assert (resp.status_code == 201)
         assert_vote_data(resp_text, vote)
