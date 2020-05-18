@@ -1,7 +1,7 @@
 import requests
-from settings import keys, testing
+import settings
 
-POSITION_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/position'
+POSITION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/position'
 
 
 def get_position(position=None, election_type=None, active=None):

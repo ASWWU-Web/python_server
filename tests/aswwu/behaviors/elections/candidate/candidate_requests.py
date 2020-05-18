@@ -1,7 +1,7 @@
-from settings import keys, testing
+import settings
 import requests
 
-ELECTION_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/election/'
+ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election/'
 
 
 def post_candidate(session, election_id, position, username, display_name):

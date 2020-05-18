@@ -1,8 +1,8 @@
-from settings import keys, testing
+import settings
 import requests
 
-ELECTION_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/election'
-CURRENT_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'elections/current'
+ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election'
+CURRENT_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/current'
 
 # (r"/elections/election/(.*)/ballot", elections.BallotHandler)
 # get, post
