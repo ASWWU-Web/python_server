@@ -25,22 +25,39 @@ def get_vote(session, position_id, username):
 
 def get_specified_vote(session, vote_id):
     """
+    Retrieve a vote.
     GET (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
-    :param session: elections-admin session
+    :param session: user session
     :param vote_id: vote id
-    :return: the request response object
+    :return resp: the request response object
     """
     url = VOTE_URL + '/' + vote_id
     resp = session.get(url)
     return resp
 
-# (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
-# get, put, delete
-# def get_specific_vote():
-#
-# def put_specific_vote():
-#
-# def delete_specific_vote():
 
-# (r"/elections/election/(.*)/count", elections.VoteCountHandler)
-# get
+def put_specified_vote(user_session, vote_id, election_id, position_id, vote, user_username):
+    """
+    Update a vote. Only works if the election is still open.
+    PUT (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
+    :param user_session: logged in user session
+    :param vote_id: id of vote to update
+    :param election_id: id of election
+    :param position_id: id of position
+    :param vote: username of person voting for
+    :param user_username: username of user that is voting
+    :return resp: the request response object
+    """
+    post_data = {
+        'id': vote_id,
+        'election': election_id,
+        'position': position_id,
+        'vote': vote,
+        'username': user_username
+    }
+    url = VOTE_URL + '/' + vote_id
+    resp = user_session.put(url, json=post_data)
+    return resp
+
+# (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
+# delete

@@ -90,3 +90,61 @@ def test_get_specified_vote(testing_server):
         assert (specified_vote_resp.status_code == 200)
         specified_vote_resp_data = json.loads(specified_vote_resp.text)
         utils.assert_is_equal_sub_dict(vote_resp_data, specified_vote_resp_data)
+
+
+def test_put_specified_vote(testing_server):
+    # create user to act as replacement vote
+    new_user = {
+        'wwuid': '9999999',
+        'username': 'bob.dylan',
+        'full_name': 'Bob Dylan',
+        'email': 'bob.dylan@wallawalla.edu'
+    }
+    auth_subtests.assert_verify_login(new_user)
+
+    # create admin session
+    admin_session = election_utils.create_elections_admin()
+
+    # create dynamic election
+    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
+
+    # create generic position
+    position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
+    position_id = json.loads(position_resp.text)['id']
+
+    # wait for election to open
+    time.sleep(2)
+
+    # post votes in election
+    users = utils.load_csv(paths.USERS_PATH)
+
+    for user in users:
+        # login as user
+        auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
+        user_session = auth_subtests.assert_verify_login(user)[1]
+
+        # create vote
+        vote_resp = vote_requests.post_vote(user_session,
+                                            election=election_id,
+                                            position=position_id,
+                                            vote=user['username'])
+        vote_resp_data = json.loads(vote_resp.text)
+        assert (vote_resp.status_code == 201)
+
+        # update vote by changing 'vote' field
+        updated_vote_data = {
+            'id': vote_resp_data['id'],
+            'election': vote_resp_data['election'],
+            'position': vote_resp_data['position'],
+            'vote': new_user['username'],
+            'username': user['username']
+        }
+        updated_vote_resp = vote_requests.put_specified_vote(user_session,
+                                                             vote_id=updated_vote_data['id'],
+                                                             election_id=updated_vote_data['election'],
+                                                             position_id=updated_vote_data['position'],
+                                                             vote=updated_vote_data['vote'],
+                                                             user_username=updated_vote_data['username'])
+        assert (updated_vote_resp.status_code == 200)
+        updated_vote_resp_data = json.loads(updated_vote_resp.text)
+        utils.assert_is_equal_sub_dict(updated_vote_data, updated_vote_resp_data)
