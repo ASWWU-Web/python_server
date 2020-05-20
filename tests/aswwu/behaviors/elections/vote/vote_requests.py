@@ -1,5 +1,4 @@
 import settings
-import requests
 
 VOTE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/vote'
 
@@ -59,5 +58,15 @@ def put_specified_vote(user_session, vote_id, election_id, position_id, vote, us
     resp = user_session.put(url, json=post_data)
     return resp
 
-# (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
-# delete
+
+def delete_specified_vote(user_session, vote_id):
+    """
+    Destroy a vote. Only works if the election is still open.
+    DELETE (r"/elections/vote/(.*)", elections.SpecificVoteHandler)
+    :param user_session: user session
+    :param vote_id: id of vote to destroy
+    :return: the request response object
+    """
+    url = VOTE_URL + '/' + vote_id
+    resp = user_session.delete(url)
+    return resp
