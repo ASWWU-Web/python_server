@@ -4,12 +4,6 @@ import requests
 ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election'
 CURRENT_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/current'
 
-# (r"/elections/election/(.*)/ballot", elections.BallotHandler)
-# get, post
-
-# (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler)
-# get, delete
-
 
 def get_current():
     """elections/current"""
