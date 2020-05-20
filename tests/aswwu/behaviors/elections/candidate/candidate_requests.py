@@ -38,5 +38,16 @@ def put_specified_candidate(session, election_id, candidate_id, candidate_data):
     resp = session.put(url, json=candidate_data)
     return resp
 
-# (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler)
-# get, put, delete
+
+def delete_specified_candidate(session, election_id, candidate_id):
+    """
+    Destroy a candidate. Only works if the election is still open.
+    DELETE (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler)
+    :param session: election-admin session
+    :param election_id: id of election to delete candidate from
+    :param candidate_id: id of candidate to destroy
+    :return: the request response object
+    """
+    url = ELECTION_URL + '/' + election_id + '/candidate/' + candidate_id
+    resp = session.delete(url)
+    return resp
