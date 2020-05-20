@@ -148,3 +148,41 @@ def test_put_specified_vote(testing_server):
         assert (updated_vote_resp.status_code == 200)
         updated_vote_resp_data = json.loads(updated_vote_resp.text)
         utils.assert_is_equal_sub_dict(updated_vote_data, updated_vote_resp_data)
+
+
+def test_delete_specified_vote(testing_server):
+    # create admin session
+    admin_session = election_utils.create_elections_admin()
+
+    # create dynamic election
+    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
+
+    # create generic position
+    position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
+    position_id = json.loads(position_resp.text)['id']
+
+    # wait for election to open
+    time.sleep(2)
+
+    # post votes in election
+    users = utils.load_csv(paths.USERS_PATH)
+    for user in users:
+        # login as user
+        auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
+        user_session = auth_subtests.assert_verify_login(user)[1]
+
+        # create vote
+        vote_resp = vote_requests.post_vote(user_session,
+                                            election=election_id,
+                                            position=position_id,
+                                            vote=user['username'])
+        vote_resp_data = json.loads(vote_resp.text)
+        assert (vote_resp.status_code == 201)
+
+        # delete vote
+        del_vote_resp = vote_requests.delete_specified_vote(admin_session, vote_resp_data['id'])
+        assert(del_vote_resp.status_code == 204)
+
+        # assert vote no longer exists
+        specified_vote_resp = vote_requests.get_specified_vote(user_session, vote_resp_data['id'])
+        assert (specified_vote_resp.status_code == 404)
