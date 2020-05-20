@@ -44,4 +44,30 @@ def post_ballot(user_session, election_id, position_id, student_id, vote):
     resp = user_session.post(url, json=post_data)
     return resp
 
-# (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler)
+
+def get_specified_ballot(admin_session, election_id, vote_id):
+    """
+    Retrieve a manually entered vote.
+    GET (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler)
+    :param admin_session: logged in election-admin session
+    :param election_id: id of election to get ballot from
+    :param vote_id: id of vote to get
+    :return: the request response object
+    """
+    url = ELECTION_URL + '/' + election_id + '/' + vote_id
+    resp = requests.get(url)
+    return resp
+
+
+def delete_specified_ballot(admin_session, election_id, vote_id):
+    """
+    Destroy a manually entered vote.
+    DELETE (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler)
+    :param admin_session: logged in election-admin session
+    :param election_id: id of election to delete ballot from
+    :param vote_id: id of vote to destroy
+    :return: the request response object
+    """
+    url = ELECTION_URL + '/' + election_id + '/' + vote_id
+    resp = admin_session.delete(url)
+    return resp
