@@ -48,6 +48,6 @@ def delete_specified_candidate(session, election_id, candidate_id):
     :param candidate_id: id of candidate to destroy
     :return: the request response object
     """
-    url = ELECTION_URL + '/' + election_id + '/candidate/' + candidate_id
+    url = ELECTION_URL + election_id + '/candidate/' + candidate_id
     resp = session.delete(url)
     return resp
