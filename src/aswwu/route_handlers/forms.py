@@ -195,7 +195,7 @@ class ViewApplicationHandler(BaseHandler):
             user = self.current_user
             if job_id == "all" and username == "all":
                 if 'forms-admin' in user.roles:
-                    apps = alchemy.query_all_forms(forms_model.JobApplication).\
+                    apps = alchemy.jobs_db.query(forms_model.JobApplication).\
                         order_by(forms_model.JobApplication.updated_at.desc())
                     self.write({'applications': [a.min() for a in apps]})
                     return

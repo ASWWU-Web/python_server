@@ -71,7 +71,7 @@ def post_app_submit(data, session=None):
 
 # "app_view": "application/view",
 def get_app_view(job_id=None, username=None, session=None):
-    job_id = "all" if job_id is None else str(job_id)
+    job_id = "all" if job_id is None else job_id
     username = "all" if username is None else username
     session = requests.Session() if session is None else session
 

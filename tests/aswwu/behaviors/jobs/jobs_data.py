@@ -1,19 +1,15 @@
-from tests import utils
-from tests.aswwu.data.paths import USERS_PATH
+from tests.aswwu.data.users import USERS
 
-# TODO: (stephen) set these consts to the whole user object and
-#                 import to test file, rather than useing load_csv
-#                 there. Refactor mask similarly. Also, create
-#                 users dictionary in place of csv.
-JOB_OWNER = utils.load_csv(USERS_PATH)[0]["username"]
-APPLICANT = utils.load_csv(USERS_PATH)[1]["username"]
+JOB_OWNER = USERS[0]
+APPLICANT = USERS[1]
+APPLICANT_2 = USERS[2]
 
 JOB_DATA_POST = {
         "job_name": "new job name",
         "job_description": "new job description",
         "visibility": "true",
         "department": "Web",
-        "owner": JOB_OWNER,
+        "owner": JOB_OWNER["username"],
         "image": "",
         "featured": "false",
         # the questions argument needs to be one string,
@@ -26,7 +22,7 @@ JOB_DATA_POST = {
     }
 
 JOB_DATA_GET_ALL = {
-    "owner": JOB_OWNER,
+    "owner": JOB_OWNER["username"],
     "featured": False,
     "job_description": "new job description",
     "department": "Web",
@@ -37,7 +33,7 @@ JOB_DATA_GET_ALL = {
 }
 
 JOB_DATA_GET_ONE = {
-    "owner": JOB_OWNER,
+    "owner": JOB_OWNER["username"],
     "featured": False,
     "job_description": "new job description",
     "department": "Web",
@@ -52,8 +48,8 @@ JOB_DATA_GET_ONE = {
     ]
 }
 
-JOB_DATA_EDIT_POST = JOB_DATA_POST.copy()
-JOB_DATA_EDIT_POST.update(
+JOB_DATA_EDITED_POST = JOB_DATA_POST.copy()
+JOB_DATA_EDITED_POST.update(
     {
         "questions": '['
                      '{"question": "question 1 edited", "id": 1},'
@@ -66,7 +62,7 @@ JOB_DATA_EDIT_POST.update(
 )
 
 JOB_DATA_GET_EDITED_ONE = {
-    "owner": JOB_OWNER,
+    "owner": JOB_OWNER["username"],
     "featured": True,
     "job_description": "new job description",
     "department": "Web",
@@ -81,12 +77,12 @@ JOB_DATA_GET_EDITED_ONE = {
     ]
 }
 
-APP_DATA_POST = {
+APP_DATA = {
     "jobID": "1",
-    "username": APPLICANT,
+    "username": APPLICANT["username"],
     "answers": '['
-               '{"questionID": 1, "answer": "question 1 answer"},'
-               '{"questionID": 2, "answer": "question 2 answer"},'
-               '{"questionID": 3, "answer": "question 3 answer"}'
+               '{"questionID": "1", "answer": "question 1 answer"},'
+               '{"questionID": "2", "answer": "question 2 answer"},'
+               '{"questionID": "3", "answer": "question 3 answer"}'
                ']'
 }
