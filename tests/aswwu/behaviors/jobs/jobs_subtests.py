@@ -1,12 +1,10 @@
-import json
-
 from settings import environment
 from tests import utils as utils
 
-from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
-from tests.aswwu.behaviors.jobs import jobs_requests, jobs_data
-from tests.aswwu.behaviors.jobs.jobs_data import JOB_DATA_POST
+from tests.aswwu.behaviors.jobs import jobs_requests
 import distutils.dir_util
+
+from tests.aswwu.behaviors.jobs.jobs_requests import post_resume_upload
 
 
 def assert_new_job_success(session, new_job_data):
@@ -35,8 +33,7 @@ def assert_upload_resume_success(session, resume_file_name, job_id):
 
     files = {'file': open(resume_location, 'rb')}
 
-    url = jobs_requests.URLS["resume_upload"]
-    response = session.post(url, files=files, data={"jobID": job_id})
+    response = post_resume_upload(files, job_id, session)
 
     assert response.status_code == 201
     assert response.json() == {"status": "Submitted"}

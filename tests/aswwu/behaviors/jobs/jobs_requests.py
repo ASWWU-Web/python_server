@@ -91,8 +91,12 @@ def get_app_export():
 
 
 # "resume_upload": "resume/upload",
-def post_resume_upload():
-    pass
+def post_resume_upload(files, job_id, session=None):
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["resume_upload"]
+    response = session.post(request_url, files=files, data={"jobID": job_id})
+    return response
 
 
 # "resume_download": "resume/download",
