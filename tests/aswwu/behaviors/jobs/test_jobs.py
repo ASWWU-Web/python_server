@@ -1,5 +1,5 @@
-from tests.aswwu.data.users import USERS
-from tests.aswwu.behaviors.jobs.jobs_subtests import assert_new_job_success, assert_new_app_success
+from tests.aswwu.behaviors.jobs.jobs_subtests import assert_new_job_success, assert_new_app_success, \
+    assert_upload_resume_success
 from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.auth.auth_requests import post_roles
 from tests.aswwu.behaviors.jobs import jobs_data, jobs_requests
@@ -163,8 +163,18 @@ def test_app_export():
 
 
 # "resume_upload": "resume/upload",
-def test_resume_upload():
-    pass
+def test_resume_upload(testing_server):
+    new_job_owner, applicant = jobs_data.JOB_OWNER, jobs_data.APPLICANT
+    create_job_permissions = ["forms-admin"]
+    owner_session = assert_verify_login(new_job_owner)[1]
+    applicant_session = assert_verify_login(applicant)[1]
+    post_roles(new_job_owner["wwuid"], create_job_permissions)
+    assert_new_job_success(owner_session, jobs_data.JOB_DATA_POST)
+
+    resume_file_name = "demo_resume.pdf"
+    job_id = 1
+
+    assert_upload_resume_success(applicant_session, resume_file_name, job_id)
 
 
 # "resume_download": "resume/download",
