@@ -100,5 +100,9 @@ def post_resume_upload(files, job_id, session=None):
 
 
 # "resume_download": "resume/download",
-def get_resume_download():
-    pass
+def get_resume_download(job_id, username, session=None):
+    session = requests.Session() if session is None else session
+
+    request_url = URLS["resume_download"] + "/" + str(job_id) + "/" + username
+    response = session.get(request_url, allow_redirects=True)
+    return response

@@ -1,3 +1,4 @@
+from tests.aswwu.behaviors.jobs.jobs_requests import get_resume_download
 from tests.aswwu.behaviors.jobs.jobs_subtests import assert_new_job_success, assert_new_app_success, \
     assert_upload_resume_success
 from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
@@ -178,5 +179,21 @@ def test_resume_upload(testing_server):
 
 
 # "resume_download": "resume/download",
-def test_resume_download():
-    pass
+def test_resume_download(testing_server):
+    new_job_owner, applicant = jobs_data.JOB_OWNER, jobs_data.APPLICANT
+    create_job_permissions = ["forms-admin"]
+    owner_session = assert_verify_login(new_job_owner)[1]
+    applicant_session = assert_verify_login(applicant)[1]
+    post_roles(new_job_owner["wwuid"], create_job_permissions)
+    assert_new_job_success(owner_session, jobs_data.JOB_DATA_POST)
+
+    resume_file_name = "demo_resume.pdf"
+    job_id = "1"
+
+    expected_file_content = assert_upload_resume_success(applicant_session, resume_file_name, job_id)[1]
+    response = get_resume_download(job_id, applicant["username"], owner_session)
+
+    assert response.status_code == 200
+    assert response.content == expected_file_content
+
+

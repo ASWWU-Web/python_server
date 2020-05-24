@@ -31,10 +31,18 @@ def assert_upload_resume_success(session, resume_file_name, job_id):
     distutils.dir_util.create_tree(environment["resumes_location"], [resume_file_name])
     utils.touch(resume_location)
 
-    files = {'file': open(resume_location, 'rb')}
+    file_content = resume_file_name + " contents"
+    file_object = open(resume_location, 'w+')
+    file_object.write(file_content)
+    file_object.close()
 
-    response = post_resume_upload(files, job_id, session)
+
+    file = {'file': open(resume_location, "r")}
+
+    response = post_resume_upload(file, job_id, session)
+
+    file["file"].close()
 
     assert response.status_code == 201
     assert response.json() == {"status": "Submitted"}
-    return response
+    return response, file_content
