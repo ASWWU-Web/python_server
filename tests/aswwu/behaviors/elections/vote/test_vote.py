@@ -19,7 +19,7 @@ POSITION_DATA = {
 
 
 def test_post_vote(testing_server):
-    admin_session = election_utils.create_elections_admin()
+    admin_session = election_utils.create_elections_admin()[1]
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
     position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
                                                     POSITION_DATA['election_type'],
@@ -37,7 +37,7 @@ def test_post_vote_candidates(testing_server):
 
 
 def test_get_vote(testing_server):
-    admin_session = election_utils.create_elections_admin()
+    admin_session = election_utils.create_elections_admin()[1]
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
     position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
                                                     POSITION_DATA['election_type'],
@@ -57,7 +57,7 @@ def test_get_vote(testing_server):
 
 def test_get_specified_vote(testing_server):
     # create admin session
-    admin_session = election_utils.create_elections_admin()
+    admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
@@ -103,7 +103,7 @@ def test_put_specified_vote(testing_server):
     auth_subtests.assert_verify_login(new_user)
 
     # create admin session
-    admin_session = election_utils.create_elections_admin()
+    admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
@@ -152,7 +152,7 @@ def test_put_specified_vote(testing_server):
 
 def test_delete_specified_vote(testing_server):
     # create admin session
-    admin_session = election_utils.create_elections_admin()
+    admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']

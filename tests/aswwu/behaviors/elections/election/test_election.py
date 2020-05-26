@@ -8,12 +8,12 @@ from tests.conftest import testing_server
 
 
 def test_get_current(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_utils.assert_post_dynamic_election(session)
 
 
 def test_get_election(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_data = election_utils.create_elections(session)
 
     resp = election_requests.get_election()
@@ -25,12 +25,12 @@ def test_get_election(testing_server):
 
 
 def test_post_election(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_utils.create_elections(session)
 
 
 def test_get_specified_election(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_data = election_utils.create_elections(session)
     for key, election in election_data.items():
         resp = election_requests.get_specified_election(key)
@@ -39,7 +39,7 @@ def test_get_specified_election(testing_server):
 
 
 def test_put_specified_election(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_data = election_utils.create_elections(session)
     for election_id, election in election_data.items():
         updated_election_data = {
@@ -63,7 +63,7 @@ def test_get_count(testing_server):
     :param testing_server: pytest testing server
     """
     # create admin session
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
     election_id = election_utils.assert_post_dynamic_election(session)['id']

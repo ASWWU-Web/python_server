@@ -6,12 +6,12 @@ from tests.conftest import testing_server
 
 
 def test_post_position(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     position_utils.create_positions(session)
 
 
 def test_get_position(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     position_data = position_utils.create_positions(session)
 
     resp = position_requests.get_position()
@@ -22,7 +22,7 @@ def test_get_position(testing_server):
 
 
 def test_put_specified_position(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     position_data = position_utils.create_positions(session)
     for key, value in position_data.items():
         updated_position_data = {
@@ -42,7 +42,7 @@ def test_put_specified_position(testing_server):
 
 
 def test_get_specified_position(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     position_data = position_utils.create_positions(session)
     for key, position in position_data.items():
         resp = position_requests.get_specified_position(key)

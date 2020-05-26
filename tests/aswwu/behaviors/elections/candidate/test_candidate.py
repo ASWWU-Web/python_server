@@ -6,13 +6,13 @@ from tests.conftest import testing_server
 
 
 def test_post_candidate(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_utils.create_candidates(session, election_id, position_ids)
 
 
 def test_get_candidate(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -25,7 +25,7 @@ def test_get_candidate(testing_server):
 
 
 def test_get_specified_candidate(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -37,7 +37,7 @@ def test_get_specified_candidate(testing_server):
 
 
 def test_put_specified_candidate(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -55,7 +55,7 @@ def test_put_specified_candidate(testing_server):
 
 
 def test_delete_specified_candidate(testing_server):
-    session = election_utils.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
 
     # create a bunch of candidates
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)

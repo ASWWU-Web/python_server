@@ -53,9 +53,9 @@ def assert_post_dynamic_election(session):
 
 
 def create_elections_admin():
-    session = auth_subtests.assert_verify_login(POST_ELECTIONS_USER)[1]
+    user_data, session = auth_subtests.assert_verify_login(POST_ELECTIONS_USER)
     auth_requests.post_roles(POST_ELECTIONS_USER['wwuid'], POST_ELECTIONS_USER['roles'])
-    return session
+    return user_data, session
 
 
 def create_elections(session):
