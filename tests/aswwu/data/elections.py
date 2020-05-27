@@ -1,4 +1,4 @@
-_flat_elections_array = [
+_elections = [
     ["aswwu", "Primary", "2", "2028-02-13 12:43:20.000000", "2028-02-13 17:51:20.000000", "2028-02-13 17:51:20.000000"],
     ["aswwu", "General Election 2026", "1", "2026-02-15 08:00:00.000000", "2026-02-15 20:00:00.000000", "2026-02-15 20:00:00.000000"],
     ["senate", "Senate Election 2025", "2", "2025-10-13 12:43:20.000000", "2025-10-13 17:51:20.000000", "2025-10-13 17:51:20.000000"],
@@ -7,7 +7,7 @@ _flat_elections_array = [
     ["aswwu", "ASWWU Election 2027", "2", "2027-06-13 12:43:20.000000", "2027-06-13 17:51:20.000000", "2027-06-12 17:51:20.200000"],
 ]
 
-POSITIONS = [
+ELECTIONS = [
     {
         "election_type": election[0],
         "name": election[1],
@@ -16,7 +16,7 @@ POSITIONS = [
         "end": election[4],
         "show_results": election[5],
     }
-    for election in _flat_elections_array
+    for election in _elections
 ]
 
 

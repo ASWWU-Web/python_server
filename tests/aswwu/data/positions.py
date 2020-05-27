@@ -1,4 +1,4 @@
-_flat_positions_array = [
+_positions = [
     ["Financial VP", "aswwu", "True", "3"],
     ["President", "aswwu", "True", "1"""],
     ["Executive VP", "aswwu", "True", "2"],
@@ -18,5 +18,5 @@ POSITIONS = [
         "active": position[2],
         "order":position[3],
     }
-    for position in _flat_positions_array
+    for position in _positions
 ]

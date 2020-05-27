@@ -1,4 +1,4 @@
-_flat_users_array = [
+_users = [
     ["3241243", "Armanda Woolston", "armanda.Woolston@wallawalla.edu", "armanda.Woolston"],
     ["1234543", "Holly Garza", "Holly.garza@wallawalla.edu", "Holly.garza"],
     ["2345679", "Raeann Castor", "raeann.Castor@wallawalla.edu", "raeann.Castor"],
@@ -17,5 +17,5 @@ USERS = [
         "email": user[2],
         "username":user[3],
     }
-    for user in _flat_users_array
+    for user in _users
 ]

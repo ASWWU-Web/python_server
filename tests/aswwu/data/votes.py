@@ -1,4 +1,4 @@
-_flat_votes_array = [
+_votes = [
     ["armanda.Woolston"],
     ["Holly.garza"],
     ["raeann.Castor"],
@@ -10,9 +10,9 @@ _flat_votes_array = [
     ["Eugene.burnette"],
 ]
 
-USERS = [
+VOTES = [
     {
         "vote": vote[0],
     }
-    for vote in _flat_votes_array
+    for vote in _votes
 ]
