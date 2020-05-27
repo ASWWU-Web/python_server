@@ -27,6 +27,13 @@ def get_verify(session=None):
 
 
 def post_roles(wwuid, roles):
+    """
+    sets the roles of the user with the provided wwuid to only those
+    listed in the provided roles array
+    :param wwuid: the wwuid of the user whos roles need to be updated
+    :param roles: an array of strings, where each string is a single role
+    :return:
+    """
     roles_endpoint = '/'.join([ROLES_URL, wwuid])
     post_data = {'roles': roles}
     resp = requests.post(roles_endpoint, json=post_data)
