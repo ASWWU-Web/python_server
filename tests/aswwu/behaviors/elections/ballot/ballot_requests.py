@@ -54,8 +54,8 @@ def get_specified_ballot(admin_session, election_id, vote_id):
     :param vote_id: id of vote to get
     :return: the request response object
     """
-    url = ELECTION_URL + '/' + election_id + '/' + vote_id
-    resp = requests.get(url)
+    url = ELECTION_URL + '/' + election_id + '/ballot/' + vote_id
+    resp = admin_session.get(url)
     return resp
 
 
@@ -68,6 +68,6 @@ def delete_specified_ballot(admin_session, election_id, vote_id):
     :param vote_id: id of vote to destroy
     :return: the request response object
     """
-    url = ELECTION_URL + '/' + election_id + '/' + vote_id
+    url = ELECTION_URL + '/' + election_id + '/ballot/' + vote_id
     resp = admin_session.delete(url)
     return resp
