@@ -19,7 +19,7 @@ def get_ballot(admin_session, election_id, position_id=None, vote=None):
         'position': position_id,
         'vote': vote
     }
-    resp = requests.get(url, params=optional_parameters)
+    resp = admin_session.get(url, params=optional_parameters)
     return resp
 
 
