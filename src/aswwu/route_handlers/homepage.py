@@ -4,7 +4,7 @@ import bleach
 import datetime
 import tornado.web
 import json
-from settings import email
+from settings import email, environment
 
 from datetime import datetime
 
@@ -16,7 +16,7 @@ import src.aswwu.alchemy_new.notifications as notifications_alchemy
 import src.aswwu.models.notifications as notifications_model
 import src.aswwu.validators.notifications as notifications_validator
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 def build_query_params(request_arguments):

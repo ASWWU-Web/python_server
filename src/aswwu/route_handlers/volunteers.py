@@ -7,8 +7,9 @@ from src.aswwu.base_handlers import BaseHandler
 import src.aswwu.models.mask as mask_model
 import src.aswwu.models.volunteers as volunteer_model
 import src.aswwu.alchemy_new.mask as alchemy
+from settings import environment
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 # fairly straightforward handler to save a TON of volunteer information
