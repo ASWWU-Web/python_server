@@ -1,8 +1,7 @@
 import tests.aswwu.behaviors.elections.election.election_requests as election_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-import tests.aswwu.data.paths as paths
-import tests.utils as utils
+from tests.aswwu.data.elections import ELECTIONS
 import datetime as dt
 import json
 
@@ -59,10 +58,14 @@ def create_elections_admin():
 
 
 def create_elections(session):
+    """
+    Create elections
+    :param session: elections-admin logged-in session
+    :return: dictionary mapping election id to election data
+    """
     election_data = {}
     # Populate elections database
-    elections = utils.load_csv(paths.ELECTIONS_PATH)
-    for election in elections:
+    for election in ELECTIONS:
         resp_data = assert_post_election(session, election)
         election_data[resp_data['id']] = resp_data
     return election_data

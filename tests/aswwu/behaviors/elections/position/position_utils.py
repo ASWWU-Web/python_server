@@ -1,6 +1,5 @@
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
-import tests.aswwu.data.paths as paths
-import tests.utils as utils
+from tests.aswwu.data.positions import POSITIONS
 import json
 
 
@@ -17,8 +16,7 @@ def assert_position_data(resp_data, position_data):
 
 def create_positions(session):
     position_data = {}
-    positions = utils.load_csv(paths.POSITIONS_PATH)
-    for position in positions:
+    for position in POSITIONS:
         resp = position_requests.post_position(session, position['position'], position['election_type'],
                                                position['active'],
                                                position['order'])

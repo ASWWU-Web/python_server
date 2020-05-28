@@ -4,7 +4,7 @@ import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.elections.vote.vote_utils as vote_utils
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-import tests.aswwu.data.paths as paths
+from tests.aswwu.data.users import USERS
 import tests.utils as utils
 import json
 import time
@@ -28,14 +28,6 @@ def test_post_vote(testing_server):
     vote_utils.create_votes(election_id, position_id)
 
 
-def test_post_vote_candidates(testing_server):
-    """
-    Test voting for candidates
-    :param testing_server:
-    """
-    pass
-
-
 def test_get_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
     election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
@@ -44,9 +36,8 @@ def test_get_vote(testing_server):
                                                     POSITION_DATA['active'], POSITION_DATA['order'])
     position_id = json.loads(position_resp.text)['id']
     vote_data = vote_utils.create_votes(election_id, position_id)
-    users = utils.load_csv(paths.USERS_PATH)
 
-    for count, user in enumerate(users):
+    for count, user in enumerate(USERS):
         user_session = auth_subtests.assert_verify_login(user)[1]
         resp = vote_requests.get_vote(user_session, position_id, user['username'])
         assert (resp.status_code == 200)
@@ -70,9 +61,7 @@ def test_get_specified_vote(testing_server):
     time.sleep(3)
 
     # post votes in election
-    users = utils.load_csv(paths.USERS_PATH)
-
-    for user in users:
+    for user in USERS:
         # login as user
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]
@@ -115,10 +104,7 @@ def test_put_specified_vote(testing_server):
     # wait for election to open
     time.sleep(2)
 
-    # post votes in election
-    users = utils.load_csv(paths.USERS_PATH)
-
-    for user in users:
+    for user in USERS:
         # login as user
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]
@@ -165,8 +151,7 @@ def test_delete_specified_vote(testing_server):
     time.sleep(2)
 
     # post votes in election
-    users = utils.load_csv(paths.USERS_PATH)
-    for user in users:
+    for user in USERS:
         # login as user
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]

@@ -1,6 +1,6 @@
 import tests.aswwu.behaviors.elections.ballot.ballot_requests as ballot_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
-import tests.aswwu.data.paths as paths
+from tests.aswwu.data.users import USERS
 import tests.utils as utils
 import json
 
@@ -24,8 +24,7 @@ def assert_create_ballots(admin_session, admin_user_data, election, positions):
     election_id = election['id']
 
     ballot_data = {}
-    users = utils.load_csv(paths.USERS_PATH)
-    for i, user in enumerate(users):
+    for i, user in enumerate(USERS):
         # cycle through position ids
         position_id = position_ids[i % len(position_ids)]
 

@@ -1,8 +1,7 @@
 import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-import tests.utils as utils
-import tests.aswwu.data.paths as paths
+from tests.aswwu.data.users import USERS
 import json
 import time
 
@@ -11,8 +10,7 @@ def create_votes(election_id, position_id):
     time.sleep(3)
     vote_data = {}
 
-    users = utils.load_csv(paths.USERS_PATH)
-    for count, user in enumerate(users):
+    for count, user in enumerate(USERS):
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]
         vote = {

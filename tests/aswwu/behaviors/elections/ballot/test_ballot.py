@@ -109,4 +109,3 @@ def test_delete_specified_ballot(testing_server):
         # verify specified ballot doesn't exist
         spec_get_resp = ballot_requests.get_specified_ballot(admin_session, election_id, ballot_id)
         assert (spec_get_resp.status_code == 404)
-
