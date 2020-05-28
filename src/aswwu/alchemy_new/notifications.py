@@ -9,13 +9,13 @@ from sqlalchemy.orm import sessionmaker, joinedload
 
 import src.aswwu.models.bases as base
 import src.aswwu.models.notifications as notifications_model
-from settings import database
+from settings import environment
 
 NotificationsBase = base.NotificationsBase
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
-notifications_engine = create_engine("sqlite:///" + database['location'] + "/notifications.db")
+notifications_engine = create_engine("sqlite:///" + environment['databases_location'] + "/notifications.db")
 
 NotificationsBase.metadata.create_all(notifications_engine)
 
