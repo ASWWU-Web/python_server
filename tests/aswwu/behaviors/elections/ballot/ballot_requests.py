@@ -1,5 +1,4 @@
 import settings
-import requests
 
 ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election'
 
