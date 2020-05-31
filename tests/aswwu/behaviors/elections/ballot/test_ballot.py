@@ -1,7 +1,10 @@
-import tests.aswwu.behaviors.elections.ballot.ballot_requests as ballot_requests
 import tests.aswwu.behaviors.elections.ballot.ballot_utils as ballot_utils
+import tests.aswwu.behaviors.elections.ballot.ballot_requests as ballot_requests
 import tests.aswwu.behaviors.elections.election.election_utils as election_utils
+import tests.aswwu.behaviors.elections.position.position_utils as position_utils
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
+from tests.aswwu.data.elections import ELECTION_INFO
+from tests.aswwu.data.positions import ASWWU_POSITIONS
 import tests.utils as utils
 import json
 import time
@@ -14,7 +17,9 @@ def test_post_ballot(testing_server):
     admin_user_data = user_data['user']
 
     # create dynamic election
-    election = election_utils.assert_post_dynamic_election(admin_session)
+    election = election_utils.assert_post_dynamic_election(session=admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])
 
     # create generic position
     position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
@@ -33,7 +38,9 @@ def test_get_ballot(testing_server):
     admin_user_data = user_data['user']
 
     # create dynamic election
-    election = election_utils.assert_post_dynamic_election(admin_session)
+    election = election_utils.assert_post_dynamic_election(session=admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])
     election_id = election['id']
 
     # create generic position
@@ -61,7 +68,9 @@ def test_get_specified_ballot(testing_server):
     admin_user_data = user_data['user']
 
     # create dynamic election
-    election = election_utils.assert_post_dynamic_election(admin_session)
+    election = election_utils.assert_post_dynamic_election(session=admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])
     election_id = election['id']
 
     # create generic position
@@ -88,18 +97,19 @@ def test_delete_specified_ballot(testing_server):
     admin_user_data = user_data['user']
 
     # create dynamic election
-    election = election_utils.assert_post_dynamic_election(admin_session)
+    election = election_utils.assert_post_dynamic_election(session=admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])
     election_id = election['id']
 
     # create generic position
-    position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
-    position = json.loads(position_resp.text)
+    positions = position_utils.assert_create_positions(admin_session, ASWWU_POSITIONS)
 
     # wait for election to open
     time.sleep(2)
 
-    # create posts
-    ballot_data = ballot_utils.assert_create_ballots(admin_session, admin_user_data, election, [position])
+    # create ballots
+    ballot_data = ballot_utils.assert_create_ballots(admin_session, admin_user_data, election, positions)
 
     # delete specified ballots
     for ballot_id, ballot in ballot_data.items():

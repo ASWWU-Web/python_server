@@ -2,14 +2,18 @@ import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import tests.aswwu.behaviors.elections.vote.vote_utils as vote_utils
 import tests.aswwu.behaviors.elections.election.election_requests as election_requests
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
+from tests.aswwu.data.elections import ELECTION_INFO
 import json
+import time
 import tests.utils as utils
 from tests.conftest import testing_server
 
 
 def test_get_current(testing_server):
     session = election_utils.create_elections_admin()[1]
-    election_utils.assert_post_dynamic_election(session)
+    election_utils.assert_post_dynamic_election(session,
+                                                election_type=ELECTION_INFO['election_type'],
+                                                election_name=ELECTION_INFO['election_name'])
 
 
 def test_get_election(testing_server):
@@ -66,14 +70,18 @@ def test_get_count(testing_server):
     session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
-    election_id = election_utils.assert_post_dynamic_election(session)['id']
+    election = election_utils.assert_post_dynamic_election(session,
+                                                           election_type=ELECTION_INFO['election_type'],
+                                                           election_name=ELECTION_INFO['election_name'])
 
     # create generic position
     position_resp = position_requests.post_position(session, 'President', 'aswwu', 'True', '1')
-    position_id = json.loads(position_resp.text)['id']
+    position = json.loads(position_resp.text)
+
+    time.sleep(2)
 
     # post votes in election
-    expected_vote_data = vote_utils.create_votes(election_id, position_id)
+    expected_vote_data = vote_utils.assert_create_votes(election, [position])
 
     # manually count votes
     vote_counts = {}
@@ -85,7 +93,7 @@ def test_get_count(testing_server):
         vote_counts[username]['votes'] += 1
 
     # count votes query
-    resp = election_requests.get_count(session, election_id)
+    resp = election_requests.get_count(session, election['id'])
 
     # check resp data
     assert (resp.status_code == 200)

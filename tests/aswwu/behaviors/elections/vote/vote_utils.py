@@ -6,11 +6,27 @@ import json
 import time
 
 
-def create_votes(election_id, position_id):
-    time.sleep(3)
+def assert_create_votes(election, positions):
+    """
+    Populate test database with votes
+    :param election: election object to create votes for
+    :param positions: list of positions to vote for
+    :return: dictionary of vote data
+    """
     vote_data = {}
+    election_id = election['id']
 
-    for count, user in enumerate(USERS):
+    # only add position ids in election
+    position_ids = []
+    for i, position in enumerate(positions):
+        if position['election_type'] == election['election_type']:
+            position_ids.append(position['id'])
+
+    # Number of votable positions
+    num_positions = len(position_ids)
+
+    for i, user in enumerate(USERS):
+        position_id = position_ids[i % num_positions]
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]
         vote = {

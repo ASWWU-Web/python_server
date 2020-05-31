@@ -19,4 +19,17 @@ ELECTIONS = [
     for election in _elections
 ]
 
+POST_ELECTIONS_USER = {
+    'wwuid': '1234567',
+    'full_name': 'John McJohn',
+    'email': 'john.mcjohn@wallawalla.edu',
+    'username': 'john.mcjohn',
+    'roles': ['elections-admin']
+}
 
+ELECTION_INFO = {
+    'election_type': 'aswwu',
+    'election_name': 'Test Election'
+}
+
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'

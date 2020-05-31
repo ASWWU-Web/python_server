@@ -1,18 +1,9 @@
 import tests.aswwu.behaviors.elections.election.election_requests as election_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-from tests.aswwu.data.elections import ELECTIONS
+from tests.aswwu.data.elections import ELECTIONS, POST_ELECTIONS_USER, DATETIME_FORMAT
 import datetime as dt
 import json
-
-POST_ELECTIONS_USER = {
-    'wwuid': '1234567',
-    'full_name': 'John McJohn',
-    'email': 'john.mcjohn@wallawalla.edu',
-    'username': 'john.mcjohn',
-    'roles': ['elections-admin']
-}
-DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def assert_election_data(resp_data, election):
@@ -33,10 +24,10 @@ def assert_post_election(session, election):
     return json.loads(resp.text)
 
 
-def assert_post_dynamic_election(session):
+def assert_post_dynamic_election(session, election_type, election_name):
     dynamic_election = {
-        'election_type': 'aswwu',
-        'name': 'General Election Test',
+        'election_type': election_type,
+        'name': election_name,
         'max_votes': 2,
         'start': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(seconds=2), DATETIME_FORMAT),
         'end': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), DATETIME_FORMAT),

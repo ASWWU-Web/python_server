@@ -4,6 +4,7 @@ import tests.aswwu.behaviors.elections.position.position_requests as position_re
 import tests.aswwu.behaviors.elections.position.position_data as position_data
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 from tests.aswwu.data.users import USERS
+from tests.aswwu.data.elections import ELECTION_INFO
 import json
 
 
@@ -50,7 +51,9 @@ def create_default_candidate_params(session):
     :return election_id: generic election id
     :return position_ids: generic position ids
     """
-    election_id = election_utils.assert_post_dynamic_election(session)['id']
+    election_id = election_utils.assert_post_dynamic_election(session=session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])['id']
     position_resp_aswwu = position_requests.post_position(session,
                                                           position=position_data.ASWWU_DATA['position'],
                                                           election_type=position_data.ASWWU_DATA['election_type'],

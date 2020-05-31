@@ -1,41 +1,44 @@
 import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
+import tests.aswwu.behaviors.elections.position.position_utils as position_utils
 import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.elections.vote.vote_utils as vote_utils
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
+from tests.aswwu.data.positions import ASWWU_POSITIONS
+from tests.aswwu.data.elections import ELECTION_INFO
 from tests.aswwu.data.users import USERS
 import tests.utils as utils
 import json
 import time
 from tests.conftest import testing_server
 
-POSITION_DATA = {
-    'position': 'Senator',
-    'election_type': 'aswwu',
-    'active': 'True',
-    'order': 1
-}
-
 
 def test_post_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
-    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
-    position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
-                                                    POSITION_DATA['election_type'],
-                                                    POSITION_DATA['active'], POSITION_DATA['order'])
-    position_id = json.loads(position_resp.text)['id']
-    vote_utils.create_votes(election_id, position_id)
+    election = election_utils.assert_post_dynamic_election(admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])
+    positions = position_utils.assert_create_positions(admin_session, ASWWU_POSITIONS)
+
+    # wait for election to open
+    time.sleep(2)
+    vote_utils.assert_create_votes(election, positions)
 
 
 def test_get_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
-    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
-    position_resp = position_requests.post_position(admin_session, POSITION_DATA['position'],
-                                                    POSITION_DATA['election_type'],
-                                                    POSITION_DATA['active'], POSITION_DATA['order'])
-    position_id = json.loads(position_resp.text)['id']
-    vote_data = vote_utils.create_votes(election_id, position_id)
+    election = election_utils.assert_post_dynamic_election(admin_session,
+                                                           election_type=ELECTION_INFO['election_type'],
+                                                           election_name=ELECTION_INFO['election_name'])
+    position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
+    position = json.loads(position_resp.text)
+    position_id = position['id']
+
+    # wait for election to open
+    time.sleep(2)
+
+    vote_data = vote_utils.assert_create_votes(election, [position])
 
     for count, user in enumerate(USERS):
         user_session = auth_subtests.assert_verify_login(user)[1]
@@ -51,14 +54,16 @@ def test_get_specified_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
-    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
+    election_id = election_utils.assert_post_dynamic_election(admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])['id']
 
     # create generic position
     position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
     position_id = json.loads(position_resp.text)['id']
 
     # wait for election to open
-    time.sleep(3)
+    time.sleep(2)
 
     # post votes in election
     for user in USERS:
@@ -95,7 +100,9 @@ def test_put_specified_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
-    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
+    election_id = election_utils.assert_post_dynamic_election(admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])['id']
 
     # create generic position
     position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
@@ -141,7 +148,9 @@ def test_delete_specified_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
 
     # create dynamic election
-    election_id = election_utils.assert_post_dynamic_election(admin_session)['id']
+    election_id = election_utils.assert_post_dynamic_election(session=admin_session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])['id']
 
     # create generic position
     position_resp = position_requests.post_position(admin_session, 'President', 'aswwu', 'True', '1')
