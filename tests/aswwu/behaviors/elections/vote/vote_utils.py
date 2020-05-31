@@ -1,18 +1,32 @@
 import tests.aswwu.behaviors.elections.vote.vote_requests as vote_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-import tests.utils as utils
-import tests.aswwu.data.paths as paths
+from tests.aswwu.data.users import USERS
 import json
 import time
 
 
-def create_votes(session, election_id, position_id):
-    time.sleep(3)
+def assert_create_votes(election, positions):
+    """
+    Populate test database with votes
+    :param election: election object to create votes for
+    :param positions: list of positions to vote for
+    :return: dictionary of vote data
+    """
     vote_data = {}
+    election_id = election['id']
 
-    users = utils.load_csv(paths.USERS_PATH)
-    for count, user in enumerate(users):
+    # only add position ids in election
+    position_ids = []
+    for i, position in enumerate(positions):
+        if position['election_type'] == election['election_type']:
+            position_ids.append(position['id'])
+
+    # Number of votable positions
+    num_positions = len(position_ids)
+
+    for i, user in enumerate(USERS):
+        position_id = position_ids[i % num_positions]
         auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         user_session = auth_subtests.assert_verify_login(user)[1]
         vote = {

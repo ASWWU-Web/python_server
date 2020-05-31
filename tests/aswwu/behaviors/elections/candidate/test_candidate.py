@@ -1,18 +1,18 @@
 import tests.aswwu.behaviors.elections.candidate.candidate_requests as candidate_requests
 import tests.aswwu.behaviors.elections.candidate.candidate_utils as candidate_utils
-import tests.aswwu.behaviors.elections.election.election_subtests as election_subtests
+import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import json
 from tests.conftest import testing_server
 
 
 def test_post_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_utils.create_candidates(session, election_id, position_ids)
 
 
 def test_get_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -25,7 +25,7 @@ def test_get_candidate(testing_server):
 
 
 def test_get_specified_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -37,7 +37,7 @@ def test_get_specified_candidate(testing_server):
 
 
 def test_put_specified_candidate(testing_server):
-    session = election_subtests.create_elections_admin()
+    session = election_utils.create_elections_admin()[1]
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
@@ -54,3 +54,18 @@ def test_put_specified_candidate(testing_server):
         candidate_utils.assert_candidate_data(json.loads(resp.text), updated_candidate_data)
 
 
+def test_delete_specified_candidate(testing_server):
+    session = election_utils.create_elections_admin()[1]
+
+    # create a bunch of candidates
+    election_id, position_ids = candidate_utils.create_default_candidate_params(session)
+    candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
+
+    # delete candidate, check if deleted
+    for candidate_id, candidate in candidate_data.items():
+        resp = candidate_requests.delete_specified_candidate(session, election_id, candidate_id)
+        assert (resp.status_code == 204)
+
+        # verify candidate is deleted
+        resp = candidate_requests.get_specified_candidate(election_id, candidate_id)
+        assert (resp.status_code == 404)

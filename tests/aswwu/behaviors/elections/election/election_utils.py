@@ -1,19 +1,9 @@
 import tests.aswwu.behaviors.elections.election.election_requests as election_requests
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import tests.aswwu.behaviors.auth.auth_subtests as auth_subtests
-import tests.aswwu.data.paths as paths
-import tests.utils as utils
+from tests.aswwu.data.elections import ELECTIONS, POST_ELECTIONS_USER, DATETIME_FORMAT
 import datetime as dt
 import json
-
-POST_ELECTIONS_USER = {
-    'wwuid': '1234567',
-    'full_name': 'John McJohn',
-    'email': 'john.mcjohn@wallawalla.edu',
-    'username': 'john.mcjohn',
-    'roles': ['elections-admin']
-}
-DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def assert_election_data(resp_data, election):
@@ -34,10 +24,10 @@ def assert_post_election(session, election):
     return json.loads(resp.text)
 
 
-def assert_post_dynamic_election(session):
+def assert_post_dynamic_election(session, election_type, election_name):
     dynamic_election = {
-        'election_type': 'aswwu',
-        'name': 'General Election Test',
+        'election_type': election_type,
+        'name': election_name,
         'max_votes': 2,
         'start': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(seconds=2), DATETIME_FORMAT),
         'end': dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), DATETIME_FORMAT),
@@ -53,16 +43,20 @@ def assert_post_dynamic_election(session):
 
 
 def create_elections_admin():
-    session = auth_subtests.assert_verify_login(POST_ELECTIONS_USER)[1]
+    user_data, session = auth_subtests.assert_verify_login(POST_ELECTIONS_USER)
     auth_requests.post_roles(POST_ELECTIONS_USER['wwuid'], POST_ELECTIONS_USER['roles'])
-    return session
+    return user_data, session
 
 
 def create_elections(session):
+    """
+    Create elections
+    :param session: elections-admin logged-in session
+    :return: dictionary mapping election id to election data
+    """
     election_data = {}
     # Populate elections database
-    elections = utils.load_csv(paths.ELECTIONS_PATH)
-    for election in elections:
+    for election in ELECTIONS:
         resp_data = assert_post_election(session, election)
         election_data[resp_data['id']] = resp_data
     return election_data

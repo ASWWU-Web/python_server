@@ -1,10 +1,10 @@
-import tests.aswwu.behaviors.elections.election.election_subtests as election_subtests
+import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import tests.aswwu.behaviors.elections.candidate.candidate_requests as candidate_requests
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
-import tests.aswwu.behaviors.auth.auth_requests as auth_requests
-import tests.aswwu.data.paths as paths
 import tests.aswwu.behaviors.elections.position.position_data as position_data
-import tests.utils as utils
+import tests.aswwu.behaviors.auth.auth_requests as auth_requests
+from tests.aswwu.data.users import USERS
+from tests.aswwu.data.elections import ELECTION_INFO
 import json
 
 
@@ -18,9 +18,8 @@ def create_candidates(session,  election_id, position_ids):
     """
     candidate_data = {}
     num_positions = len(position_ids)
-    users = utils.load_csv(paths.USERS_PATH)
 
-    for count, user in enumerate(users):
+    for count, user in enumerate(USERS):
         response = auth_requests.post_verify(user['wwuid'], user['full_name'], user['email'])
         response_txt = json.loads(response.text)['user']
         response_txt['email'] = user['email']
@@ -52,7 +51,9 @@ def create_default_candidate_params(session):
     :return election_id: generic election id
     :return position_ids: generic position ids
     """
-    election_id = election_subtests.assert_post_dynamic_election(session)['id']
+    election_id = election_utils.assert_post_dynamic_election(session=session,
+                                                              election_type=ELECTION_INFO['election_type'],
+                                                              election_name=ELECTION_INFO['election_name'])['id']
     position_resp_aswwu = position_requests.post_position(session,
                                                           position=position_data.ASWWU_DATA['position'],
                                                           election_type=position_data.ASWWU_DATA['election_type'],
