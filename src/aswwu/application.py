@@ -8,7 +8,7 @@ import threading
 from settings import keys
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
-    mask, volunteers, instagram, forms, pages, homepage, elections, \
+    mask, forms, pages, homepage, elections, \
     froala_images as froala
 
 
