@@ -1,7 +1,7 @@
 from tests.aswwu.behaviors.mask.mask_data import BASE_PROFILE, IMPERSONAL_FIELDS, PERSONAL_FIELDS, SELF_FIELDS, DEFAULT_MASK_PHOTO
 import tests.utils as utils
 from tests.aswwu.behaviors.mask.mask_utils import build_profile_dict, assert_update_profile
-from tests.aswwu.data.paths import USERS_PATH
+from tests.aswwu.data.users import USERS
 from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
@@ -14,17 +14,15 @@ PROFILE_PHOTOS_LOCATION = settings.environment["profile_photos_location"]
 
 
 def test_update_profile(testing_server):
-    users = utils.load_csv(USERS_PATH, use_unicode=True)
-    for user in users:
+    for user in USERS:
         login_response_text, session = assert_verify_login(user)
         profile_data = build_profile_dict(user)
         assert_update_profile(user, session, profile_data)
 
 
 def test_search_all(testing_server):
-    users = utils.load_csv(USERS_PATH, use_unicode=True)
     expected_results = []
-    for user in users:
+    for user in USERS:
         user_session = assert_verify_login(user)[1]
         profile_data = build_profile_dict(user)
         assert_update_profile(user, user_session, profile_data)
@@ -45,7 +43,7 @@ def test_profile_noauth_private(testing_server):
     If a user's privacy is set to 0, then only base info should be returned to a viewer not logged in.
     :return:
     """
-    viewee = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    viewee = USERS[0]
     profile_data = build_profile_dict(viewee, {"privacy": "0"})
 
     viewee_session = assert_verify_login(viewee)[1]
@@ -72,7 +70,7 @@ def test_profile_noauth_public(testing_server):
     If a user's privacy is set to 1, then impersonal info should be returned to a viewer not logged in.
     :return:
     """
-    viewee = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    viewee = USERS[0]
     profile_data = build_profile_dict(viewee, {"privacy": "1"})
 
     viewee_session = assert_verify_login(viewee)[1]
@@ -95,7 +93,7 @@ def test_profile_auth_other(testing_server):
     If a viewer is logged in and views someone else's profile they should receive the view_other model.
     :return:
     """
-    viewee, viewer = utils.load_csv(USERS_PATH, use_unicode=True)[0:2]
+    viewee, viewer = USERS[0:2]
     profile_data = build_profile_dict(viewee)
 
     viewee_session = assert_verify_login(viewee)[1]
@@ -118,7 +116,7 @@ def test_profile_auth_self(testing_server):
     If a viewer is logged in and views their own profile they should receive the whole profile model.
     :return:
     """
-    user = utils.load_csv(USERS_PATH, use_unicode=True)[0]
+    user = USERS[0]
     profile_data = build_profile_dict(user)
 
     user_session = assert_verify_login(user)[1]
@@ -133,7 +131,7 @@ def test_profile_auth_self(testing_server):
 
 
 def test_search_names(testing_server):
-    users = utils.load_csv(USERS_PATH)
+    users = USERS
     for user in users:
         assert_verify_login(user)
 
@@ -171,7 +169,7 @@ def test_search_names(testing_server):
 
 
 def test_list_photos(testing_server):
-    users = utils.load_csv(USERS_PATH)[0:3]
+    users = USERS[0:3]
 
     photos = [
         settings.environment["current_year"] + "/a01-" + users[1]["wwuid"] + ".jpg",
@@ -200,7 +198,7 @@ def test_list_photos(testing_server):
 
 
 def test_search_profiles(testing_server):
-    users = utils.load_csv(USERS_PATH, use_unicode=True)
+    users = USERS
     for user in users[0:4]:
         session = assert_verify_login(user)[1]
         profile_data = build_profile_dict(user)
