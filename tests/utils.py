@@ -9,26 +9,6 @@ import glob
 import settings
 
 
-def load_csv(csv_file, use_unicode=False):
-    def create_row_element(headers, row, header_index):
-        if use_unicode:
-            return unicode(headers[header_index]), unicode(row[header_index]) # change for python 3
-        else:
-            return headers[header_index], row[header_index]
-
-    object_list = []
-    with open(csv_file) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        headers = next(csv_reader)
-        for row in csv_reader:
-            row_object = dict()
-            for header_index in range(0, len(headers)):
-                key, value = create_row_element(headers, row, header_index)
-                row_object[key] = value
-            object_list.append(row_object)
-    return object_list
-
-
 def clean_temporary_folder(folder_path=None):
     if folder_path is None:
         folder_path = settings.environment["temporary_files"]
