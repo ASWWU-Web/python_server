@@ -35,7 +35,6 @@ class Application(tornado.web.Application):
         (r"/forms/application/status", forms.ApplicationStatusHandler),
         (r"/forms/resume/upload", forms.ResumeUploadHandler),
         (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
-        (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
         # pages
         (r"/pages", pages.GetAllHandler),
         (r"/pages/search", pages.SearchHandler),
