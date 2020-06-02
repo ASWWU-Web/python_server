@@ -19,39 +19,6 @@ logger = logging.getLogger(environment["log_name"])
 PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
 
 
-## administrative role handler
-# class AdministratorRoleHandler(BaseHandler):
-#     # decorator to force them to be logged in to access this information
-#     # also only accepts post requests right now
-#     @tornado.web.authenticated
-#     def post(self):
-#         user = self.current_user
-#         # check if they have valid permissions
-#         if 'administrator' not in user.roles:
-#             self.write({'error': 'insufficient permissions'})
-#         else:
-#             cmd = self.get_argument('cmd', None)
-#             # grant permissions to other users
-#             # sharing is caring
-#             if cmd == 'set_role':
-#                 username = self.get_argument('username', '').replace(' ', '.').lower()
-#                 fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
-#                 if not fuser:
-#                     self.write({'error': 'user does not exist'})
-#                 else:
-#                     fuser = fuser[0]
-#                     if fuser.roles is None:
-#                         fuser.roles = ''
-#                     # roles are a comma separated list
-#                     # so we have to do some funkiness to append and then rejoin that list in the database
-#                     roles = fuser.roles.split(', ')
-#                     roles.append(self.get_argument('newRole', None))
-#                     roles = set(roles)
-#                     fuser.roles = ', '.join(roles)
-#                     mask.add_or_update(fuser)
-#                     self.write({'response': 'success'})
-
-
 # this is the root of all searches
 class SearchHandler(BaseHandler):
     # accepts a year and a query as parameters
@@ -183,37 +150,6 @@ def update_views(user, profile, year):
                     mask.add_or_update(view)
 
 
-# queries the server for a user's photos
-# class ProfilePhotoHandler(BaseHandler):
-#     def get(self, year, wwuid_or_username):
-#         wwuid = None
-#         username = None
-#         if len(wwuid_or_username.split(".")) == 1:
-#             wwuid = wwuid_or_username
-#         else:
-#             username = wwuid_or_username
-#         # check if we're looking at current photos or not
-#         if year == self.application.options.current_year:
-#             if wwuid:
-#                 profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
-#             else:
-#                 profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
-#         else:
-#             if wwuid:
-#                 profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
-#             else:
-#                 profile = archive.archive_db.query(archive_model.get_archive_model(year))\
-#                     .filter_by(username=str(username)).all()
-#         if len(profile) == 0:
-#             self.write({'error': 'no profile found'})
-#         elif len(profile) > 1:
-#             self.write({'error': 'too many profiles found'})
-#         else:
-#             # now we've got just one profile, return the photo field attached to a known photo URI
-#             profile = profile[0]
-#             self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
-
-
 # this updates profile information - not much to it
 class ProfileUpdateHandler(BaseHandler):
     @tornado.web.authenticated
@@ -278,16 +214,3 @@ class ListProfilePhotoHandler(BaseHandler):
         except Exception as e:
             logger.info(e)
             raise Exception(e)
-
-
-
-# class MatcherHandler(BaseHandler):
-#     @tornado.web.authenticated
-#     def get(self):
-#         user = self.current_user
-#
-#         if 'matcher' in user.roles:
-#             profiles = mask.query_all(mask_model.Profile)
-#             self.write({'database': [p.view_other() for p in profiles]})
-#         else:
-#             self.write("{'error': 'Insufficient Permissions :('}")

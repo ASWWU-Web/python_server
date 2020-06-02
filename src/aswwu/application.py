@@ -20,18 +20,11 @@ class Application(tornado.web.Application):
         (r"/roles/(.*)", base.RoleHandler),
         # mask
         (r"/profile/(.*)/(.*)", mask.ProfileHandler),
-        # (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
-        # (r"/role/administrator", mask.AdministratorRoleHandler),  # UNUSED
-        # (r"/role/volunteer", volunteers.VolunteerRoleHandler),  # UNUSED
         (r"/search/names", mask.SearchNamesFast),
         (r"/search/all", mask.SearchAllHandler),
         (r"/search/(.*)/(.*)", mask.SearchHandler),
         (r"/update/list_photos", mask.ListProfilePhotoHandler),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
-        # (r"/volunteer", volunteers.VolunteerHandler),  # UNUSED
-        # (r"/volunteer/(.*)", volunteers.VolunteerHandler),  # UNUSED
-        # (r"/feed", instagram.FeedHandler),  # UNUSED
-        # (r"/matcher", mask.MatcherHandler),  # UNUSED
         # jobs
         (r"/forms/job/new", forms.NewFormHandler),
         (r"/forms/job/view/(.*)", forms.ViewFormHandler),
