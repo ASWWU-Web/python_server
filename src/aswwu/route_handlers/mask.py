@@ -3,6 +3,10 @@ import json
 import logging
 import glob
 import re
+import os
+import io
+import base64
+from PIL import Image
 
 import bleach
 import tornado.web
@@ -198,6 +202,16 @@ class ProfileUpdateHandler(BaseHandler):
         else:
             self.write({'error': 'invalid permissions'})
 
+class UploadProfilePhotoHandler(BaseHandler):
+    def post(self):
+        try:
+            image_base64 = self.get_argument("image")
+            image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
+            image.save("../media/profiles/1718/2-2023546.jpg") # CHANGE WWUID TO environment["developer"]
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
@@ -206,8 +220,8 @@ class ListProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         try:
-            wwuid = self.current_user.wwuid
-            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*'
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*' # SEARCHING WITH DASH
             photo_list = glob.glob(glob_pattern)
             photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})

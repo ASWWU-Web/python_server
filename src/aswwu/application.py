@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
         (r"/search/all", mask.SearchAllHandler),
         (r"/search/(.*)/(.*)", mask.SearchHandler),
         (r"/update/list_photos", mask.ListProfilePhotoHandler),
+        (r"/update/upload_photo", mask.UploadProfilePhotoHandler),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
         # jobs
         (r"/forms/job/new", forms.NewFormHandler),
