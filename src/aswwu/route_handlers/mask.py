@@ -207,8 +207,11 @@ class UploadProfilePhotoHandler(BaseHandler):
     def post(self):
         try:
             image_base64 = self.get_argument("image")
+            image_name = self.get_argument("name")
             image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
-            image.save("../media/profiles/1718/2-2023546.jpg") # CHANGE WWUID TO environment["developer"]
+            image_path = PENDING_PROFILE_PHOTOS_LOCATION + "/" + image_name
+            image.save(image_path)
+            self.write({'link': image_path})
         except Exception as e:
             logger.info(e)
             raise Exception(e)
