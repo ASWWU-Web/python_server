@@ -21,7 +21,8 @@ from settings import environment
 
 logger = logging.getLogger(environment["log_name"])
 PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
-
+PENDING_PROFILE_PHOTOS_LOCATION = environment["pending_profile_photos_location"]
+CURRENT_YEAR = environment["current_year"]
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
@@ -224,6 +225,22 @@ class ListProfilePhotoHandler(BaseHandler):
             glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*' # SEARCHING WITH DASH
             photo_list = glob.glob(glob_pattern)
             photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            self.write({'photos': photo_list})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+
+class ListPendingProfilePhotoHandler(BaseHandler):
+    '''
+    Return the authenticated user's pending profile pictures, example: {"photos": ["pending_profiles/12345_1234567.jpg"]}
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*-' + wwuid + '.*' # SEARCHING WITH DASH
+            photo_list = glob.glob(glob_pattern)
+            photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)

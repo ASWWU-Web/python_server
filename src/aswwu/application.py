@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
         (r"/search/all", mask.SearchAllHandler),
         (r"/search/(.*)/(.*)", mask.SearchHandler),
         (r"/update/list_photos", mask.ListProfilePhotoHandler),
+        (r"/update/list_pending_photos", mask.ListPendingProfilePhotoHandler),
         (r"/update/upload_photo", mask.UploadProfilePhotoHandler),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
         # jobs
@@ -51,6 +52,8 @@ class Application(tornado.web.Application):
         (r"/pages/media/upload_image", froala.UploadHandler),
         (r"/pages/media/load_images", froala.LoadAllHandler),
         (r"/pages/media/static/(.*)", froala.LoadImageHandler),
+        (r"/pages/media/approve/(.*)", froala.ApproveImageHandler),
+        (r"/pages/media/dismay/(.*)", froala.DismayImageHandler),
         (r"/pages/(.*)", pages.GetHandler),
         # homepage
         (r"/homepage/open_forum", homepage.OpenForumHandler),

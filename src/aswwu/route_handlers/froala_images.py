@@ -10,6 +10,11 @@ from settings import environment
 
 from src.aswwu.base_handlers import BaseHandler
 
+PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
+PENDING_PROFILE_PHOTOS_LOCATION = environment["pending_profile_photos_location"]
+DISMAYED_PROFILE_PHOTOS_LOCATION = environment["dismayed_profile_photos_location"]
+MEDIA_LOCATION = environment["media_location"]
+CURRENT_YEAR = environment["current_year"]
 
 class UploadHandler(BaseHandler):
     @tornado.web.authenticated
@@ -64,6 +69,53 @@ class LoadAllHandler(BaseHandler):
 
 class LoadImageHandler(BaseHandler):
     def get(self, filename):
-        image = open(glob.glob("../media/cms/" + filename)[0], "r")
-        self.set_header("Content-Type", "image/*")
+        print(MEDIA_LOCATION + filename)
+        image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        image = open(glob.glob(image_name)[0], "r")
+        self.set_header("Content-Type", "image/gif")
         self.write(image.read())
+        # image = open(glob.glob("../media/cms/" + filename)[0], "r")
+        # self.set_header("Content-Type", "image/*")
+        # self.write(image.read())
+
+class ApproveImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        wwuid = str(self.current_user.wwuid)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*-' + wwuid + '.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})
+
+class DismayImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = DISMAYED_PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        wwuid = str(self.current_user.wwuid)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*-' + wwuid + '.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})
