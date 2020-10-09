@@ -241,7 +241,7 @@ class ListPendingProfilePhotoHandler(BaseHandler):
     def get(self):
         try:
             wwuid = str(self.current_user.wwuid)
-            glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*-' + wwuid + '.*' # SEARCHING WITH DASH
+            glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
             photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
