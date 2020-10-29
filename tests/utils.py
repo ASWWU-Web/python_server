@@ -75,7 +75,7 @@ def assert_is_equal_sub_dict(expected, actual):
     :param expected:
     :return: bool
     """
-    for expected_key, expected_value in expected.items():
+    for expected_key, expected_value in list(expected.items()):
         assert expected_key in actual
         if isinstance(expected_value, dict):
             assert_is_equal_sub_dict(expected_value, actual[expected_key])

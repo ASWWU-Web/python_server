@@ -84,7 +84,7 @@ def test_get_specified_ballot(testing_server):
     ballot_data = ballot_utils.assert_create_ballots(admin_session, admin_user_data, election, [position])
 
     # verify specified ballot matches ballot data
-    for ballot_id, ballot in ballot_data.items():
+    for ballot_id, ballot in list(ballot_data.items()):
         spec_get_resp = ballot_requests.get_specified_ballot(admin_session, election_id, ballot_id)
         assert (spec_get_resp.status_code == 200)
         spec_get_resp_data = json.loads(spec_get_resp.text)
@@ -112,7 +112,7 @@ def test_delete_specified_ballot(testing_server):
     ballot_data = ballot_utils.assert_create_ballots(admin_session, admin_user_data, election, positions)
 
     # delete specified ballots
-    for ballot_id, ballot in ballot_data.items():
+    for ballot_id, ballot in list(ballot_data.items()):
         delete_resp = ballot_requests.delete_specified_ballot(admin_session, election_id, ballot_id)
         assert (delete_resp.status_code == 204)
 

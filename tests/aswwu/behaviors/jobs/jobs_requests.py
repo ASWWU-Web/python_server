@@ -1,3 +1,4 @@
+from builtins import str
 import requests
 import settings
 
@@ -14,7 +15,7 @@ URLS = {
     "resume_upload": "resume/upload",
     "resume_download": "resume/download",
 }
-URLS = {key : BASE_URL + "/" + URLS[key] for key in URLS.keys()}
+URLS = {key : BASE_URL + "/" + URLS[key] for key in list(URLS.keys())}
 
 
 # "new": "job/new",

@@ -1,6 +1,7 @@
 # sheldon woodward
 # jan 17, 2019
 
+from builtins import str
 from datetime import datetime
 
 import src.aswwu.alchemy_new.elections as elections_alchemy
@@ -19,7 +20,7 @@ def validate_parameters(given_parameters, required_parameters):
     """
     # check for missing parameters
     for parameter in required_parameters:
-        if parameter not in given_parameters.keys():
+        if parameter not in list(given_parameters.keys()):
             raise exceptions.BadRequest400Exception('missing parameters')
 
     # check for too many parameters
@@ -27,7 +28,7 @@ def validate_parameters(given_parameters, required_parameters):
         raise exceptions.BadRequest400Exception('too many parameters')
 
     # check for bad election type
-    if 'election_type' in given_parameters.keys() and given_parameters['election_type'] not in ('aswwu', 'senate'):
+    if 'election_type' in list(given_parameters.keys()) and given_parameters['election_type'] not in ('aswwu', 'senate'):
         raise exceptions.BadRequest400Exception('election_type is not aswwu or senate')
 
 

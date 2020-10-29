@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import str
 import logging
 
 import datetime
@@ -149,7 +151,7 @@ class AdminAllHandler(BaseHandler):
             if 'administrator' in user.roles:
                 pages = alchemy.get_all_current_pages()
             elif any(role in user.roles for role in ['pages', 'pages-admin']):
-                pages = alchemy.get_admin_pages(user.username)
+                pages = alchemy.get_all_current_pages()
             else:
                 pages = []
             self.write({"results": [p.serialize_preview() for p in pages]})
@@ -369,7 +371,7 @@ class SearchHandler(BaseHandler):
             search_criteria = {}
             # Put query into JSON form
             query = self.request.arguments
-            for key, value in query.items():
+            for key, value in list(query.items()):
                 search_criteria[key] = value[0].lower()
             results = alchemy.search_pages(search_criteria)
             self.write({'results': [p.serialize_preview() for p in results]})

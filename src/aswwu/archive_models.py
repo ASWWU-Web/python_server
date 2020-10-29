@@ -4,6 +4,8 @@
 # at this point the fields have all been standardized
 # each year just add another model class and add the year's shorthand (i.e. 1415) to the array at the bottom
 
+from builtins import str
+from builtins import object
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 

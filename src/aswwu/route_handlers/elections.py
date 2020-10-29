@@ -1,3 +1,4 @@
+from builtins import str
 import tornado.web
 import json
 
@@ -16,7 +17,7 @@ import src.aswwu.validators.elections as elections_validator
 
 def build_query_params(request_arguments):
     search_criteria = {}
-    for key, value in request_arguments.items():
+    for key, value in list(request_arguments.items()):
         if key in ('start', 'end'):
             search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
         else:

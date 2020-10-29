@@ -1,3 +1,4 @@
+from builtins import str
 import tests.aswwu.behaviors.elections.position.position_requests as position_requests
 import json
 

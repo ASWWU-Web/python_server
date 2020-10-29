@@ -1,3 +1,4 @@
+from builtins import str
 import settings
 
 ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election'

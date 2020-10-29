@@ -1,3 +1,4 @@
+from builtins import str
 import requests
 import settings
 
@@ -10,7 +11,7 @@ URLS = {
     "list_photos": "update/list_photos",
     "update": "update",
 }
-URLS = {key : BASE_URL + "/" + URLS[key] for key in URLS.keys()}
+URLS = {key : BASE_URL + "/" + URLS[key] for key in list(URLS.keys())}
 
 
 def get_profile(year, username, session=None):
@@ -68,7 +69,7 @@ def get_profile_search(year, session=None, string_query=None, dictionary_query=N
     if string_query is not None:
         query = string_query
     elif dictionary_query is not None:
-        query = ";".join([key + "=" + value for key, value in dictionary_query.items()])
+        query = ";".join([key + "=" + value for key, value in list(dictionary_query.items())])
     else:
         assert False  # you must provide a string query or a dictionary query
     request_url = URLS["search"] + "/" + year + "/" + query

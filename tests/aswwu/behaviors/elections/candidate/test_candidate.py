@@ -29,7 +29,7 @@ def test_get_specified_candidate(testing_server):
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
-    for candidate_id, candidate in candidate_data.items():
+    for candidate_id, candidate in list(candidate_data.items()):
         resp = candidate_requests.get_specified_candidate(election_id, candidate_id)
         assert(resp.status_code == 200)
         resp_data = json.loads(resp.text)
@@ -41,7 +41,7 @@ def test_put_specified_candidate(testing_server):
     election_id, position_ids = candidate_utils.create_default_candidate_params(session)
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
-    for candidate_id, candidate in candidate_data.items():
+    for candidate_id, candidate in list(candidate_data.items()):
         updated_candidate_data = {
             'id': candidate_id,
             'election': election_id,
@@ -62,7 +62,7 @@ def test_delete_specified_candidate(testing_server):
     candidate_data = candidate_utils.create_candidates(session, election_id, position_ids)
 
     # delete candidate, check if deleted
-    for candidate_id, candidate in candidate_data.items():
+    for candidate_id, candidate in list(candidate_data.items()):
         resp = candidate_requests.delete_specified_candidate(session, election_id, candidate_id)
         assert (resp.status_code == 204)
 

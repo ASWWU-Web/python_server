@@ -36,7 +36,7 @@ def test_post_election(testing_server):
 def test_get_specified_election(testing_server):
     session = election_utils.create_elections_admin()[1]
     election_data = election_utils.create_elections(session)
-    for key, election in election_data.items():
+    for key, election in list(election_data.items()):
         resp = election_requests.get_specified_election(key)
         assert(resp.status_code == 200)
         election_utils.assert_election_data(json.loads(resp.text), election)
@@ -45,7 +45,7 @@ def test_get_specified_election(testing_server):
 def test_put_specified_election(testing_server):
     session = election_utils.create_elections_admin()[1]
     election_data = election_utils.create_elections(session)
-    for election_id, election in election_data.items():
+    for election_id, election in list(election_data.items()):
         updated_election_data = {
             'election_type': 'aswwu' if election['election_type'] == 'senate' else 'senate',
             'name': election['name'] + '_updated',
@@ -85,7 +85,7 @@ def test_get_count(testing_server):
 
     # manually count votes
     vote_counts = {}
-    for username, expected_vote in expected_vote_data.items():
+    for username, expected_vote in list(expected_vote_data.items()):
         if username not in vote_counts:
             vote_counts[username] = {}
             vote_counts[username]['candidate'] = username

@@ -1,5 +1,7 @@
 # base_handlers.py
 
+from builtins import str
+from builtins import object
 import datetime
 import hashlib
 import hmac
@@ -29,7 +31,7 @@ def import_profile(profile, exported_json):
             setattr(profile, field, exported_json[field])
 
 
-class LoggedInUser:
+class LoggedInUser(object):
     def __init__(self, wwuid):
         self.wwuid = wwuid
         profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
@@ -73,7 +75,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # creates an HMAC digest that is a hexadecimal hash based on a provided message
     def generate_hmac_digest(self, message):
         secret = self.application.settings['secret_key']
-        signature = hmac.new(secret, message, digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(str.encode(secret), str.encode(message), digestmod=hashlib.sha256).hexdigest()
         return signature
 
     # create a authorization token for the given WWUID based on the current time

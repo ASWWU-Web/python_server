@@ -1,5 +1,6 @@
 # mask.py
 
+from builtins import str
 import logging
 
 from sqlalchemy import create_engine, func, or_, and_, desc, asc, case

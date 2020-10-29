@@ -1,3 +1,4 @@
+from builtins import str
 import datetime
 import json
 import logging
@@ -87,7 +88,7 @@ class SearchHandler(BaseHandler):
 class SearchNamesFast(BaseHandler):
     def get(self):
         search_criteria = {}
-        for key, value in self.request.arguments.items():
+        for key, value in list(self.request.arguments.items()):
             search_criteria[key] = value[0]
         names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
         self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})

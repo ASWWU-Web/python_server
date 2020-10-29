@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 import time
 import pytest
 import tornado.options
 import threading
-import utils
+from . import utils
 import settings
 
 assert settings.environment["pytest"]  # make sure the pytest environment has been set

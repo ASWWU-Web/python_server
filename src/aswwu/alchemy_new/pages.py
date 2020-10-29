@@ -1,5 +1,6 @@
 # pages.py
 
+from builtins import str
 import ast
 import logging
 

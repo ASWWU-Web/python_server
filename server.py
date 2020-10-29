@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import input
 import tornado.autoreload
 import tornado.web
 from tornado.options import define
@@ -24,7 +26,7 @@ if __name__ == "__main__":
     print('services running, press ctrl+c to stop')
     try:
         while True:
-            raw_input('')
+            input('')
     except KeyboardInterrupt:
         print('stopping services...')
         application.stop_server(server, event_loop_thread, ioloop)

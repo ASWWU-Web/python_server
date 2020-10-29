@@ -1,5 +1,6 @@
 # jobs.py
 
+from builtins import str
 import logging
 
 from sqlalchemy import create_engine

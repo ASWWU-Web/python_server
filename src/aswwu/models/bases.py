@@ -1,17 +1,20 @@
 # models.py
+from builtins import str
+from builtins import object
 import datetime
 import logging
 import uuid
 
 import six
-from pattern.en import pluralize
+import inflect
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 from settings import environment
 
 logger = logging.getLogger(environment["log_name"])
-
+p = inflect.engine()
+pluralize = p.plural
 
 # create a UUID generator function
 def uuid_gen():
@@ -50,7 +53,7 @@ class Base(object):
                 try:
                     if not isinstance(value, six.string_types):
                         value = str(value)
-                    obj[key] = value.encode("utf-8")
+                    obj[key] = value
                 # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
                     obj[key] = 'None'
