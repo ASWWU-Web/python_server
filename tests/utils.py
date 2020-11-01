@@ -32,7 +32,7 @@ def setup_databases():
 
 def touch(filename):
     # https://stackoverflow.com/questions/1158076/implement-touch-using-python#comment977269_1158096
-    open(filename, 'wa').close()
+    open(filename, 'w').close()
 
 
 def reset_databases():

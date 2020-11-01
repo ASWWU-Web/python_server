@@ -7,4 +7,7 @@ settings.py
 adminLog
 *.env
 tmp
+htmlcov/
+.coverage
 *.bak
+.pytest_cache

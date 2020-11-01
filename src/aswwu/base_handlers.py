@@ -136,6 +136,11 @@ class BaseHandler(tornado.web.RequestHandler):
         if status_code >= 500:
             logger.error("{} error".format(self.__class__.__name__))
 
+    def get_argument(self, query, default=None):
+        result = super().get_argument(query, default)
+        if not result:
+            return json.loads(self.request.body).get(query, default)
+        return result
 
 class BaseLoginHandler(BaseHandler):
     def get(self):

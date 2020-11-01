@@ -11,6 +11,7 @@ from PIL import Image
 
 import bleach
 import tornado.web
+from tornado.escape import to_basestring
 from sqlalchemy import or_
 
 from src.aswwu.base_handlers import BaseHandler
@@ -89,7 +90,7 @@ class SearchNamesFast(BaseHandler):
     def get(self):
         search_criteria = {}
         for key, value in list(self.request.arguments.items()):
-            search_criteria[key] = value[0]
+            search_criteria[key] = to_basestring(value[0])
         names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
         self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})
 

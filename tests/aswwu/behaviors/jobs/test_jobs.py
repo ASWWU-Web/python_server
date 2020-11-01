@@ -194,6 +194,6 @@ def test_resume_download(testing_server):
     response = get_resume_download(job_id, applicant["username"], owner_session)
 
     assert response.status_code == 200
-    assert response.content == expected_file_content
+    assert response.content.decode("utf-8") == expected_file_content
 
 

@@ -279,7 +279,7 @@ class ResumeUploadHandler(BaseHandler):
                 fh = open(
                     RESUMES_LOCATION + "/" + user.username + "_" + job_id + os.path.splitext(fileinfo['filename'])[1],
                     'w+')
-                fh.write(fileinfo['body'])
+                fh.write(fileinfo['body'].decode("utf-8"))
                 self.set_status(201)
                 self.write({"status": "Submitted"})
             else:
