@@ -21,7 +21,7 @@ def build_query_params(request_arguments):
         if key in ('start', 'end'):
             search_criteria[key] = datetime.strptime(search_criteria.get(key), '%Y-%m-%d %H:%M:%S.%f')
         else:
-            search_criteria[key] = value[0]
+            search_criteria[key] = value[0].decode("utf-8")
     return search_criteria
 
 
