@@ -7,6 +7,7 @@ import string
 import glob
 
 from settings import environment
+
 from src.aswwu.base_handlers import BaseHandler
 
 PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
