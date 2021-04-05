@@ -3,6 +3,10 @@ import json
 import logging
 import glob
 import re
+import os
+import io
+import base64
+from PIL import Image
 
 import bleach
 import tornado.web
@@ -17,7 +21,8 @@ from settings import environment
 
 logger = logging.getLogger(environment["log_name"])
 PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
-
+PENDING_PROFILE_PHOTOS_LOCATION = environment["pending_profile_photos_location"]
+CURRENT_YEAR = environment["current_year"]
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
@@ -198,6 +203,19 @@ class ProfileUpdateHandler(BaseHandler):
         else:
             self.write({'error': 'invalid permissions'})
 
+class UploadProfilePhotoHandler(BaseHandler):
+    def post(self):
+        try:
+            image_base64 = self.get_argument("image")
+            image_name = self.get_argument("name")
+            image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
+            image_path = PENDING_PROFILE_PHOTOS_LOCATION + "/" + image_name
+            image.save(image_path)
+            self.write({'link': image_path})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
@@ -206,10 +224,26 @@ class ListProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         try:
-            wwuid = self.current_user.wwuid
-            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*'
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*' # SEARCHING WITH DASH
             photo_list = glob.glob(glob_pattern)
             photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            self.write({'photos': photo_list})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+
+class ListPendingProfilePhotoHandler(BaseHandler):
+    '''
+    Return the authenticated user's pending profile pictures, example: {"photos": ["pending_profiles/12345_1234567.jpg"]}
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
+            photo_list = glob.glob(glob_pattern)
+            photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)

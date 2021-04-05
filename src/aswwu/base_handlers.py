@@ -167,6 +167,7 @@ class BaseVerifyLoginHandler(BaseHandler):
             'user': user.to_json(),
             'token': token
         })
+        print(user.to_json())
         # set the cookie header in the response
         self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
 
