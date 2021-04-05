@@ -20,6 +20,9 @@ local_dev_environment = {
     'databases_location': '../databases',
     'profile_photos_location': '../media/profiles',
     'resumes_location': '../databases/resume',
+    'media_location': '../media',
+    'pending_profile_photos_location': '../media/pending_profiles',
+    'dismayed_profile_photos_location': '../media/dismayed_profiles'
 }
 
 pytest_environment = {
@@ -35,6 +38,9 @@ pytest_environment = {
     'databases_location': './tmp/databases',
     'profile_photos_location': './tmp/profile_photos',
     'resumes_location': './tmp/resume',
+    'media_location': './tmp/media',
+    'pending_profile_photos_location': './tmp/pending_profiles',
+    'dismayed_profile_photos_location': './tmp/dismayed_profiles'
 }
 
 production_environment = {
@@ -47,6 +53,9 @@ production_environment = {
     'databases_location': '../databases',
     'profile_photos_location': '../media/profiles',  # TODO: (stephen) implement
     'resumes_location': '../databases/resume',  # TODO: (stephen) implement
+    'media_location': '../media',
+    'pending_profile_photos_location': '../media/pending_profiles',
+    'dismayed_profile_photos_location': '../media/dismayed_profiles'
 }
 
 environment = pytest_environment
