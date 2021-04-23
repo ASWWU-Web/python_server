@@ -217,6 +217,22 @@ class UploadProfilePhotoHandler(BaseHandler):
             raise Exception(e)
     get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
+class DirectUploadProfilePhotoHandler(BaseHandler):
+    def post(self):
+        try:
+            user = self.current_user
+            if 'forms' in user.roles or ('mask-admin' in user.roles):
+                image_base64 = self.get_argument("image")
+                image_name = self.get_argument("name")
+                image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
+                image_path = PROFILE_PHOTOS_LOCATION + "/" + image_name
+                image.save(image_path)
+                self.write({'link': image_path})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+
 class ListProfilePhotoHandler(BaseHandler):
     '''
     Return the authenticated user's profile pictures, example: {"photos": ["profiles/1718/12345_1234567.jpg"]}
