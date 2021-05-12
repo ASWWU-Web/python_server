@@ -27,6 +27,7 @@ class Application(tornado.web.Application):
         (r"/update/list_pending_photos", mask.ListPendingProfilePhotoHandler),
         (r"/update/upload_photo", mask.UploadProfilePhotoHandler),
         (r"/update/upload_photo_direct", mask.DirectUploadProfilePhotoHandler),
+        (r"/verify/mask-permissions", mask.VerifyMaskUploadPermissions),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
         # jobs
         (r"/forms/job/new", forms.NewFormHandler),

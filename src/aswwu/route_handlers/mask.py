@@ -218,16 +218,40 @@ class UploadProfilePhotoHandler(BaseHandler):
     get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
 class DirectUploadProfilePhotoHandler(BaseHandler):
+    '''
+        Upload a profile photo directly to the server
+    '''
     def post(self):
         try:
             user = self.current_user
-            if 'forms' in user.roles or ('mask-admin' in user.roles):
+            if 'mask-admin' in user.roles:
                 image_base64 = self.get_argument("image")
                 image_name = self.get_argument("name")
                 image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
                 image_path = PROFILE_PHOTOS_LOCATION + "/" + image_name
                 image.save(image_path)
                 self.write({'link': image_path})
+            else:
+                raise Exception("You do not have permission to upload files")
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+
+class VerifyMaskUploadPermissions(BaseHandler):
+    '''
+        Verify  Permissions to upload to mask.
+    '''
+    def post(self):
+        try:
+            if self.current_user:
+                user = self.current_user
+                if 'mask-admin' in user.roles:
+                    self.write({'permission': True})
+                else:
+                    self.write({'permission': False})
+            else:
+                raise Exception("You must be logged in!")
         except Exception as e:
             logger.info(e)
             raise Exception(e)
