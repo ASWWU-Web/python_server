@@ -236,7 +236,7 @@ class DirectUploadProfilePhotoHandler(BaseHandler):
         except Exception as e:
             logger.info(e)
             raise Exception(e)
-    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+    get = post
 
 class VerifyMaskUploadPermissions(BaseHandler):
     '''
@@ -255,7 +255,7 @@ class VerifyMaskUploadPermissions(BaseHandler):
         except Exception as e:
             logger.info(e)
             raise Exception(e)
-    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+    get = post
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
