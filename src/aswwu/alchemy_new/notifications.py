@@ -1,0 +1,74 @@
+# notifications.py
+
+#import and set up the logging
+
+import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, joinedload
+
+import src.aswwu.models.bases as base
+import src.aswwu.models.notifications as notifications_model
+from settings import environment
+
+NotificationsBase = base.NotificationsBase
+
+logger = logging.getLogger(environment["log_name"])
+
+notifications_engine = create_engine("sqlite:///" + environment['databases_location'] + "/notifications.db")
+
+NotificationsBase.metadata.create_all(notifications_engine)
+
+# bind instances of the databases to corresponding variables
+NotificationsBase.metadata.bind = notifications_engine
+notifications_dbs = sessionmaker(bind=notifications_engine)
+notifications_db = notifications_dbs()
+
+
+# updates a model, or creates it if it doesnt exist
+def add_or_update(thing):
+    try:
+        notifications_db.add(thing)
+        notifications_db.commit()
+        return thing
+    except Exception as e:
+        logger.info(e)
+        notifications_db.rollback()
+
+def query_notifications(notification_id=None, notification_text=None, notification_links=None, start_time=None, end_time=None,
+                        severity=None, visible=None):
+    """
+    Queries the database for notifications matching the specified parameters.
+    :param
+    :param
+    :param
+    :param
+    :param
+    :param
+    :param
+    :param
+    :return: Returns a list of all matched objects in the query.
+    """
+    thing = None
+    try:
+        thing = notifications_db.query(notifications_model.Notification)
+        if notification_id is not None:
+            thing = thing.filter_by(id=notification_id)
+        if notification_text is not None:
+            thing = thing.filter_by(notification_text=str(notification_text))
+        if notification_links is not None:
+            thing = thing.filter_by(notification_links=str(notification_links))
+        if start_time is not None:
+            thing = thing.filter_by(notifications_model.Notification.start_time <= start_time)
+        if end_time is not None:
+            thing = thing.filter_by(notifications_model.Notification.start_time >= start_time)
+        if severity is not None:
+            thing = thing.filter_by(severity=int(severity))
+        if visible is not None:
+            thing = thing.filter_by(visible=int(visible))
+        thing = thing.all()
+    except Exception as e:
+        logger.info(e)
+        notifications_db.rollback()
+    return thing
+

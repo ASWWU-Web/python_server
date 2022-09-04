@@ -57,6 +57,8 @@ class Application(tornado.web.Application):
         (r"/pages/(.*)", pages.GetHandler),
         # homepage
         (r"/homepage/open_forum", homepage.OpenForumHandler),
+        (r"/homepage/notifications", homepage.NotificationHandler),
+        (r"/homepage/notifications/(.*)", homepage.SpecifiedNotificationHandler),
         # elections
         (r"/elections/vote", elections.VoteHandler),
         (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
