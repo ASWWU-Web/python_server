@@ -7,8 +7,9 @@ import json
 import src.aswwu.alchemy_new.pages as alchemy
 import src.aswwu.models.pages as pages_model
 from src.aswwu.base_handlers import BaseHandler
+from settings import environment
 
-logger = logging.getLogger("aswwu")
+logger = logging.getLogger(environment["log_name"])
 
 
 class GetAllHandler(BaseHandler):

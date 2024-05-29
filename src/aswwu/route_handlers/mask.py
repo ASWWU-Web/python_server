@@ -3,6 +3,10 @@ import json
 import logging
 import glob
 import re
+import os
+import io
+import base64
+from PIL import Image
 
 import bleach
 import tornado.web
@@ -13,42 +17,12 @@ import src.aswwu.models.mask as mask_model
 import src.aswwu.archive_models as archive_model
 import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
+from settings import environment
 
-logger = logging.getLogger("aswwu")
-
-
-# administrative role handler
-class AdministratorRoleHandler(BaseHandler):
-    # decorator to force them to be logged in to access this information
-    # also only accepts post requests right now
-    @tornado.web.authenticated
-    def post(self):
-        user = self.current_user
-        # check if they have valid permissions
-        if 'administrator' not in user.roles:
-            self.write({'error': 'insufficient permissions'})
-        else:
-            cmd = self.get_argument('cmd', None)
-            # grant permissions to other users
-            # sharing is caring
-            if cmd == 'set_role':
-                username = self.get_argument('username', '').replace(' ', '.').lower()
-                fuser = mask.people_db.query(mask_model.User).filter_by(username=username).all()
-                if not fuser:
-                    self.write({'error': 'user does not exist'})
-                else:
-                    fuser = fuser[0]
-                    if fuser.roles is None:
-                        fuser.roles = ''
-                    # roles are a comma separated list
-                    # so we have to do some funkiness to append and then rejoin that list in the database
-                    roles = fuser.roles.split(', ')
-                    roles.append(self.get_argument('newRole', None))
-                    roles = set(roles)
-                    fuser.roles = ', '.join(roles)
-                    mask.add_or_update(fuser)
-                    self.write({'response': 'success'})
-
+logger = logging.getLogger(environment["log_name"])
+PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
+PENDING_PROFILE_PHOTOS_LOCATION = environment["pending_profile_photos_location"]
+CURRENT_YEAR = environment["current_year"]
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
@@ -122,7 +96,7 @@ class SearchNamesFast(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        # cache for 24 hours
+        # cache client side for 24 hours, server side caching in nginx
         self.add_header('Cache-control', 'max-age=86400')
         self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
@@ -150,7 +124,8 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            if "mask" in self.request.headers.get('Referer'):
+            referer = self.request.headers.get('Referer')
+            if referer is not None and "mask" in referer:
                 update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:
@@ -181,37 +156,6 @@ def update_views(user, profile, year):
                     view.num_views += 1
                     view.last_viewed = datetime.datetime.now()
                     mask.add_or_update(view)
-
-
-# queries the server for a user's photos
-class ProfilePhotoHandler(BaseHandler):
-    def get(self, year, wwuid_or_username):
-        wwuid = None
-        username = None
-        if len(wwuid_or_username.split(".")) == 1:
-            wwuid = wwuid_or_username
-        else:
-            username = wwuid_or_username
-        # check if we're looking at current photos or not
-        if year == self.application.options.current_year:
-            if wwuid:
-                profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
-            else:
-                profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
-        else:
-            if wwuid:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(wwuid=str(wwuid)).all()
-            else:
-                profile = archive.archive_db.query(archive_model.get_archive_model(year))\
-                    .filter_by(username=str(username)).all()
-        if len(profile) == 0:
-            self.write({'error': 'no profile found'})
-        elif len(profile) > 1:
-            self.write({'error': 'too many profiles found'})
-        else:
-            # now we've got just one profile, return the photo field attached to a known photo URI
-            profile = profile[0]
-            self.redirect("https://aswwu.com/media/img-sm/"+str(profile.photo))
 
 
 # this updates profile information - not much to it
@@ -262,6 +206,19 @@ class ProfileUpdateHandler(BaseHandler):
         else:
             self.write({'error': 'invalid permissions'})
 
+class UploadProfilePhotoHandler(BaseHandler):
+    def post(self):
+        try:
+            image_base64 = self.get_argument("image")
+            image_name = self.get_argument("name")
+            image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
+            image_path = PENDING_PROFILE_PHOTOS_LOCATION + "/" + image_name
+            image.save(image_path)
+            self.write({'link': image_path})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)
+    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
@@ -270,23 +227,27 @@ class ListProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         try:
-            wwuid = self.current_user.wwuid
-            photo_list = glob.glob('./../media/profiles/*/*-' + wwuid + '.*')
-            photo_list = [re.search(r"(.\/..\/media\/)(.*)", path).group(2) for path in photo_list]
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*' # SEARCHING WITH DASH
+            photo_list = glob.glob(glob_pattern)
+            photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
             raise Exception(e)
 
-
-
-class MatcherHandler(BaseHandler):
+class ListPendingProfilePhotoHandler(BaseHandler):
+    '''
+    Return the authenticated user's pending profile pictures, example: {"photos": ["pending_profiles/12345_1234567.jpg"]}
+    '''
     @tornado.web.authenticated
     def get(self):
-        user = self.current_user
-
-        if 'matcher' in user.roles:
-            profiles = mask.query_all(mask_model.Profile)
-            self.write({'database': [p.view_other() for p in profiles]})
-        else:
-            self.write("{'error': 'Insufficient Permissions :('}")
+        try:
+            wwuid = str(self.current_user.wwuid)
+            glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
+            photo_list = glob.glob(glob_pattern)
+            photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            self.write({'photos': photo_list})
+        except Exception as e:
+            logger.info(e)
+            raise Exception(e)

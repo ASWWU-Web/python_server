@@ -1,7 +1,6 @@
 import logging
 import time
 
-import tornado.httpserver
 import tornado.web
 from tornado.options import options
 from tornado.ioloop import IOLoop
@@ -10,7 +9,7 @@ from threading import Thread
 from settings import keys
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
-    mask, volunteers, instagram, forms, pages, homepage, elections, \
+    mask, forms, pages, homepage, elections, \
     froala_images as froala
 
 
@@ -19,20 +18,16 @@ class Application(tornado.web.Application):
         # base
         (r"/login", base.BaseLoginHandler),  # dummy route required by tornado
         (r"/verify", base.BaseVerifyLoginHandler),
+        (r"/roles/(.*)", base.RoleHandler),
         # mask
         (r"/profile/(.*)/(.*)", mask.ProfileHandler),
-        (r"/profile_photo/(.*)/(.*)", mask.ProfilePhotoHandler),  # UNUSED
-        (r"/role/administrator", mask.AdministratorRoleHandler),  # UNUSED
-        (r"/role/volunteer", volunteers.VolunteerRoleHandler),  # UNUSED
         (r"/search/names", mask.SearchNamesFast),
         (r"/search/all", mask.SearchAllHandler),
         (r"/search/(.*)/(.*)", mask.SearchHandler),
         (r"/update/list_photos", mask.ListProfilePhotoHandler),
+        (r"/update/list_pending_photos", mask.ListPendingProfilePhotoHandler),
+        (r"/update/upload_photo", mask.UploadProfilePhotoHandler),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
-        (r"/volunteer", volunteers.VolunteerHandler),  # UNUSED
-        (r"/volunteer/(.*)", volunteers.VolunteerHandler),  # UNUSED
-        (r"/feed", instagram.FeedHandler),  # UNUSED
-        (r"/matcher", mask.MatcherHandler),  # UNUSED
         # jobs
         (r"/forms/job/new", forms.NewFormHandler),
         (r"/forms/job/view/(.*)", forms.ViewFormHandler),
@@ -43,7 +38,6 @@ class Application(tornado.web.Application):
         (r"/forms/application/status", forms.ApplicationStatusHandler),
         (r"/forms/resume/upload", forms.ResumeUploadHandler),
         (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
-        (r"/forms/application/export/(.*)", forms.ExportApplicationsHandler),
         # pages
         (r"/pages", pages.GetAllHandler),
         (r"/pages/search", pages.SearchHandler),
@@ -59,6 +53,8 @@ class Application(tornado.web.Application):
         (r"/pages/media/upload_image", froala.UploadHandler),
         (r"/pages/media/load_images", froala.LoadAllHandler),
         (r"/pages/media/static/(.*)", froala.LoadImageHandler),
+        (r"/pages/media/approve/(.*)", froala.ApproveImageHandler),
+        (r"/pages/media/dismay/(.*)", froala.DismayImageHandler),
         (r"/pages/(.*)", pages.GetHandler),
         # homepage
         (r"/homepage/open_forum", homepage.OpenForumHandler),
@@ -82,16 +78,16 @@ class Application(tornado.web.Application):
             "login_url": "/login",
             "secret_key": keys["hmac"]
         }
-        self.options = options
-        logger = logging.getLogger(options.log_name)
+        self.options = tornado.options.options
+        logger = logging.getLogger(tornado.options.options.log_name)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler("src/aswwu/"+options.log_name+".log")
+        fh = logging.FileHandler("src/aswwu/"+tornado.options.options.log_name+".log")
         fh.setLevel(logging.DEBUG)
         formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
         fh.setFormatter(formatter)
         logger.addHandler(fh)
         tornado.web.Application.__init__(self, self.handlers, **settings)
-        logger.info("Application started on port " + str(options.port))
+        logger.info("Application started on port " + str(tornado.options.options.port))
 
 
 def start_server():
@@ -105,7 +101,7 @@ def start_server():
     return server, event_loop_thread
 
 
-def stop_server(server, event_loop_thread):
+def stop_server(server, event_loop_thread, ioloop):
     server.stop()
     IOLoop.current().add_callback(IOLoop.current().stop)
     event_loop_thread.join()

@@ -1,12 +1,7 @@
-"""This module contains convenience functions for creating data and inserting it into the databases
-   for testing
-"""
 from contextlib import contextmanager
 from datetime import datetime
 import csv
-
-
-from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select
+from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select, MetaData
 from sqlalchemy.exc import IntegrityError
 
 

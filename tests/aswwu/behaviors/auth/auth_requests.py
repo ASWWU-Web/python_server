@@ -1,21 +1,40 @@
 import requests
-from settings import keys, testing
+import settings
+
+BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
+VERIFY_URL = '/'.join([BASE_URL, 'verify'])
+ROLES_URL = '/'.join([BASE_URL, 'roles'])
 
 
-VERIFY_URL = testing['base_url'] + ':' + str(testing['port']) + '/' + 'verify'
+def post_verify(wwuid, full_name, email, session=None):
+    session = requests.Session() if session is None else session
 
-
-def post_verify(wwuid, full_name, email):
     post_data = {
-        'secret_key': keys["samlEndpointKey"],
+        'secret_key': settings.keys["samlEndpointKey"],
         'employee_id': wwuid,
         'full_name': full_name,
         'email_address': email,
     }
-    resp = requests.post(VERIFY_URL, post_data)
+    resp = session.post(VERIFY_URL, post_data)
     return resp
 
 
-def get_verify():
-    resp = requests.get(VERIFY_URL)
+def get_verify(session=None):
+    session = requests.Session() if session is None else session
+
+    resp = session.get(VERIFY_URL)
+    return resp
+
+
+def post_roles(wwuid, roles):
+    """
+    sets the roles of the user with the provided wwuid to only those
+    listed in the provided roles array
+    :param wwuid: the wwuid of the user whos roles need to be updated
+    :param roles: an array of strings, where each string is a single role
+    :return:
+    """
+    roles_endpoint = '/'.join([ROLES_URL, wwuid])
+    post_data = {'roles': roles}
+    resp = requests.post(roles_endpoint, json=post_data)
     return resp
