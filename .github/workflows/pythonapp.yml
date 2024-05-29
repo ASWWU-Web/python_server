@@ -20,16 +20,15 @@ jobs:
       - name: Run Tests
         run: |
           bash scripts/run_pytests.sh
+      - name: upload coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash)
 
-    - name: upload coverage
-      run: |
-        bash <(curl -s https://codecov.io/bash)
-
-    - name: Prepare Artifact (not in use)
-      run: |
-        mkdir ../backend-artifact
-        mkdir ../backend-artifact/backend-payload
-        mkdir ../backend-artifact/backend-payload/python_server
-        cp scripts/remote_deploy.sh ../backend-artifact/
-        cp scripts/server_deploy.sh ../backend-artifact/backend-payload
-        cp -r ./* ../backend-artifact/backend-payload/python_server/
+      - name: Prepare Artifact (not in use)
+        run: |
+          mkdir ../backend-artifact
+          mkdir ../backend-artifact/backend-payload
+          mkdir ../backend-artifact/backend-payload/python_server
+          cp scripts/remote_deploy.sh ../backend-artifact/
+          cp scripts/server_deploy.sh ../backend-artifact/backend-payload
+          cp -r ./* ../backend-artifact/backend-payload/python_server/
