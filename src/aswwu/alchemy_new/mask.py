@@ -58,12 +58,12 @@ def search_all_profiles():
             .group_by(mask_model.User.username)\
             .order_by(asc(
                 case(
-                    [
+                    
                         (mask_model.Profile.photo == 'None', 2),
                         (mask_model.Profile.photo == '', 2),
                         (mask_model.Profile.photo == None, 2),
                         (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
-                    ], else_=1)), func.random())
+                    , else_=1)), func.random())
 
     except Exception as e:
         logger.info(e)

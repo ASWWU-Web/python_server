@@ -126,6 +126,9 @@ class SearchAllHandler(BaseHandler):
         self.add_header('Cache-control', 'max-age=86400')
         self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
+        if profiles == None:
+            self.write({'error': 'no profiles found'})
+            return
         keys = ['username', 'full_name', 'photo', 'email']
         self.write({'results': [r.to_json(limitList=keys) for r in profiles]})
 
