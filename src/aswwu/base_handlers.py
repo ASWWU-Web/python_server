@@ -97,7 +97,8 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 if not self.get_cookie("token"):
                     user = None
-                    self.set_cookie('token', '', domain='.aswwu.com', expires_days=14)
+                    # TODO (riley): abstract domain property to settings
+                    self.set_cookie('token', '', domain='.aswwumask.com', expires_days=14)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -169,7 +170,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         })
         print(user.to_json())
         # set the cookie header in the response
-        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+        self.set_cookie("token", token, domain='.aswwumask.com', expires_days=14)
 
     def post(self):
         """
@@ -212,7 +213,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         }
         self.write(response)
         # set the cookie header in the response
-        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+        self.set_cookie("token", token, domain='.aswwumask.com', expires_days=14)
 
 
 class RoleHandler(BaseHandler):
