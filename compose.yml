@@ -1,0 +1,13 @@
+services:
+  python_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    # scuffed way to keep the container running
+    # TODO (riley): only have keyboard interaction when running in dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../databases:/usr/databases

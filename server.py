@@ -19,9 +19,8 @@ if __name__ == "__main__":
     if environment["dev"]:
         tornado.autoreload.start()
 
-    server, event_loop_thread, ioloop = application.start_server()
+    server, event_loop_thread = application.start_server()
 
-    print('services running, press ctrl+c to stop')
     print('services running, press ctrl+c to stop')
     try:
         while True:
