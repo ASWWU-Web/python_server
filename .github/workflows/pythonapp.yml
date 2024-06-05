@@ -4,33 +4,30 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
-      with:
-        python-version: 2.7
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.12.3
 
-    - name: Install dependencies
-      run: |
-        bash scripts/pytest_setup.sh
+      - name: Install dependencies
+        run: |
+          bash scripts/pytest_setup.sh
+      - name: Run Tests
+        run: |
+          bash scripts/run_pytests.sh
+      - name: upload coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash)
 
-    - name: Run Tests
-      run: |
-        bash scripts/run_pytests.sh
-
-    - name: upload coverage
-      run: |
-        bash <(curl -s https://codecov.io/bash)
-
-    - name: Prepare Artifact (not in use)
-      run: |
-        mkdir ../backend-artifact
-        mkdir ../backend-artifact/backend-payload
-        mkdir ../backend-artifact/backend-payload/python_server
-        cp scripts/remote_deploy.sh ../backend-artifact/
-        cp scripts/server_deploy.sh ../backend-artifact/backend-payload
-        cp -r ./* ../backend-artifact/backend-payload/python_server/
+      - name: Prepare Artifact (not in use)
+        run: |
+          mkdir ../backend-artifact
+          mkdir ../backend-artifact/backend-payload
+          mkdir ../backend-artifact/backend-payload/python_server
+          cp scripts/remote_deploy.sh ../backend-artifact/
+          cp scripts/server_deploy.sh ../backend-artifact/backend-payload
+          cp -r ./* ../backend-artifact/backend-payload/python_server/

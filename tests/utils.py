@@ -11,9 +11,9 @@ import settings
 
 def clean_temporary_folder(folder_path=None):
     if folder_path is None:
-        folder_path = settings.environment["temporary_files"]
+        folder_path = settings.testing["temporary_files"]
     else:
-        assert folder_path.split('/')[0:2] == settings.environment["temporary_files"].split('/')
+        assert folder_path.split('/')[0:2] == settings.testing["temporary_files"].split('/')
 
     if not os.path.isdir(folder_path):
         os.makedirs(folder_path)
@@ -23,7 +23,7 @@ def clean_temporary_folder(folder_path=None):
 
 
 def setup_databases():
-    from_path, to_path = settings.environment['original_testing_databases'], settings.environment['databases_location']
+    from_path, to_path = settings.testing['original_testing_databases'], settings.testing['databases_location']
     clean_temporary_folder(folder_path=to_path)
     assert os.path.isdir(from_path) and os.path.isdir(to_path)
     for database in glob.glob(from_path + '/*.db'):

@@ -16,6 +16,7 @@ local_dev_environment = {
     'developer': 2029909,
     'port': 8888,
     'log_name': 'local_aswwu',
+    'base_url': 'localhost',
     'current_year': '1920',
     'databases_location': '../databases',
     'profile_photos_location': '../media/profiles',
@@ -25,7 +26,7 @@ local_dev_environment = {
     'dismayed_profile_photos_location': '../media/dismayed_profiles'
 }
 
-pytest_environment = {
+testing = {
     'environment_name': 'Pytest Automated Testing',
     'pytest': True,
     'dev': False,
@@ -58,4 +59,4 @@ production_environment = {
     'dismayed_profile_photos_location': '../media/dismayed_profiles'
 }
 
-environment = pytest_environment
+environment = testing

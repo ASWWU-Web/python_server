@@ -58,12 +58,12 @@ def search_all_profiles():
             .group_by(mask_model.User.username)\
             .order_by(asc(
                 case(
-                    [
+                    
                         (mask_model.Profile.photo == 'None', 2),
                         (mask_model.Profile.photo == '', 2),
                         (mask_model.Profile.photo == None, 2),
                         (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
-                    ], else_=1)), func.random())
+                    , else_=1)), func.random())
 
     except Exception as e:
         logger.info(e)
@@ -74,10 +74,9 @@ def search_all_profiles():
 def search_profile_names(query, limit=0):
     thing = None
     try:
-        # print('hello')
         thing = people_db.query(mask_model.Profile) \
             .with_entities(mask_model.Profile.username, mask_model.Profile.full_name) \
-            .filter(or_(mask_model.Profile.full_name. ilike("%" + query + "%"), mask_model.Profile.username. ilike("%" + query + "%"))) \
+            .filter(or_(mask_model.Profile.full_name.ilike(f"%{query}%"), mask_model.Profile.username.ilike(f"%{query}%"))) \
             .order_by(mask_model.Profile.full_name) \
             .limit(limit) \
             .all()

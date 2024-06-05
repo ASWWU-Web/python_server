@@ -42,3 +42,4 @@ def assert_verify_response(response, user):
     assert (response_text['user']['status'] == DEFAULT_STATUS)
     assert (response_text['user']['full_name'] == user['full_name'])
     assert (response_text['token'].split('|')[0] == user['wwuid'])
+

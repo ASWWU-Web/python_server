@@ -73,7 +73,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # creates an HMAC digest that is a hexadecimal hash based on a provided message
     def generate_hmac_digest(self, message):
         secret = self.application.settings['secret_key']
-        signature = hmac.new(secret, message, digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(secret.encode(), message.encode(), digestmod=hashlib.sha256).hexdigest()
         return signature
 
     # create a authorization token for the given WWUID based on the current time
@@ -97,7 +97,8 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 if not self.get_cookie("token"):
                     user = None
-                    self.set_cookie('token', '', domain='.aswwu.com', expires_days=14)
+                    # TODO (riley): abstract domain property to settings
+                    self.set_cookie('token', '', domain='.aswwumask.com', expires_days=14)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -169,7 +170,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         })
         print(user.to_json())
         # set the cookie header in the response
-        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+        self.set_cookie("token", token, domain='.aswwumask.com', expires_days=14)
 
     def post(self):
         """
@@ -206,12 +207,13 @@ class BaseVerifyLoginHandler(BaseHandler):
             add_null_view('null.user', user.username)
         # return the new users token and information
         token = self.generate_token(user.wwuid)
-        self.write({
+        response = {
             'user': user.to_json(),
             'token': token
-        })
+        }
+        self.write(response)
         # set the cookie header in the response
-        self.set_cookie("token", token, domain='.aswwu.com', expires_days=14)
+        self.set_cookie("token", token, domain='.aswwumask.com', expires_days=14)
 
 
 class RoleHandler(BaseHandler):

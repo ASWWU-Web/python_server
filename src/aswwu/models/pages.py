@@ -5,10 +5,10 @@ from sqlalchemy.orm import relationship
 
 from src.aswwu.models.bases import PagesBase
 
-# PagesBase = declarative_base(cls=base.PagesBase)
-
 
 class Page(PagesBase):
+    __tablename__ = 'pages'
+
     url = Column(String(50), nullable=False)
     title = Column(String(100), nullable=False)
     description = Column(String(500))
@@ -80,16 +80,22 @@ class Page(PagesBase):
 
 
 class PageEditor(PagesBase):
+    __tablename__ = 'pageeditors'
+
     username = Column(String(50))
     url = Column(String(50), ForeignKey('pages.url'))
 
 
 class PageTag(PagesBase):
+    __tablename__ = 'pagetags'
+
     tag = Column(String(50))
     url = Column(String(50), ForeignKey('pages.url'))
 
 
 class Category(PagesBase):
+    __tablename__ = 'categories'
+
     category = Column(String(50), unique=True)
     description = Column(String(250))
 
@@ -104,6 +110,8 @@ class Category(PagesBase):
 
 
 class Department(PagesBase):
+    __tablename__ = 'departments'
+
     department = Column(String(50), unique=True)
     description = Column(String(250))
     color = Column(String(50))
@@ -119,6 +127,8 @@ class Department(PagesBase):
         }
 
 class Featured(PagesBase):
+    __tablename__ = 'featureds'
+
     url = Column(String(50), ForeignKey('pages.url'))
     # TODO: unnecessary column
     featured = Column(Boolean)

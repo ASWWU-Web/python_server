@@ -4,9 +4,8 @@ import logging
 import uuid
 
 import six
-from pattern.en import pluralize
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.declarative import declarative_base
 
 from settings import environment
 
@@ -20,11 +19,6 @@ def uuid_gen():
 
 # define a base model for all other models
 class Base(object):
-    @declared_attr
-    def __tablename__(self):
-        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
-
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -50,7 +44,7 @@ class Base(object):
                 try:
                     if not isinstance(value, six.string_types):
                         value = str(value)
-                    obj[key] = value.encode("utf-8")
+                    obj[key] = value
                 # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
                     obj[key] = 'None'
@@ -66,11 +60,6 @@ Base = declarative_base(cls=Base)
 
 
 class ElectionBase(object):
-    @declared_attr
-    def __tablename__(self):
-        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
-
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -104,11 +93,6 @@ ElectionBase = declarative_base(cls=ElectionBase)
 
 
 class PagesBase(object):
-    @declared_attr
-    def __tablename__(self):
-        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
-
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(String(50), primary_key=True, default=uuid_gen)
@@ -143,11 +127,6 @@ PagesBase = declarative_base(cls=PagesBase)
 
 
 class JobsBase(object):
-    @declared_attr
-    def __tablename__(self):
-        # every model will have a corresponding table that is the lowercase and pluralized version of it's name
-        return pluralize(self.__name__.lower())
-
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
     id = Column(Integer, primary_key=True)
