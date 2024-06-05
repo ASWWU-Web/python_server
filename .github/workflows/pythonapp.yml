@@ -16,13 +16,12 @@ jobs:
       - name: Install dependencies
         run: |
           bash scripts/pytest_setup.sh
-      # TODO: fix broken tests
-      # - name: Run Tests
-      #   run: |
-      #     bash scripts/run_pytests.sh
-      # - name: upload coverage
-      #   run: |
-      #     bash <(curl -s https://codecov.io/bash)
+      - name: Run Tests
+        run: |
+          bash scripts/run_pytests.sh
+      - name: upload coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash)
 
       - name: Prepare Artifact (not in use)
         run: |
