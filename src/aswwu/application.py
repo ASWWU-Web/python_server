@@ -101,7 +101,7 @@ def start_server():
     return server, event_loop_thread
 
 
-def stop_server(server, event_loop_thread, ioloop):
+def stop_server(server, event_loop_thread):
     server.stop()
     IOLoop.current().add_callback(IOLoop.current().stop)
     event_loop_thread.join()
