@@ -6,14 +6,11 @@ ENV PIPENV_VENV_IN_PROJECT=1
 # TODO (riley): set a static version
 RUN pip install pipenv
 
-# Pipfile contains requests
 ADD Pipfile.lock Pipfile /usr/src/
 
 WORKDIR /usr/src
 
 RUN /usr/local/bin/pipenv sync
-
-RUN /usr/src/.venv/bin/python -c "import requests; print(requests.__version__)"
 
 FROM docker.io/python:3.12.3-alpine AS runtime
 
@@ -21,8 +18,6 @@ FROM docker.io/python:3.12.3-alpine AS runtime
 RUN mkdir -v /usr/src/.venv
 
 COPY --from=builder /usr/src/.venv/ /usr/src/.venv/
-
-RUN /usr/src/.venv/bin/python -c "import requests; print(requests.__version__)"
 
 WORKDIR /usr/src
 COPY . /usr/src
