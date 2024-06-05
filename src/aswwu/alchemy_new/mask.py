@@ -76,7 +76,7 @@ def search_profile_names(query, limit=0):
     try:
         thing = people_db.query(mask_model.Profile) \
             .with_entities(mask_model.Profile.username, mask_model.Profile.full_name) \
-            .filter(or_(mask_model.Profile.full_name. ilike("%" + query + "%"), mask_model.Profile.username. ilike("%" + query + "%"))) \
+            .filter(or_(mask_model.Profile.full_name.ilike(f"%{query}%"), mask_model.Profile.username.ilike(f"%{query}%"))) \
             .order_by(mask_model.Profile.full_name) \
             .limit(limit) \
             .all()

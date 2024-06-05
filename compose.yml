@@ -13,5 +13,6 @@ services:
     # TODO (riley): only have keyboard interaction when running in dev
     stdin_open: true
     tty: true
+    restart: unless-stopped
     volumes:
       - ../databases:/usr/databases

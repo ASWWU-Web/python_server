@@ -88,8 +88,15 @@ class SearchNamesFast(BaseHandler):
     def get(self):
         search_criteria = {}
         for key, value in self.request.arguments.items():
-            search_criteria[key] = value[0]
+            # convert to str
+            search_criteria[key] = value[0].decode('utf-8')
+        
+
         names = mask.search_profile_names(search_criteria.get('full_name', ''), limit=int(search_criteria.get('limit', 5)))
+        # if no names are found, return an empty list
+        if names == None:
+            self.write({'results': []})
+            return
         self.write({'results': [{'username': pair[0], 'full_name': pair[1]} for pair in names]})
 
 
