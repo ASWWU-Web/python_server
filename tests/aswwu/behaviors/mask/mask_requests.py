@@ -100,5 +100,5 @@ def post_update_profile(username, profile_data, session=None):
     session = requests.Session() if session is None else session
 
     request_url = URLS["update"] + "/" + username
-    resp = session.post(request_url, profile_data)
+    resp = session.post(request_url, json=profile_data)
     return resp
