@@ -6,6 +6,7 @@ import hmac
 import json
 import logging
 import time
+import base64
 
 import tornado.web
 
@@ -80,10 +81,11 @@ class BaseHandler(tornado.web.RequestHandler):
     def generate_token(self, wwuid):
         now = int(time.mktime(datetime.datetime.now().timetuple()))
         message = str(wwuid)+"|"+str(now)
-        return message+"|"+self.generate_hmac_digest(message)
+        return base64.b64encode((message+"|"+self.generate_hmac_digest(message)).encode('ascii')).decode('ascii')
 
     # see if the authorization token received from the user has been tampered with (i.e. copied or stolen)
     def validate_token(self, token):
+        token = base64.b64decode(token.encode('ascii')).decode('ascii')
         token = token.split("|")
         if len(token) != 3:
             return False
