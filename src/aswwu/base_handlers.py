@@ -29,6 +29,10 @@ def import_profile(profile, exported_json):
         if exported_json[field]:
             setattr(profile, field, exported_json[field])
 
+def parse_token(token):
+    token = base64.b64decode(token.encode('ascii')).decode('ascii')
+    print("token", token)
+    return token
 
 class LoggedInUser:
     def __init__(self, wwuid):
@@ -84,8 +88,8 @@ class BaseHandler(tornado.web.RequestHandler):
         return base64.b64encode((message+"|"+self.generate_hmac_digest(message)).encode('ascii')).decode('ascii')
 
     # see if the authorization token received from the user has been tampered with (i.e. copied or stolen)
+    # expects a non-base64 encoded token
     def validate_token(self, token):
-        token = base64.b64decode(token.encode('ascii')).decode('ascii')
         token = token.split("|")
         if len(token) != 3:
             return False
@@ -104,6 +108,7 @@ class BaseHandler(tornado.web.RequestHandler):
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
+                    token = parse_token(token)
                     wwuid = token.split("|")[0]
                     date_created = int(token.split("|")[1])
                     now = int(time.mktime(datetime.datetime.now().timetuple()))
@@ -114,7 +119,7 @@ class BaseHandler(tornado.web.RequestHandler):
                         user = LoggedInUser(wwuid)
             except:
                 user = None
-
+            print(user)
             return user
         else:
             return LoggedInUser(environment['developer'])
