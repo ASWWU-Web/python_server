@@ -18,3 +18,4 @@ services:
 
 networks:
   backend:
+    name: backend
