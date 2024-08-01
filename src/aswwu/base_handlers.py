@@ -219,7 +219,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         }
         self.write(response)
         # set the cookie header in the response
-        self.set_cookie("token", token, domain=f".{environment['base_url']}", expires_days=14)
+        # self.set_cookie("token", token, domain=f".{environment['base_url']}", expires_days=14)
 
 
 class RoleHandler(BaseHandler):
