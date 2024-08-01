@@ -30,8 +30,7 @@ def import_profile(profile, exported_json):
             setattr(profile, field, exported_json[field])
 
 def parse_token(token):
-    token = base64.b64decode(token.encode('ascii')).decode('ascii')
-    print("token", token)
+    token = base64.b64decode(token.encode()).decode()
     return token
 
 class LoggedInUser:
@@ -85,7 +84,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def generate_token(self, wwuid):
         now = int(time.mktime(datetime.datetime.now().timetuple()))
         message = str(wwuid)+"|"+str(now)
-        return base64.b64encode((message+"|"+self.generate_hmac_digest(message)).encode('ascii')).decode('ascii')
+        return base64.b64encode((message+"|"+self.generate_hmac_digest(message)).encode()).decode()
 
     # see if the authorization token received from the user has been tampered with (i.e. copied or stolen)
     # expects a non-base64 encoded token
@@ -119,7 +118,6 @@ class BaseHandler(tornado.web.RequestHandler):
                         user = LoggedInUser(wwuid)
             except:
                 user = None
-            print(user)
             return user
         else:
             return LoggedInUser(environment['developer'])
@@ -175,8 +173,9 @@ class BaseVerifyLoginHandler(BaseHandler):
             'user': user.to_json(),
             'token': token
         })
-        print(user.to_json())
-        self.set_cookie("token", token, domain=f".{environment['base_url']}", expires_days=14)
+        print(token)
+        # renew the token cookie
+        self.set_cookie("token", value=token, domain=f".{environment['base_url']}", expires_days=14)
 
     def post(self):
         """
@@ -219,7 +218,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         }
         self.write(response)
         # set the cookie header in the response
-        self.set_cookie("token", token, domain=f".{environment['base_url']}", expires_days=14)
+        # self.set_cookie("token", token, domain=f".{environment['base_url']}", expires_days=14)
 
 
 class RoleHandler(BaseHandler):
