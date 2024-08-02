@@ -151,6 +151,13 @@ class BaseLoginHandler(BaseHandler):
         self.write({'error': 'not implemented'})
 
 
+class BaseLogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie("token")
+        return self.redirect("/")
+
+
+
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
     @tornado.web.authenticated

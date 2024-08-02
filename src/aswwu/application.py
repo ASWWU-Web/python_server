@@ -17,6 +17,7 @@ class Application(tornado.web.Application):
     handlers = [
         # base
         (r"/login", base.BaseLoginHandler),  # dummy route required by tornado
+        (r"/logout", base.BaseLogoutHandler),
         (r"/verify", base.BaseVerifyLoginHandler),
         (r"/roles/(.*)", base.RoleHandler),
         # mask
