@@ -154,7 +154,8 @@ class BaseLoginHandler(BaseHandler):
 class BaseLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("token")
-        return self.redirect("/")
+        self.set_status(200)
+        self.write({'status': 'logged out'})
 
 
 

@@ -1,6 +1,6 @@
 import tests.aswwu.behaviors.auth.auth_requests as auth_requests
 import requests
-from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_response, assert_verify_login
+from tests.aswwu.behaviors.auth.auth_subtests import assert_logout, assert_verify_response, assert_verify_login
 from tests.conftest import testing_server
 # from tests.utils import load_csv
 # from tests.aswwu.data.paths import USERS_PATH
@@ -18,6 +18,10 @@ def test_get_verify(testing_server):
     for user in USERS:
         assert_verify_login(user)
 
+def test_get_logout(testing_server):
+    user = USERS[0]
+    assert_logout(user)
+    
 
 def test_post_roles(testing_server):
     for user in USERS:
