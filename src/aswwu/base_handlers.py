@@ -173,7 +173,6 @@ class BaseVerifyLoginHandler(BaseHandler):
             'user': user.to_json(),
             'token': token
         })
-        print(token)
         # renew the token cookie
         self.set_cookie("token", value=token, domain=f".{environment['base_url']}", expires_days=14)
 
