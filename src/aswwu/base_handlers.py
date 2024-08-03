@@ -153,7 +153,11 @@ class BaseLoginHandler(BaseHandler):
 
 class BaseLogoutHandler(BaseHandler):
     def get(self):
-        self.clear_cookie("token")
+        if not self.current_user:
+            self.set_status(401)
+            self.write({'error': 'not logged in'})
+            return
+        self.clear_cookie("token", domain=f".{environment['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
         self.set_status(200)
         self.write({'status': 'logged out'})
 

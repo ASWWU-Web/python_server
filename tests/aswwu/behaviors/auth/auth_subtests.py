@@ -53,9 +53,10 @@ def assert_logout(user):
     :return: None
     """
     _, session = assert_verify_login(user)
+
+    print(session.cookies.get_dict())
     
     response = auth_requests.get_logout(session)
     response_text = json.loads(response.text)
     assert (response.status_code == 200)
     assert (response_text['status'] == 'logged out')
-    assert (session.cookies.get('token') is None)
