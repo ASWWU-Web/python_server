@@ -151,6 +151,18 @@ class BaseLoginHandler(BaseHandler):
         self.write({'error': 'not implemented'})
 
 
+class BaseLogoutHandler(BaseHandler):
+    def get(self):
+        if not self.current_user:
+            self.set_status(401)
+            self.write({'error': 'not logged in'})
+            return
+        self.clear_cookie("token", domain=f".{environment['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
+        self.set_status(200)
+        self.write({'status': 'logged out'})
+
+
+
 # verify a user's authorization token
 class BaseVerifyLoginHandler(BaseHandler):
     @tornado.web.authenticated

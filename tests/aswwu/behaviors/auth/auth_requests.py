@@ -25,6 +25,12 @@ def get_verify(session=None):
     resp = session.get(VERIFY_URL)
     return resp
 
+def get_logout(session=None):
+    session = requests.Session() if session is None else session
+
+    resp = session.get('/'.join([BASE_URL, 'logout']))
+    return resp
+
 
 def post_roles(wwuid, roles):
     """

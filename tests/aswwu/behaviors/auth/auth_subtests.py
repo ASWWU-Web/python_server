@@ -45,3 +45,18 @@ def assert_verify_response(response, user):
     assert (response_text['user']['full_name'] == user['full_name'])
     assert (base64.b64decode(response_text['token']).decode('ascii').split('|')[0] == user['wwuid'])
 
+
+def assert_logout(user):
+    """
+    Tests whether a user can log out.
+    :param session: the authenticated session
+    :return: None
+    """
+    _, session = assert_verify_login(user)
+
+    print(session.cookies.get_dict())
+    
+    response = auth_requests.get_logout(session)
+    response_text = json.loads(response.text)
+    assert (response.status_code == 200)
+    assert (response_text['status'] == 'logged out')
