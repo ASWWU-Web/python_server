@@ -1,3 +1,4 @@
+import os
 import requests
 import settings
 
@@ -10,7 +11,7 @@ def post_verify(wwuid, full_name, email, session=None):
     session = requests.Session() if session is None else session
 
     post_data = {
-        'secret_key': settings.keys["samlEndpointKey"],
+        'secret_key': os.environ.get("SAML_ENDPOINT_KEY"),
         'employee_id': wwuid,
         'full_name': full_name,
         'email_address': email,

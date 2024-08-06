@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import time
 import base64
 
@@ -197,7 +198,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         """
         # check secret key to ensure this is the SAML conatiner
         secret_key = self.get_argument('secret_key', None)
-        if secret_key != keys["samlEndpointKey"]:
+        if secret_key != os.environ.get('SAML_SECRET_KEY'):
             logger.info("Unauthorized Access Attempted")
             self.write({'error': 'Unauthorized Access Attempted'})
             return

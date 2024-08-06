@@ -1,12 +1,12 @@
 import logging
-import time
+import os
+
 
 import tornado.web
 from tornado.options import options
 from tornado.ioloop import IOLoop
 from threading import Thread
 
-from settings import keys
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
     mask, forms, pages, homepage, elections, \
@@ -77,7 +77,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         settings = {
             "login_url": "/login",
-            "secret_key": keys["hmac"]
+            "secret_key": os.environ.get("HMAC_KEY"),
         }
         self.options = tornado.options.options
         logger = logging.getLogger(tornado.options.options.log_name)
