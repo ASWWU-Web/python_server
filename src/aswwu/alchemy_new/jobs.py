@@ -6,13 +6,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, joinedload
 
 import src.aswwu.models.bases as base
-from settings import environment
+from settings import config
 
 JobsBase = base.JobsBase
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config["log_name"])
 
-jobs_engine = create_engine("sqlite:///" + environment["databases_location"] + "/jobs.db")
+jobs_engine = create_engine("sqlite:///" + config["databases"] + "/jobs.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 

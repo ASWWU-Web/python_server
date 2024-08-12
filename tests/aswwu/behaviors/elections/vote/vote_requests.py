@@ -1,6 +1,6 @@
 import settings
 
-VOTE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/vote'
+VOTE_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/' + 'elections/vote'
 
 
 def post_vote(session, election, position, vote):

@@ -1,7 +1,7 @@
 import requests
 import settings
 
-BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/forms'
+BASE_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/forms'
 URLS = {
     "new": "job/new",
     "job_view": "job/view",

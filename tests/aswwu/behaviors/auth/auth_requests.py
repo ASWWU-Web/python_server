@@ -2,7 +2,7 @@ import os
 import requests
 import settings
 
-BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
+BASE_URL = settings.config['base_url'] + ':' + str(settings.config['port'])
 VERIFY_URL = '/'.join([BASE_URL, 'verify'])
 ROLES_URL = '/'.join([BASE_URL, 'roles'])
 

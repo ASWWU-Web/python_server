@@ -11,7 +11,7 @@ import base64
 
 import tornado.web
 
-from settings import keys, environment
+from settings import config
 
 # import models and alchemy functions as needed
 import src.aswwu.models.mask as mask_model
@@ -20,7 +20,11 @@ import src.aswwu.alchemy_new.archive as archive
 import src.aswwu.archive_models as archives
 import src.aswwu.exceptions as exceptions
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config["log_name"])
+
+env = os.environ['ENVIRONMENT']
+HMAC_KEY = os.environ['HMAC_KEY']
+SAML_ENDPOINT_KEY = os.environ['SAML_ENDPOINT_KEY']
 
 
 # model used only in this file
@@ -99,12 +103,12 @@ class BaseHandler(tornado.web.RequestHandler):
     # global hook that allows the @tornado.web.authenticated decorator to function
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
-        if not environment['dev']:
+        if not env == "development":
             try:
                 if not self.get_cookie("token"):
                     user = None
                     # TODO (riley): abstract domain property to settings
-                    self.set_cookie('token', '', domain=f".{environment['base_url']}", expires_days=14)
+                    self.set_cookie('token', '', domain=f".{config['base_url']}", expires_days=14)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -121,7 +125,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 user = None
             return user
         else:
-            return LoggedInUser(environment['developer'])
+            return LoggedInUser(config['developer_id'])
 
     def prepare(self):
         # some modern JS frameworks force data to be sent as JSON
@@ -158,7 +162,7 @@ class BaseLogoutHandler(BaseHandler):
             self.set_status(401)
             self.write({'error': 'not logged in'})
             return
-        self.clear_cookie("token", domain=f".{environment['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
+        self.clear_cookie("token", domain=f".{config['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
         self.set_status(200)
         self.write({'status': 'logged out'})
 
@@ -187,7 +191,7 @@ class BaseVerifyLoginHandler(BaseHandler):
             'token': token
         })
         # renew the token cookie
-        self.set_cookie("token", value=token, domain=f".{environment['base_url']}", expires_days=14)
+        self.set_cookie("token", value=token, domain=f".{config['base_url']}", expires_days=14)
 
     def post(self):
         """
@@ -239,7 +243,7 @@ class RoleHandler(BaseHandler):
         Modify roles in the users table, accessible only in a testing environment.
         Writes the modified user object.
         """
-        if not environment['pytest']:
+        if not env == "testing":
             raise exceptions.Forbidden403Exception('Method Forbidden')
         else:
             user = mask.query_user(wwuid)

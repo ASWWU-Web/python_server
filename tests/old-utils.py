@@ -9,9 +9,9 @@ import shutil
 
 def clean_temporary_folder(folder_path=None):
     if folder_path is None:
-        folder_path = settings.environment["temporary_files"]
+        folder_path = settings.config["temporary_files"]
     else:
-        assert folder_path.split('/')[0:2] == settings.environment["temporary_files"].split('/')
+        assert folder_path.split('/')[0:2] == settings.config["temporary_files"].split('/')
 
     if not os.path.isdir(folder_path):
         os.makedirs(folder_path)

@@ -1,4 +1,4 @@
-from settings import environment
+from settings import config
 from tests import utils as utils
 
 from tests.aswwu.behaviors.jobs import jobs_requests
@@ -26,9 +26,9 @@ def assert_new_app_success(session, new_app_data):
 
 
 def assert_upload_resume_success(session, resume_file_name, job_id):
-    resume_location = environment["temporary_files"] + "/" + resume_file_name
+    resume_location = config["temporary_files"] + "/" + resume_file_name
 
-    distutils.dir_util.create_tree(environment["resumes_location"], [resume_file_name])
+    distutils.dir_util.create_tree(config["resumes"], [resume_file_name])
     utils.touch(resume_location)
 
     file_content = resume_file_name + " contents"

@@ -1,6 +1,6 @@
 import settings
 
-ELECTION_URL = settings.environment['base_url'] + ':' + str(settings.environment['port']) + '/' + 'elections/election'
+ELECTION_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/' + 'elections/election'
 
 
 def get_ballot(admin_session, election_id, position_id=None, vote=None):
