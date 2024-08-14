@@ -65,8 +65,35 @@ def setupConfig():
     config['testing_databases'] = './testing_databases'
 
     # write the config file
-    with open('config.toml', 'rb+') as config_file:
-        config_file.write(toml.dump(config))
+    with open('config.toml', 'w') as config_file:
+        tmpConfig = {
+            'server': {
+                'port': config['port'],
+                'base_url': config['base_url'],
+                'temporary_files': config['temporary_files']
+            },
+            'database': {
+                'databases': config['databases'],
+                'testing_databases': config['testing_databases']
+            },
+            'logging': {
+                'log_name': config['log_name'],
+                'level': 'INFO'
+            },
+            'media': {
+                'media_path': config['media_path']
+            },
+            'development': {
+                'developer_id': config['developer_id']
+            },
+            'mask': {
+                'current_year': config['current_year']
+            },
+            'forms': {
+                'resumes': config['resumes']
+            }
+        }
+        toml.dump(tmpConfig, config_file)
         config_file.close()
 
 
