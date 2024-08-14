@@ -1,2 +1,7 @@
 [tool.pytest.ini_options]
 pythonpath = ["src", "tests"]
+
+[tool.pytest_env]
+ENVIRONMENT = "pytest"
+HMAC_KEY = "secret_key"
+SAML_ENDPOINT_KEY = "secret_key"
