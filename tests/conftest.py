@@ -6,9 +6,9 @@ import utils
 import settings
 import os
 
-settings.loadConfig()
-
 assert os.environ["ENVIRONMENT"] == "pytest" # make sure the pytest environment has been set
+
+settings.loadConfig("./config.testing.toml")
 
 tornado.options.define("port", default=settings.config["port"], type=int)
 tornado.options.define("log_name", default=settings.config["log_name"])
@@ -23,7 +23,7 @@ def testing_server():
     pass
     # # TODO: (stephen) find a way to copy fresh databases on every run without causing IO errors
     utils.reset_databases()
-    utils.clean_temporary_folder(folder_path=settings.buildMediaPath("profile_photos"))
+    utils.clean_temporary_folder(folder_path=settings.buildMediaPath("profile_pictures"))
 
     # application must be imported after databases are setup
     from src.aswwu.application import start_server, stop_server

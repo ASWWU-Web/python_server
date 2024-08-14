@@ -7,3 +7,5 @@ adminLog
 *.env
 tmp
 .coverage
+config.testing.toml
+config.toml

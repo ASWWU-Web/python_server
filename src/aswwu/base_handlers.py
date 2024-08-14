@@ -44,8 +44,12 @@ class LoggedInUser:
         profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
         user = mask.query_user(wwuid)
         if len(profile) == 0:
-            old_profile = archive.archive_db.query(archives.get_archive_model(get_last_year())).\
-                filter_by(wwuid=str(wwuid)).all()
+            # for some reason, the archive db is not always available
+            try:
+                old_profile = archive.archive_db.query(archives.get_archive_model(get_last_year())).\
+                    filter_by(wwuid=str(wwuid)).all()
+            except:
+                old_profile = []
             new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
                 import_profile(new_profile, old_profile[0].export_info())
@@ -108,7 +112,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 if not self.get_cookie("token"):
                     user = None
                     # TODO (riley): abstract domain property to settings
-                    self.set_cookie('token', '', domain=f".{config['base_url']}", expires_days=14)
+                    self.set_cookie('token', '', domain=f".{config['base_url'].split('://')[1]}", expires_days=14, httponly=True, secure=True)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -122,6 +126,7 @@ class BaseHandler(tornado.web.RequestHandler):
                     else:
                         user = LoggedInUser(wwuid)
             except:
+                logger.warning("user not found")
                 user = None
             return user
         else:
@@ -191,7 +196,8 @@ class BaseVerifyLoginHandler(BaseHandler):
             'token': token
         })
         # renew the token cookie
-        self.set_cookie("token", value=token, domain=f".{config['base_url']}", expires_days=14)
+        # remove the protocol from the domain
+        self.set_cookie("token", value=token, domain=f".{config['base_url'].split('://')[1]}", expires_days=14, httponly=True, secure=True)
 
     def post(self):
         """
@@ -202,7 +208,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         """
         # check secret key to ensure this is the SAML conatiner
         secret_key = self.get_argument('secret_key', None)
-        if secret_key != os.environ.get('SAML_SECRET_KEY'):
+        if secret_key != os.environ.get('SAML_ENDPOINT_KEY'):
             logger.info("Unauthorized Access Attempted")
             self.write({'error': 'Unauthorized Access Attempted'})
             return
@@ -243,7 +249,8 @@ class RoleHandler(BaseHandler):
         Modify roles in the users table, accessible only in a testing environment.
         Writes the modified user object.
         """
-        if not env == "testing":
+        
+        if not env == "pytest":
             raise exceptions.Forbidden403Exception('Method Forbidden')
         else:
             user = mask.query_user(wwuid)

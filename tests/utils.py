@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from datetime import datetime
 import csv
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select, MetaData
+import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 import os
 import shutil
@@ -22,10 +23,12 @@ def clean_temporary_folder(folder_path=None):
 
 
 def setup_databases():
-    from_path, to_path = settings.testing['original_testing_databases'], settings.testing['databases_location']
+    # todo find a better way to configure this
+    from_path, to_path = settings.config['testing_databases'], settings.config['databases']
     clean_temporary_folder(folder_path=to_path)
     assert os.path.isdir(from_path) and os.path.isdir(to_path)
     for database in glob.glob(from_path + '/*.db'):
+        print("copying", database)
         shutil.copy(database, to_path)
 
 
@@ -63,7 +66,11 @@ def reset_databases():
         with closing(database[0].connect()) as con:
             trans = con.begin()
             for table in reversed(database[1].metadata.sorted_tables):
-                con.execute(table.delete())
+                # quick fix for sqlite
+                # TODO: create archive tables dynamically if they don't exist
+                if sqlalchemy.inspect(con).has_table(table.name):
+                    con.execute(table.delete())
+                    
             trans.commit()
 
 def assert_is_equal_sub_dict(expected, actual):
