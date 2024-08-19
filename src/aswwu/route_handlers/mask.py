@@ -54,7 +54,7 @@ class SearchHandler(BaseHandler):
                     if f[0] in ['gender']:
                         results = results.filter(getattr(model, f[0]).ilike(f[1]))
                     else:
-                        attribute_arr = f[1].encode('ascii', 'ignore').split(",")
+                        attribute_arr = f[1].split(",")
                         if len(attribute_arr) > 1:
                             results = results.filter(
                                 or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
