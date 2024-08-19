@@ -18,7 +18,7 @@ if you want to have auto login with your wwu id, the `developer_id` field in the
 - clone the repository
 - `cp .env.example .env`
 - in `.env`
-  - set `ENVIRONMENT = production`
+  - set `ENVIRONMENT=production`
   - update the secret fields
 - then run docker compose build
 - then run docker compose up
