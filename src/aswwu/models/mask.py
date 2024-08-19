@@ -57,7 +57,7 @@ class Profile(Base):
     office_hours = Column(String(250))
 
     def num_views(self):
-        from src.aswwu.alchemy_new.mask import num_views
+        from src.aswwu.alchemy_engines.mask import num_views
         views = num_views(self.username)
         return views
 

@@ -3,8 +3,8 @@
 
 from datetime import datetime
 
-import src.aswwu.alchemy_new.elections as elections_alchemy
-import src.aswwu.alchemy_new.mask as mask_alchemy
+import src.aswwu.alchemy_engines.elections as elections_alchemy
+import src.aswwu.alchemy_engines.mask as mask_alchemy
 import src.aswwu.exceptions as exceptions
 
 datetime_format = '%Y-%m-%d %H:%M:%S.%f'

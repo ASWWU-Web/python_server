@@ -47,11 +47,11 @@ def reset_databases():
     from src.aswwu.models.mask import Base as MaskBase
     from src.aswwu.models.pages import PagesBase
 
-    from src.aswwu.alchemy_new.archive import archive_engine
-    from src.aswwu.alchemy_new.elections import election_engine
-    from src.aswwu.alchemy_new.jobs import jobs_engine
-    from src.aswwu.alchemy_new.mask import engine as mask_engine
-    from src.aswwu.alchemy_new.pages import pages_engine
+    from src.aswwu.alchemy_engines.archive import archive_engine
+    from src.aswwu.alchemy_engines.elections import election_engine
+    from src.aswwu.alchemy_engines.jobs import jobs_engine
+    from src.aswwu.alchemy_engines.mask import engine as mask_engine
+    from src.aswwu.alchemy_engines.pages import pages_engine
 
     databases = (
         (archive_engine, ArchiveBase),

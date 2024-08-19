@@ -15,8 +15,8 @@ from settings import config
 
 # import models and alchemy functions as needed
 import src.aswwu.models.mask as mask_model
-import src.aswwu.alchemy_new.mask as mask
-import src.aswwu.alchemy_new.archive as archive
+import src.aswwu.alchemy_engines.mask as mask
+import src.aswwu.alchemy_engines.archive as archive
 import src.aswwu.archive_models as archives
 import src.aswwu.exceptions as exceptions
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, ForeignKey, String, DateTime, Boolean, Integer
 
 from src.aswwu.models.bases import ElectionBase
-import src.aswwu.alchemy_new.mask as mask_alchemy
+import src.aswwu.alchemy_engines.mask as mask_alchemy
 
 
 class Election(ElectionBase):

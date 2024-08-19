@@ -9,7 +9,7 @@ import tornado.web
 from src.aswwu.base_handlers import BaseHandler
 from settings import config
 import src.aswwu.models.forms as forms_model
-import src.aswwu.alchemy_new.jobs as alchemy
+import src.aswwu.alchemy_engines.jobs as alchemy
 import datetime
 
 logger = logging.getLogger(config.logging.get('log_name'))
