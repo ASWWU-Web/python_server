@@ -8,8 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # import settings
-from settings import config, loadConfig
-loadConfig()
+from settings import config
 
 from src.aswwu import application
 
@@ -23,9 +22,9 @@ if __name__ == "__main__":
 
 
     # allow command line arguments e.g. `python server.py --port=8881`
-    define("port", default=config["port"], help="run on the given port", type=int)
-    define("log_name", default=config["log_name"], help="name of the logfile")
-    define("current_year", default=config["current_year"], help="current school year")
+    define("port", default=config.server.get('port'), help="run on the given port", type=int)
+    define("log_name", default=config.logging.get('log_name'), help="name of the logfile")
+    define("current_year", default=config.mask.get('current_year'), help="current school year")
     tornado.options.parse_command_line()
 
 

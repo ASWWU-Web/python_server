@@ -8,7 +8,7 @@ import json
 from settings import  buildMediaPath
 import settings
 
-CURRENT_YEAR = settings.config["current_year"]
+CURRENT_YEAR = settings.config.mask.get('current_year')
 PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 
 

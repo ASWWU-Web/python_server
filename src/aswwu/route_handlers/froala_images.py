@@ -14,7 +14,7 @@ PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profiles")
 DISMAYED_PROFILE_PHOTOS_LOCATION = buildMediaPath("dismayed_profiles")
 MEDIA_LOCATION = buildMediaPath("")
-CURRENT_YEAR = config["current_year"]
+CURRENT_YEAR = config.mask.get('current_year')
 
 class UploadHandler(BaseHandler):
     @tornado.web.authenticated
@@ -29,7 +29,7 @@ class UploadHandler(BaseHandler):
             return
         try:
             fileinfo = self.request.files['file'][0]
-            if not config['dev']:
+            if not os.environ['ENVIRONMENT'] == 'development':
                 server_url = 'https://aswwu.com/server/pages/media/static/'
             else:
                 server_url = 'http://localhost:8888/pages/media/static/'
@@ -52,7 +52,7 @@ class UploadHandler(BaseHandler):
 class LoadAllHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        if not config['dev']:
+        if not os.environ['ENVIRONMENT'] == 'development':
             server_url = 'https://aswwu.com/server/pages/media/static/'
         else:
             server_url = 'http://localhost:8888/pages/media/static/'

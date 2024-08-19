@@ -8,11 +8,11 @@ import os
 
 assert os.environ["ENVIRONMENT"] == "pytest" # make sure the pytest environment has been set
 
-settings.loadConfig("./config.testing.toml")
 
-tornado.options.define("port", default=settings.config["port"], type=int)
-tornado.options.define("log_name", default=settings.config["log_name"])
-tornado.options.define("current_year", default=settings.config["current_year"])
+
+tornado.options.define("port", default=settings.config.server.get('port'))
+tornado.options.define("log_name", default=settings.config.logging.get('log_name'))
+tornado.options.define("current_year", default=settings.config.mask.get('current_year'))
 
 utils.clean_temporary_folder()
 utils.setup_databases()

@@ -8,7 +8,7 @@ from settings import config
 
 from src.aswwu.base_handlers import BaseHandler
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 
 class OpenForumHandler(BaseHandler):

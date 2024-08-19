@@ -12,8 +12,8 @@ import src.aswwu.models.forms as forms_model
 import src.aswwu.alchemy_new.jobs as alchemy
 import datetime
 
-logger = logging.getLogger(config["log_name"])
-RESUMES_LOCATION = config['resumes']
+logger = logging.getLogger(config.logging.get('log_name'))
+RESUMES_LOCATION = config.forms.get('resumes')
 
 
 class NewFormHandler(BaseHandler):

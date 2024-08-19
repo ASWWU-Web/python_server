@@ -12,10 +12,10 @@ from settings import config
 
 ElectionBase = base.ElectionBase
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 # defines the databases URLs relative to "server.py"
-election_engine = create_engine("sqlite:///" + config['databases'] + "/elections.db")
+election_engine = create_engine("sqlite:///" + config.database.get('databases') + "/elections.db")
 # create the model tables if they don't already exist
 ElectionBase.metadata.create_all(election_engine)
 

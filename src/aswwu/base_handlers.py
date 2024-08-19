@@ -20,7 +20,7 @@ import src.aswwu.alchemy_new.archive as archive
 import src.aswwu.archive_models as archives
 import src.aswwu.exceptions as exceptions
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 env = os.environ['ENVIRONMENT']
 HMAC_KEY = os.environ['HMAC_KEY']
@@ -112,7 +112,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 if not self.get_cookie("token"):
                     user = None
                     # TODO (riley): abstract domain property to settings
-                    self.set_cookie('token', '', domain=f".{config['base_url'].split('://')[1]}", expires_days=14, httponly=True, secure=True)
+                    self.set_cookie('token', '', domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, httponly=True, secure=True)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -130,7 +130,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 user = None
             return user
         else:
-            return LoggedInUser(config['developer_id'])
+            return LoggedInUser(config.development.get('developer_id'))
 
     def prepare(self):
         # some modern JS frameworks force data to be sent as JSON
@@ -167,7 +167,7 @@ class BaseLogoutHandler(BaseHandler):
             self.set_status(401)
             self.write({'error': 'not logged in'})
             return
-        self.clear_cookie("token", domain=f".{config['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
+        self.clear_cookie("token", domain=f".{config.server.get('base_url')}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
         self.set_status(200)
         self.write({'status': 'logged out'})
 
@@ -197,7 +197,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         })
         # renew the token cookie
         # remove the protocol from the domain
-        self.set_cookie("token", value=token, domain=f".{config['base_url'].split('://')[1]}", expires_days=14, httponly=True, secure=True)
+        self.set_cookie("token", value=token, domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, httponly=True, secure=True)
 
     def post(self):
         """

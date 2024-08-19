@@ -1,8 +1,7 @@
 import requests
 import settings
 
-POSITION_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/' + 'elections/position'
-
+POSITION_URL = settings.config.server.get('base_url') + ':' + str(settings.config.server.get('port')) + '/' + 'elections/position'
 
 def get_position(position=None, election_type=None, active=None):
     optional_parameters = {

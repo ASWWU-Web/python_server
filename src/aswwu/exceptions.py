@@ -9,8 +9,7 @@ from tornado.web import HTTPError
 from settings import config
 
 
-logger = logging.getLogger(config["log_name"])
-
+logger = logging.getLogger(config.logging.get('log_name'))
 
 class BadRequest400Exception(HTTPError):
     """

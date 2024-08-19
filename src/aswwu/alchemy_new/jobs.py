@@ -10,9 +10,9 @@ from settings import config
 
 JobsBase = base.JobsBase
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
-jobs_engine = create_engine("sqlite:///" + config["databases"] + "/jobs.db")
+jobs_engine = create_engine("sqlite:///" + config.database.get('databases') + "/jobs.db")
 
 JobsBase.metadata.create_all(jobs_engine)
 

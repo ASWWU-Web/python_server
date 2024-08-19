@@ -9,7 +9,7 @@ import src.aswwu.models.pages as pages_model
 from src.aswwu.base_handlers import BaseHandler
 from settings import config
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 
 class GetAllHandler(BaseHandler):

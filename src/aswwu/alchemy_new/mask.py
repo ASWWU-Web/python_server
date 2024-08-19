@@ -16,10 +16,10 @@ ElectionBase = base.ElectionBase
 PagesBase = base.PagesBase
 JobsBase = base.JobsBase
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 # defines the databases URLs relative to "server.py"
-engine = create_engine("sqlite:///" + config['databases'] + "/people.db")
+engine = create_engine("sqlite:///" + config.database.get('databases') + "/people.db")
 
 # bind instances of the databases to corresponding variables
 Base.metadata.bind = engine

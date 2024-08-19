@@ -1,8 +1,8 @@
 import settings
 import requests
 
-ELECTION_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/' + 'elections/election'
-CURRENT_URL = settings.config['base_url'] + ':' + str(settings.config['port']) + '/' + 'elections/current'
+ELECTION_URL = settings.config.server.get('base_url') + ':' + str(settings.config.server.get('port')) + '/' + 'elections/election'
+CURRENT_URL = settings.config.server.get('base_url') + ':' + str(settings.config.server.get('port')) + '/' + 'elections/current'
 
 
 def get_current():

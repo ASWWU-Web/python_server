@@ -19,10 +19,10 @@ import src.aswwu.alchemy_new.mask as mask
 import src.aswwu.alchemy_new.archive as archive
 from settings import config, buildMediaPath
 
-logger = logging.getLogger(config["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 PROFILE_PHOTOS_LOCATION = buildMediaPath("profile_photos")
 PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profile_photos")
-CURRENT_YEAR = config["current_year"]
+CURRENT_YEAR = config.mask.get('current_year')
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
