@@ -24,7 +24,7 @@ class Config:
             'developer_id': 0
         }
         self.mask = {
-            'current_year': 0
+            'current_year': ''
         }
         self.forms = {
             'resumes': ''
@@ -77,7 +77,7 @@ class Config:
             'developer_id': 0
         }
         self.mask = {
-            'current_year': '2324'
+            'current_year': '2425'
         }
         self.forms = {
             'resumes': './tmp/resume'
@@ -104,7 +104,7 @@ class Config:
             'developer_id': 0
         }
         self.mask = {
-            'current_year': '2324'
+            'current_year': '2425'
         }
         self.forms = {
             'resumes': '../databases/resume'
