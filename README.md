@@ -5,42 +5,23 @@
 ## Run in Development
 
 - `pipenv install`
-- `cp test_settings.py settings.py`
-- in `settings.py`
-
-  - set `testing['dev']` to `True` to bypass authentication
-  - set `testing['developer']` to your WWU ID, to make yourself the current user locally.
-  - set environment to `local_dev_environment`
-  - when running pytests
-    - set `testing['pytest']` to `True`, and
-    - set `testing['dev']` to `False`
-
+- `cp .env.example .env`
 - `pipenv run python server.py`
 - test your connection with `curl -X GET http://localhost:8888/search/all`
+
+if you want to have auto login with your wwu id, the `developer_id` field in the `config.toml` file and restart the server.
 
 **Note:** The live server is available at `https://aswwumask.com/server/`
 
 ## Production
 
 - clone the repository
-- `cp test_settings.py settings.py`
-- in `settings.py`
-  - set `environment = production_environment`
-  - update any settings needed such as `database` and `secret_key`
+- `cp .env.example .env`
+- in `.env`
+  - set `ENVIRONMENT = production`
+  - update the secret fields
 - then run docker compose build
 - then run docker compose up
 
-if you need to update settings.py
+if you need to update config.toml
 run `docker-compose down` then `docker-compose up --build`
-
-# Documentation
-
-The raw documentation files can be found in the docs folder. To view the parsed versions, use the following links:
-
-## Master Branch
-
-- [Elections](https://docs.aswwu.com?url=https://raw.githubusercontent.com/ASWWU-Web/python_server/master/docs/elections.yml)
-
-## Develop Branch
-
-- [Elections](https://docs.aswwu.com?url=https://raw.githubusercontent.com/ASWWU-Web/python_server/develop/docs/elections.yml)
