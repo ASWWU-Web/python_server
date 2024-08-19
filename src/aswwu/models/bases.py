@@ -7,9 +7,9 @@ import six
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-from settings import environment
+from settings import config
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 
 # create a UUID generator function

@@ -5,12 +5,11 @@ from tests.aswwu.data.users import USERS
 from tests.aswwu.behaviors.auth.auth_subtests import assert_verify_login
 from tests.aswwu.behaviors.mask import mask_requests
 import json
-import distutils.dir_util
-from settings import environment
+from settings import  buildMediaPath
 import settings
 
-CURRENT_YEAR = settings.environment["current_year"]
-PROFILE_PHOTOS_LOCATION = settings.environment["profile_photos_location"]
+CURRENT_YEAR = settings.config.mask.get('current_year')
+PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 
 
 def test_update_profile(testing_server):

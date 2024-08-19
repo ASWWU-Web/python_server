@@ -15,14 +15,14 @@ from sqlalchemy import or_
 from src.aswwu.base_handlers import BaseHandler
 import src.aswwu.models.mask as mask_model
 import src.aswwu.archive_models as archive_model
-import src.aswwu.alchemy_new.mask as mask
-import src.aswwu.alchemy_new.archive as archive
-from settings import environment
+import src.aswwu.alchemy_engines.mask as mask
+import src.aswwu.alchemy_engines.archive as archive
+from settings import config, buildMediaPath
 
-logger = logging.getLogger(environment["log_name"])
-PROFILE_PHOTOS_LOCATION = environment["profile_photos_location"]
-PENDING_PROFILE_PHOTOS_LOCATION = environment["pending_profile_photos_location"]
-CURRENT_YEAR = environment["current_year"]
+logger = logging.getLogger(config.logging.get('log_name'))
+PROFILE_PHOTOS_LOCATION = buildMediaPath("profile_photos")
+PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profile_photos")
+CURRENT_YEAR = config.mask.get('current_year')
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):

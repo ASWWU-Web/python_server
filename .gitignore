@@ -1,6 +1,5 @@
 *.pyc
 *.log
-settings.py
 *.xml
 .idea/
 .DS_Store
@@ -8,3 +7,5 @@ adminLog
 *.env
 tmp
 .coverage
+config.testing.toml
+config.toml

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from datetime import datetime
 import csv
 from sqlalchemy import Boolean, Column, DateTime, MetaData, String, Table, Integer, ForeignKey, select, MetaData
+import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 import os
 import shutil
@@ -11,10 +12,9 @@ import settings
 
 def clean_temporary_folder(folder_path=None):
     if folder_path is None:
-        folder_path = settings.testing["temporary_files"]
+        folder_path = settings.config.server.get('temporary_files')
     else:
-        assert folder_path.split('/')[0:2] == settings.testing["temporary_files"].split('/')
-
+        assert folder_path.split('/')[0:2] == settings.config.server.get('temporary_files').split('/')
     if not os.path.isdir(folder_path):
         os.makedirs(folder_path)
     else:
@@ -23,10 +23,12 @@ def clean_temporary_folder(folder_path=None):
 
 
 def setup_databases():
-    from_path, to_path = settings.testing['original_testing_databases'], settings.testing['databases_location']
+    # todo find a better way to configure this
+    from_path, to_path = settings.config.database.get('testing_databases'), settings.config.database.get('databases')
     clean_temporary_folder(folder_path=to_path)
     assert os.path.isdir(from_path) and os.path.isdir(to_path)
     for database in glob.glob(from_path + '/*.db'):
+        print("copying", database)
         shutil.copy(database, to_path)
 
 
@@ -45,11 +47,11 @@ def reset_databases():
     from src.aswwu.models.mask import Base as MaskBase
     from src.aswwu.models.pages import PagesBase
 
-    from src.aswwu.alchemy_new.archive import archive_engine
-    from src.aswwu.alchemy_new.elections import election_engine
-    from src.aswwu.alchemy_new.jobs import jobs_engine
-    from src.aswwu.alchemy_new.mask import engine as mask_engine
-    from src.aswwu.alchemy_new.pages import pages_engine
+    from src.aswwu.alchemy_engines.archive import archive_engine
+    from src.aswwu.alchemy_engines.elections import election_engine
+    from src.aswwu.alchemy_engines.jobs import jobs_engine
+    from src.aswwu.alchemy_engines.mask import engine as mask_engine
+    from src.aswwu.alchemy_engines.pages import pages_engine
 
     databases = (
         (archive_engine, ArchiveBase),
@@ -64,7 +66,11 @@ def reset_databases():
         with closing(database[0].connect()) as con:
             trans = con.begin()
             for table in reversed(database[1].metadata.sorted_tables):
-                con.execute(table.delete())
+                # quick fix for sqlite
+                # TODO: create archive tables dynamically if they don't exist
+                if sqlalchemy.inspect(con).has_table(table.name):
+                    con.execute(table.delete())
+                    
             trans.commit()
 
 def assert_is_equal_sub_dict(expected, actual):

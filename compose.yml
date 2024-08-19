@@ -14,6 +14,7 @@ services:
     volumes:
       - ../databases:/usr/databases
       - ../media:/usr/media
+      - ./config.toml:/usr/python_server/config.toml
     networks:
       - backend
 

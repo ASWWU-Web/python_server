@@ -36,7 +36,6 @@ def assert_verify_response(response, user):
     :return: None
     """
     response_text = json.loads(response.text)
-    print(response_text)
     assert (response.status_code == 200)
     assert (response_text['user']['username'] == user['username'])
     assert (response_text['user']['wwuid'] == user['wwuid'])
@@ -54,8 +53,6 @@ def assert_logout(user):
     """
     _, session = assert_verify_login(user)
 
-    print(session.cookies.get_dict())
-    
     response = auth_requests.get_logout(session)
     response_text = json.loads(response.text)
     assert (response.status_code == 200)

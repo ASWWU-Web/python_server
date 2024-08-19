@@ -4,12 +4,12 @@ import datetime
 import tornado.web
 import json
 
-import src.aswwu.alchemy_new.pages as alchemy
+import src.aswwu.alchemy_engines.pages as alchemy
 import src.aswwu.models.pages as pages_model
 from src.aswwu.base_handlers import BaseHandler
-from settings import environment
+from settings import config
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 
 class GetAllHandler(BaseHandler):

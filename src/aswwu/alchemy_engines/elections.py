@@ -8,14 +8,14 @@ from sqlalchemy.orm import sessionmaker
 import src.aswwu.models.bases as base
 import src.aswwu.models.elections as elections_model
 from datetime import datetime
-from settings import environment
+from settings import config
 
 ElectionBase = base.ElectionBase
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
 
 # defines the databases URLs relative to "server.py"
-election_engine = create_engine("sqlite:///" + environment['databases_location'] + "/elections.db")
+election_engine = create_engine("sqlite:///" + config.database.get('databases') + "/elections.db")
 # create the model tables if they don't already exist
 ElectionBase.metadata.create_all(election_engine)
 

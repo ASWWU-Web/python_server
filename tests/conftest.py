@@ -4,12 +4,15 @@ import tornado.options
 import threading
 import utils
 import settings
+import os
 
-assert settings.testing["pytest"]  # make sure the pytest environment has been set
+assert os.environ["ENVIRONMENT"] == "pytest" # make sure the pytest environment has been set
 
-tornado.options.define("port", default=settings.testing["port"], type=int)
-tornado.options.define("log_name", default=settings.testing["log_name"])
-tornado.options.define("current_year", default=settings.testing["current_year"])
+
+
+tornado.options.define("port", default=settings.config.server.get('port'))
+tornado.options.define("log_name", default=settings.config.logging.get('log_name'))
+tornado.options.define("current_year", default=settings.config.mask.get('current_year'))
 
 utils.clean_temporary_folder()
 utils.setup_databases()
@@ -20,7 +23,7 @@ def testing_server():
     pass
     # # TODO: (stephen) find a way to copy fresh databases on every run without causing IO errors
     utils.reset_databases()
-    utils.clean_temporary_folder(folder_path=settings.testing["profile_photos_location"])
+    utils.clean_temporary_folder(folder_path=settings.buildMediaPath("profile_pictures"))
 
     # application must be imported after databases are setup
     from src.aswwu.application import start_server, stop_server

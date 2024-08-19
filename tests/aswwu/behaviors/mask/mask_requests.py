@@ -1,7 +1,7 @@
 import requests
 import settings
 
-BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
+BASE_URL = settings.config.server.get('base_url') + ':' + str(settings.config.server.get('port'))
 URLS = {
     "profile": "profile",
     "search_fast": "search/names",

@@ -1,7 +1,8 @@
+import os
 import requests
 import settings
 
-BASE_URL = settings.environment['base_url'] + ':' + str(settings.environment['port'])
+BASE_URL = settings.config.server.get('base_url') + ':' + str(settings.config.server.get('port'))
 VERIFY_URL = '/'.join([BASE_URL, 'verify'])
 ROLES_URL = '/'.join([BASE_URL, 'roles'])
 
@@ -10,7 +11,7 @@ def post_verify(wwuid, full_name, email, session=None):
     session = requests.Session() if session is None else session
 
     post_data = {
-        'secret_key': settings.keys["samlEndpointKey"],
+        'secret_key': os.environ.get("SAML_ENDPOINT_KEY"),
         'employee_id': wwuid,
         'full_name': full_name,
         'email_address': email,

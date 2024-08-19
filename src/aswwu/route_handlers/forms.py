@@ -7,13 +7,13 @@ import bleach
 import tornado.web
 
 from src.aswwu.base_handlers import BaseHandler
-from settings import email, environment
+from settings import config
 import src.aswwu.models.forms as forms_model
-import src.aswwu.alchemy_new.jobs as alchemy
+import src.aswwu.alchemy_engines.jobs as alchemy
 import datetime
 
-logger = logging.getLogger(environment["log_name"])
-RESUMES_LOCATION = environment['resumes_location']
+logger = logging.getLogger(config.logging.get('log_name'))
+RESUMES_LOCATION = config.forms.get('resumes')
 
 
 class NewFormHandler(BaseHandler):
@@ -323,7 +323,7 @@ def email_notify(applicant, owner, job_id):
     if job_id == '1':
         return
     # construct email
-    from_address = email['username']
+    from_address = os.environ['EMAIL_USERNAME']
     to_address = owner + "@wallawalla.edu"
     subject = "New Job Application Submitted"
     text = applicant + " has submitted an application for job ID " + job_id +\
@@ -352,7 +352,7 @@ def send_email(from_address, to_address, subject, text):
     smtpserver.ehlo()
     smtpserver.starttls()
     smtpserver.ehlo()
-    smtpserver.login(from_address, email['password'])
+    smtpserver.login(from_address, os.environ['EMAIL_PASSWORD'])
     header = 'To:' + to_address + '\n' + 'From: ' + from_address + '\n' + 'Subject:%s \n' % subject
     msgbody = header + '\n %s \n\n' % text
     smtpserver.sendmail(from_address, to_address, msgbody)

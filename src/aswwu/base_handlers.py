@@ -5,21 +5,26 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import time
 import base64
 
 import tornado.web
 
-from settings import keys, environment
+from settings import config
 
 # import models and alchemy functions as needed
 import src.aswwu.models.mask as mask_model
-import src.aswwu.alchemy_new.mask as mask
-import src.aswwu.alchemy_new.archive as archive
+import src.aswwu.alchemy_engines.mask as mask
+import src.aswwu.alchemy_engines.archive as archive
 import src.aswwu.archive_models as archives
 import src.aswwu.exceptions as exceptions
 
-logger = logging.getLogger(environment["log_name"])
+logger = logging.getLogger(config.logging.get('log_name'))
+
+env = os.environ['ENVIRONMENT']
+HMAC_KEY = os.environ['HMAC_KEY']
+SAML_ENDPOINT_KEY = os.environ['SAML_ENDPOINT_KEY']
 
 
 # model used only in this file
@@ -39,8 +44,12 @@ class LoggedInUser:
         profile = mask.query_by_wwuid(mask_model.Profile, wwuid)
         user = mask.query_user(wwuid)
         if len(profile) == 0:
-            old_profile = archive.archive_db.query(archives.get_archive_model(get_last_year())).\
-                filter_by(wwuid=str(wwuid)).all()
+            # for some reason, the archive db is not always available
+            try:
+                old_profile = archive.archive_db.query(archives.get_archive_model(get_last_year())).\
+                    filter_by(wwuid=str(wwuid)).all()
+            except:
+                old_profile = []
             new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
                 import_profile(new_profile, old_profile[0].export_info())
@@ -98,12 +107,12 @@ class BaseHandler(tornado.web.RequestHandler):
     # global hook that allows the @tornado.web.authenticated decorator to function
     # checks for an authorization header and attempts to validate the user with that information
     def get_current_user(self):
-        if not environment['dev']:
+        if not env == "development":
             try:
                 if not self.get_cookie("token"):
                     user = None
                     # TODO (riley): abstract domain property to settings
-                    self.set_cookie('token', '', domain=f".{environment['base_url']}", expires_days=14)
+                    self.set_cookie('token', '', domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, httponly=True, secure=True)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
                     token = self.get_cookie("token")
@@ -117,10 +126,11 @@ class BaseHandler(tornado.web.RequestHandler):
                     else:
                         user = LoggedInUser(wwuid)
             except:
+                logger.warning("user not found")
                 user = None
             return user
         else:
-            return LoggedInUser(environment['developer'])
+            return LoggedInUser(config.development.get('developer_id'))
 
     def prepare(self):
         # some modern JS frameworks force data to be sent as JSON
@@ -157,7 +167,7 @@ class BaseLogoutHandler(BaseHandler):
             self.set_status(401)
             self.write({'error': 'not logged in'})
             return
-        self.clear_cookie("token", domain=f".{environment['base_url']}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
+        self.clear_cookie("token", domain=f".{config.server.get('base_url')}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
         self.set_status(200)
         self.write({'status': 'logged out'})
 
@@ -186,7 +196,8 @@ class BaseVerifyLoginHandler(BaseHandler):
             'token': token
         })
         # renew the token cookie
-        self.set_cookie("token", value=token, domain=f".{environment['base_url']}", expires_days=14)
+        # remove the protocol from the domain
+        self.set_cookie("token", value=token, domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, httponly=True, secure=True)
 
     def post(self):
         """
@@ -197,7 +208,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         """
         # check secret key to ensure this is the SAML conatiner
         secret_key = self.get_argument('secret_key', None)
-        if secret_key != keys["samlEndpointKey"]:
+        if secret_key != os.environ.get('SAML_ENDPOINT_KEY'):
             logger.info("Unauthorized Access Attempted")
             self.write({'error': 'Unauthorized Access Attempted'})
             return
@@ -238,7 +249,8 @@ class RoleHandler(BaseHandler):
         Modify roles in the users table, accessible only in a testing environment.
         Writes the modified user object.
         """
-        if not environment['pytest']:
+        
+        if not env == "pytest":
             raise exceptions.Forbidden403Exception('Method Forbidden')
         else:
             user = mask.query_user(wwuid)
