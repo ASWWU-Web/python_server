@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           bash scripts/setup_pytest.sh
-      - uses: wemake-services/wemake-python-styleguide
+      - uses: wemake-services/wemake-python-styleguide@master
         with:
           reporter: "github-pr-review"
         env:
