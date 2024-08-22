@@ -1,0 +1,25 @@
+# This was inspired by
+# https://dev.to/ricardochaves/python-lint-with-github-actions-2i7p
+
+name: Run Lint
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.3
+      - name: Install dependencies
+        run: |
+          bash scripts/setup_pytest.sh
+      - name: wemake-python-styleguide
+        uses: wemake-services/wemake-python-styleguide
+        with:
+          reporter: "github-pr-review"
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
