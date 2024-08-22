@@ -3,7 +3,11 @@
 
 name: Run Lint
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - master
+  push:
 
 jobs:
   lint:
@@ -17,8 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           bash scripts/setup_pytest.sh
-      - name: wemake-python-styleguide
-        uses: wemake-services/wemake-python-styleguide
+      - uses: wemake-services/wemake-python-styleguide
         with:
           reporter: "github-pr-review"
         env:
