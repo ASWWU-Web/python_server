@@ -6,8 +6,7 @@ name: Run Lint
 on:
   pull_request:
     branches:
-      - master
-  push:
+      - develop
 
 jobs:
   lint:
