@@ -1,11 +1,10 @@
+import asyncio
 import logging
 import os
 
 
 import tornado.web
 from tornado.options import options
-from tornado.ioloop import IOLoop
-from threading import Thread
 
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
@@ -79,6 +78,7 @@ class Application(tornado.web.Application):
         settings = {
             "login_url": "/login",
             "secret_key": os.environ.get("HMAC_KEY"),
+            "debug": os.environ.get("ENVIRONMENT") == "development"
         }
         self.options = tornado.options.options
         logger = logging.getLogger(tornado.options.options.log_name)
@@ -91,19 +91,14 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(tornado.options.options.port))
 
+shutdown_event = asyncio.Event()
 
-def start_server():
-    # https://stackoverflow.com/a/57688560
+async def start_server():
     application = Application()
-    server = application.listen(options.port)
-    event_loop_thread = Thread(target=IOLoop.current().start)
-    event_loop_thread.daemon = True
-    event_loop_thread.start()
-    print('The Tornado IOLoop thread has started.')
-    return server, event_loop_thread
+    application.listen(options.port)
+    logging.getLogger(tornado.options.options.log_name).info("services running, press ctrl+c to stop")
+    await shutdown_event.wait()
 
-
-def stop_server(server, event_loop_thread):
-    server.stop()
-    IOLoop.current().add_callback(IOLoop.current().stop)
-    event_loop_thread.join()
+def stop_server(signum, frame):
+    logging.getLogger(tornado.options.options.log_name).info("stopping services...")
+    shutdown_event.set()

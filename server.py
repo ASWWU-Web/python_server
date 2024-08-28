@@ -1,7 +1,9 @@
+import signal
 import tornado.autoreload
 import tornado.web
 import os
 from tornado.options import define
+import asyncio
 
 # environment variables
 from dotenv import load_dotenv
@@ -10,8 +12,7 @@ load_dotenv()
 # import settings
 from settings import config
 
-from src.aswwu import application
-
+from src.aswwu.application import start_server, stop_server
 
 if __name__ == "__main__":
     # TODO: generate env
@@ -28,20 +29,11 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
 
 
-    print("Running in the " + env + " Environment")
+    print("Running in the " + env + " environment")
     assert env != "pytest"  # the pytest environment should never be used here
-
-    # reload the server if changes are made
-    if env == "development":
-        tornado.autoreload.start()
-
-    server, event_loop_thread = application.start_server()
-
-    print('services running, press ctrl+c to stop')
+    signal.signal(signal.SIGINT, stop_server)
+    signal.signal(signal.SIGTERM, stop_server)
     try:
-        while True:
-            input('')
-    except KeyboardInterrupt:
-        print('stopping services...')
-        application.stop_server(server, event_loop_thread)
-        exit(0)
+        asyncio.run(start_server())
+    except KeyboardInterrupt as e:
+        stop_server(e, None)
