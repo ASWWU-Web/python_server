@@ -40,7 +40,7 @@ class Config:
             with open(location, "rb") as tmpCfg:
                 # if the file doesn't exist, docker will try to mount a directory
                 # so we may encounter empty files to bypass it
-                if tmpCfg.read() == '':
+                if tmpCfg.read() == b'':
                     print("No config file found, creating one...")
                     self.make()
                     return
