@@ -62,6 +62,7 @@ class Config:
             self.setupTestingConfig()
         else:
             self.setupConfig()
+            self.save()
     
     def setupTestingConfig(self):
         self.server = {
