@@ -25,7 +25,7 @@ services:
     tty: true
     volumes:
       - ../databases:/usr/databases:rw,Z
-      - ../media:/usr/media:rw,Z
+      - ../media:/usr/media:rw,z
       - ./config.toml:/usr/src/config.toml:rw,Z
     networks:
       - proxy
