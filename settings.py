@@ -40,12 +40,11 @@ class Config:
             with open(location, "rb") as tmpCfg:
                 # if the file doesn't exist, docker will try to mount a directory
                 # so we may encounter empty files to bypass it
-                try:
-                    tomlConfig = tomllib.load(tmpCfg)
-                except:
-                    print("Error loading config file, creating new one...")
+                if tmpCfg.read() == '':
+                    print("No config file found, creating one...")
                     self.make()
                     return
+                tomlConfig = tomllib.load(tmpCfg)
                 # ok so we have a config file, let's load it
                 self.server =            tomlConfig['server']
                 self.database =          tomlConfig['database']
