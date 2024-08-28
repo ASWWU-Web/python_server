@@ -36,14 +36,10 @@ class Config:
         self.load()
     
     def load(self, location = "./config.toml"):
-        if os.path.exists(location) and os.environ['ENVIRONMENT'] != 'pytest':
+        # if the file doesn't exist, docker will try to mount a directory
+        # so we may encounter empty files to bypass it
+        if os.path.exists(location) and os.environ['ENVIRONMENT'] != 'pytest' and os.stat(location).st_size > 0:
             with open(location, "rb") as tmpCfg:
-                # if the file doesn't exist, docker will try to mount a directory
-                # so we may encounter empty files to bypass it
-                if tmpCfg.read() == b'':
-                    print("No config file found, creating one...")
-                    self.make()
-                    return
                 tomlConfig = tomllib.load(tmpCfg)
                 # ok so we have a config file, let's load it
                 self.server =            tomlConfig['server']
@@ -63,7 +59,6 @@ class Config:
         else:
             self.setupConfig()
             self.save()
-    
     def setupTestingConfig(self):
         self.server = {
             'port': 8888,
@@ -120,8 +115,11 @@ class Config:
 
     def save(self):
         with open('config.toml', 'w') as config_file:            
-            toml.dump(self, config_file)
+            toml.dump(self.asdict(), config_file)
             config_file.close()
+
+    def asdict(self):
+        return {k: v for k, v in self.__dict__.items() if v is not None and not k.startswith('_')}
 
 # global config object
 config = Config()
