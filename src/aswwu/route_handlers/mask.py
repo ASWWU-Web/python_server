@@ -1,9 +1,7 @@
-import datetime
+from datetime import datetime, UTC
 import json
 import logging
 import glob
-import re
-import os
 import io
 import base64
 from PIL import Image
@@ -20,7 +18,7 @@ import src.aswwu.alchemy_engines.archive as archive
 from settings import config, buildMediaPath
 
 logger = logging.getLogger(config.logging.get('log_name'))
-PROFILE_PHOTOS_LOCATION = buildMediaPath("profile_photos")
+PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profile_photos")
 CURRENT_YEAR = config.mask.get('current_year')
 
@@ -79,7 +77,7 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
-        keys = ['username', 'full_name', 'photo', 'email', 'views']
+        keys = ['username', 'full_name', 'photo', 'email']
         self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
 
 
@@ -131,9 +129,6 @@ class ProfileHandler(BaseHandler):
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
-            referer = self.request.headers.get('Referer')
-            if referer is not None and "mask" in referer:
-                update_views(user, profile, year)
             if not user:
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
@@ -144,25 +139,6 @@ class ProfileHandler(BaseHandler):
                     self.write(profile.to_json())
                 else:
                     self.write(profile.view_other())
-
-
-def update_views(user, profile, year):
-    if user and str(user.wwuid) != str(profile.wwuid) and year == tornado.options.options.current_year:
-        views = mask.people_db.query(mask_model.ProfileView)\
-            .filter_by(viewer=user.username, viewed=profile.username).all()
-        if len(views) == 0:
-            view = mask_model.ProfileView()
-            view.viewer = user.username
-            view.viewed = profile.username
-            view.last_viewed = datetime.datetime.now()
-            view.num_views = 1
-            mask.add_or_update(view)
-        else:
-            for view in views:
-                if (datetime.datetime.now() - view.last_viewed).total_seconds() > 7200:
-                    view.num_views += 1
-                    view.last_viewed = datetime.datetime.now()
-                    mask.add_or_update(view)
 
 
 # this updates profile information - not much to it
@@ -215,18 +191,28 @@ class ProfileUpdateHandler(BaseHandler):
             self.write({'error': 'invalid permissions'})
 
 class UploadProfilePhotoHandler(BaseHandler):
+    @tornado.web.authenticated
     def post(self):
+        # TODO: we should probably convert images to webp or some better format
         try:
-            image_base64 = self.get_argument("image")
-            image_name = self.get_argument("name")
-            image = Image.open(io.BytesIO(base64.b64decode(image_base64))) # https://stackoverflow.com/questions/26070547/decoding-base64-from-post-to-use-in-pil
-            image_path = PENDING_PROFILE_PHOTOS_LOCATION + "/" + image_name
-            image.save(image_path)
-            self.write({'link': image_path})
-        except Exception as e:
-            logger.info(e)
-            raise Exception(e)
-    get = post # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+            data = json.loads(self.request.body)
+            if not data.get('image'):
+                self.set_status(status_code=400)
+                self.write({'error': 'incorrect format'})
+                self.flush()
+            image_base64 = data.get('image')
+            return self.process_image(image_base64)
+        except Exception as error:
+            logger.info(error)
+            raise Exception(error)
+    get = post   # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
+
+    def process_image(self, image):
+        image = Image.open(io.BytesIO(base64.b64decode(image)))
+        image_name = f'{self.current_user.wwuid}_{int(datetime.now(UTC).timestamp() * 1000)}'
+        image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.{image.format.lower()}'
+        image.save(image_path)
+        return image_path
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
@@ -236,7 +222,7 @@ class ListProfilePhotoHandler(BaseHandler):
     def get(self):
         try:
             wwuid = str(self.current_user.wwuid)
-            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/*-' + wwuid + '.*' # SEARCHING WITH DASH
+            glob_pattern = PROFILE_PHOTOS_LOCATION + '/*/' + wwuid + '_*.*' # SEARCHING WITH DASH
             photo_list = glob.glob(glob_pattern)
             photo_list = ['profiles' + photo.replace(PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
@@ -251,10 +237,9 @@ class ListPendingProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         try:
-            wwuid = str(self.current_user.wwuid)
             glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
-            photo_list = ['pending_profiles' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
