@@ -23,9 +23,4 @@ WORKDIR /usr/src
 COPY . /usr/src
 
 
-# Creates a non-root user and adds permission to access the /app folder
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /usr/src
-USER appuser
-
-
 CMD ["/usr/src/.venv/bin/python", "server.py"] 
