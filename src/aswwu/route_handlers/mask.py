@@ -201,7 +201,8 @@ class UploadProfilePhotoHandler(BaseHandler):
                 self.write({'error': 'incorrect format'})
                 self.flush()
             image_base64 = data.get('image')
-            return self.process_image(image_base64)
+            self.process_image(image_base64)
+            self.write({'success': True})
         except Exception as error:
             logger.info(error)
             raise Exception(error)
@@ -212,7 +213,6 @@ class UploadProfilePhotoHandler(BaseHandler):
         image_name = f'{self.current_user.wwuid}_{int(datetime.now(UTC).timestamp() * 1000)}'
         image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.{image.format.lower()}'
         image.save(image_path)
-        return image_path
 
 class ListProfilePhotoHandler(BaseHandler):
     '''

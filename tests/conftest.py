@@ -5,6 +5,7 @@ import threading
 import utils
 import settings
 import os
+from tornado.ioloop import IOLoop
 
 assert os.environ["ENVIRONMENT"] == "pytest" # make sure the pytest environment has been set
 
@@ -25,9 +26,25 @@ def testing_server():
     utils.reset_databases()
     utils.clean_temporary_folder(folder_path=settings.buildMediaPath("profile_pictures"))
 
-    # application must be imported after databases are setup
-    from src.aswwu.application import start_server, stop_server
+    
 
+    # for now, we are manually threading the server until i can figure out the asyncio stuff
     server, event_loop_thread = start_server()
     yield
     stop_server(server, event_loop_thread)
+
+def start_server():
+    # application must be imported after databases are setup
+    from src.aswwu.application import Application
+    application = Application()
+    server = application.listen(tornado.options.options.port)
+    event_loop_thread = threading.Thread(target=IOLoop.current().start)
+    event_loop_thread.daemon = True
+    event_loop_thread.start()
+    print('The Tornado IOLoop thread has started.')
+    return server, event_loop_thread
+
+def stop_server(server, event_loop_thread):
+    server.stop()
+    IOLoop.current().add_callback(IOLoop.current().stop)
+    event_loop_thread.join()

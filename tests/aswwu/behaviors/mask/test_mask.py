@@ -220,7 +220,6 @@ def test_search_profiles(testing_server):
         "photo": DEFAULT_MASK_PHOTO,
         "email": user["email"],
         "full_name": user["full_name"],
-        "views": "0",
     } for user in users[4:9]]
     search_response = mask_requests.get_profile_search(CURRENT_YEAR, dictionary_query={"majors": "physics"})
     assert search_response.status_code == 200
