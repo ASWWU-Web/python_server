@@ -38,7 +38,15 @@ class Config:
     def load(self, location = "./config.toml"):
         if os.path.exists(location) and os.environ['ENVIRONMENT'] != 'pytest':
             with open(location, "rb") as tmpCfg:
-                tomlConfig = tomllib.load(tmpCfg)
+                # if the file doesn't exist, docker will try to mount a directory
+                # so we may encounter empty files to bypass it
+                try:
+                    tomlConfig = tomllib.load(tmpCfg)
+                except:
+                    print("Error loading config file, creating new one...")
+                    self.make()
+                    return
+                # ok so we have a config file, let's load it
                 self.server =            tomlConfig['server']
                 self.database =          tomlConfig['database']
                 self.logging =           tomlConfig['logging']

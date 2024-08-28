@@ -22,9 +22,9 @@ services:
       - EMAIL_PASSWORD
     restart: unless-stopped
     volumes:
-      - ../databases:/usr/databases
-      - ../media:/usr/media
-      - ./config.toml:/usr/src/config.toml
+      - ../databases:/usr/databases:rw,Z
+      - ../media:/usr/media:rw,Z
+      - ./config.toml:/usr/src/config.toml:rw,Z
     networks:
       - proxy
 
