@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import signal
 
 
 import tornado.web
@@ -102,3 +103,4 @@ async def start_server():
 def stop_server(signum, frame):
     logging.getLogger(tornado.options.options.log_name).info("stopping services...")
     shutdown_event.set()
+    exit(0)
