@@ -21,6 +21,8 @@ services:
       - EMAIL_USERNAME
       - EMAIL_PASSWORD
     restart: unless-stopped
+    stdin_open: true
+    tty: true
     volumes:
       - ../databases:/usr/databases:rw,Z
       - ../media:/usr/media:rw,Z
