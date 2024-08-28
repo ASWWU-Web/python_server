@@ -280,3 +280,7 @@ def add_null_view(user, profile):
         view.last_viewed = datetime.datetime.now()
         view.num_views = 0
         mask.add_or_update(view)
+
+class HealthCheckHandler(BaseHandler):
+    def get(self):
+        self.write({'status': 'ok'})

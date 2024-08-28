@@ -20,6 +20,7 @@ class Application(tornado.web.Application):
         (r"/logout", base.BaseLogoutHandler),
         (r"/verify", base.BaseVerifyLoginHandler),
         (r"/roles/(.*)", base.RoleHandler),
+        (r"/healthcheck", base.HealthCheckHandler),
         # mask
         (r"/profile/(.*)/(.*)", mask.ProfileHandler),
         (r"/search/names", mask.SearchNamesFast),
