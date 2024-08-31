@@ -111,7 +111,6 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 if not self.get_cookie("token"):
                     user = None
-                    # TODO (riley): abstract domain property to settings
                     self.set_cookie('token', '', domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, httponly=True, secure=True)
                     logger.error("There was no cookie! You're not logged in!")
                 else:
@@ -192,8 +191,7 @@ class BaseVerifyLoginHandler(BaseHandler):
         # if a user exists, refresh their token for them
         token = self.generate_token(user.wwuid)
         self.write({
-            'user': user.to_json(),
-            'token': token
+            'user': user.to_json()
         })
         # renew the token cookie
         # remove the protocol from the domain

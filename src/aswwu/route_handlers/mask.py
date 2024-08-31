@@ -4,7 +4,8 @@ import logging
 import glob
 import io
 import base64
-from PIL import Image
+import os
+from PIL import Image, ImageOps
 
 import bleach
 import tornado.web
@@ -20,7 +21,9 @@ from settings import config, buildMediaPath
 logger = logging.getLogger(config.logging.get('log_name'))
 PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profile_photos")
+DISMAYED_PROFILE_PHOTOS_LOCATION = buildMediaPath("dismayed_profile_photos")
 CURRENT_YEAR = config.mask.get('current_year')
+MEDIA_LOCATION = buildMediaPath("")
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
@@ -192,7 +195,6 @@ class ProfileUpdateHandler(BaseHandler):
 class UploadProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        # TODO: we should probably convert images to webp or some better format
         try:
             data = json.loads(self.request.body)
             if not data.get('image'):
@@ -208,10 +210,24 @@ class UploadProfilePhotoHandler(BaseHandler):
     get = post   # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
     def process_image(self, image):
+        # make a pillow object from the base64 string
         image = Image.open(io.BytesIO(base64.b64decode(image)))
+        # create the name and path
         image_name = f'{self.current_user.wwuid}_{int(datetime.now(UTC).timestamp() * 1000)}'
-        image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.{image.format.lower()}'
-        image.save(image_path)
+        image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.jpg'
+        # transpose the image
+        image = ImageOps.exif_transpose(image)
+
+        # convert to RGB/JPEG
+        rgb_image = image.convert('RGB')
+        # Save the image, reducing the quality to 75% and optimizing
+        # This is so we have a smaller image size in general.
+        # We can do some further optimizations by implementing an image proxy. But that is for later.
+        rgb_image.save(image_path, quality=75, optimize=True)
+
+        # close the images
+        image.close()
+        rgb_image.close()
 
 class ListProfilePhotoHandler(BaseHandler):
     '''
@@ -239,7 +255,44 @@ class ListPendingProfilePhotoHandler(BaseHandler):
             glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
             photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            print(photo_list)
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
             raise Exception(e)
+
+class ApproveImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})
+
+class DismayImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = DISMAYED_PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})
