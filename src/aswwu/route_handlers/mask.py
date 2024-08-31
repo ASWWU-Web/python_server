@@ -30,10 +30,6 @@ class SearchHandler(BaseHandler):
         server_year = self.application.options.current_year
         if query_year == server_year:
             model = mask_model.Profile
-            # results = alchemy.people_db.query(model)
-
-            # profiles = alchemy.search_all_profiles()
-            # results = {r[0] for r in profiles}
         # otherwise we're going old school with the Archives
         else:
             model = archive_model.get_archive_model(query_year)
@@ -41,23 +37,26 @@ class SearchHandler(BaseHandler):
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]
             for f in fields:
-                if len(f) == 1:
-                    # throw %'s around everything to make the search relative
-                    # e.g. searching for "b" will return anything that has b *somewhere* in it
-                    v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
-                    results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
-                else:
-                    # we want these queries to matche exactly
-                    # e.g. "%male%" would also return "female"
-                    if f[0] in ['gender']:
-                        results = results.filter(getattr(model, f[0]).ilike(f[1]))
-                    else:
-                        attribute_arr = f[1].split(",")
-                        if len(attribute_arr) > 1:
-                            results = results.filter(
-                                or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
+                match len(f):
+                    case 0:
+                        break
+                    case 1:
+                        # throw %'s around everything to make the search relative
+                        # e.g. searching for "b" will return anything that has b *somewhere* in it
+                        v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
+                        results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
+                    case _:
+                        # we want these queries to matche exactly
+                        # e.g. "%male%" would also return "female"
+                        if f[0] in ['gender']:
+                            results = results.filter(getattr(model, f[0]).ilike(f[1]))
                         else:
-                            results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
+                            attribute_arr = f[1].split(",")
+                            if len(attribute_arr) > 1:
+                                results = results.filter(
+                                    or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
+                            else:
+                                results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
             self.write({'results': [r.base_info() for r in results]})
             return
 
