@@ -1,0 +1,20 @@
+# This was inspired by
+# https://dev.to/ricardochaves/python-lint-with-github-actions-2i7p
+
+name: Run Lint
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wemake-services/wemake-python-styleguide@master
+        with:
+          reporter: "github-pr-review"
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}

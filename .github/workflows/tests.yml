@@ -1,4 +1,4 @@
-name: Python application
+name: Run Tests
 
 on: [push]
 
@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12.3
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12.3
       - name: Install dependencies
         run: |
-          bash scripts/pytest_setup.sh
+          bash scripts/setup_ci.sh
       - name: Run Tests
         run: |
           bash scripts/run_pytests.sh
