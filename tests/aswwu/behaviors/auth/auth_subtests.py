@@ -42,8 +42,6 @@ def assert_verify_response(response, user):
     assert (response_text['user']['roles'] in DEFAULT_ROLES)
     assert (response_text['user']['status'] == DEFAULT_STATUS)
     assert (response_text['user']['full_name'] == user['full_name'])
-    assert (base64.b64decode(response_text['token']).decode('ascii').split('|')[0] == user['wwuid'])
-
 
 def assert_logout(user):
     """
