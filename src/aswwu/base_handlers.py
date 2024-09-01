@@ -228,8 +228,6 @@ class BaseVerifyLoginHandler(BaseHandler):
                                    full_name=full_name,
                                    status='Student')
             mask.add_or_update(user)
-            # initial view for the new user
-            add_null_view('null.user', user.username)
         # return the new users token and information
         token = self.generate_token(user.wwuid)
         response = {
@@ -266,18 +264,6 @@ class RoleHandler(BaseHandler):
 def get_last_year():
     year = tornado.options.options.current_year
     return str(int(year[:2]) - 1) + str(int(year[2:4]) - 1)
-
-
-def add_null_view(user, profile):
-    views = mask.people_db.query(mask_model.ProfileView)\
-        .filter_by(viewer=user, viewed=profile).all()
-    if len(views) == 0:
-        view = mask_model.ProfileView()
-        view.viewer = user
-        view.viewed = profile
-        view.last_viewed = datetime.datetime.now()
-        view.num_views = 0
-        mask.add_or_update(view)
 
 class HealthCheckHandler(BaseHandler):
     def get(self):

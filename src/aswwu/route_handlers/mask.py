@@ -63,13 +63,16 @@ class SearchHandler(BaseHandler):
             self.write({'results': [r.base_info() for r in results]})
             return
 
+        
         try:
             search_criteria = {}
             # Put query into JSON form
             temp_query = query.rstrip(";")
             for q in temp_query.split(";"):
                 search_criteria[q.split("=")[0]] = q.split("=")[1]
+            print(search_criteria)
             results = mask.search_profiles(search_criteria)
+
         except:
             search_criteria = query
             # If there's no search parameters
@@ -80,7 +83,7 @@ class SearchHandler(BaseHandler):
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
         keys = ['username', 'full_name', 'photo', 'email']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
+        self.write({'results': [r.to_json(limitList=keys) for r in results]})
 
 
 # get 10 (username, full_name) pairs based on query of fullname
@@ -192,15 +195,17 @@ class ProfileUpdateHandler(BaseHandler):
         else:
             self.write({'error': 'invalid permissions'})
 
+# upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
+        data = json.loads(self.request.body)
+        if not data.get('image'):
+            self.set_status(status_code=400)
+            self.write({'error': 'incorrect format'})
+            self.flush()
+            return
         try:
-            data = json.loads(self.request.body)
-            if not data.get('image'):
-                self.set_status(status_code=400)
-                self.write({'error': 'incorrect format'})
-                self.flush()
             image_base64 = data.get('image')
             self.process_image(image_base64)
             self.write({'success': True})
@@ -229,6 +234,7 @@ class UploadProfilePhotoHandler(BaseHandler):
         image.close()
         rgb_image.close()
 
+# list profile photos
 class ListProfilePhotoHandler(BaseHandler):
     '''
     Return the authenticated user's profile pictures, example: {"photos": ["profiles/1718/12345_1234567.jpg"]}
@@ -245,6 +251,9 @@ class ListProfilePhotoHandler(BaseHandler):
             logger.info(e)
             raise Exception(e)
 
+# -- moderation --
+
+# list pending profile photos
 class ListPendingProfilePhotoHandler(BaseHandler):
     '''
     Return the authenticated user's pending profile pictures, example: {"photos": ["pending_profiles/12345_1234567.jpg"]}
@@ -261,6 +270,7 @@ class ListPendingProfilePhotoHandler(BaseHandler):
             logger.info(e)
             raise Exception(e)
 
+# approve profile photos
 class ApproveImageHandler(BaseHandler):
     def get(self, filename):
         pending_image_name = MEDIA_LOCATION + "/" + filename
@@ -279,6 +289,7 @@ class ApproveImageHandler(BaseHandler):
         photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
         self.write({'photos': photo_list})
 
+# dismay profile photos
 class DismayImageHandler(BaseHandler):
     def get(self, filename):
         pending_image_name = MEDIA_LOCATION + "/" + filename

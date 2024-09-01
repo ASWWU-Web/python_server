@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship, backref
 
 import src.aswwu.models.bases as base
@@ -50,27 +50,23 @@ class Profile(Base):
     favorite_music = Column(String(1000))
     pet_peeves = Column(String(500))
     personality = Column(String(250))
+    # DEPRECATED
     views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
     privacy = Column(Integer)
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))
 
-    def num_views(self):
-        from src.aswwu.alchemy_engines.mask import num_views
-        views = num_views(self.username)
-        return views
-
     # sometimes useful to only get a small amount of information about a user
     # e.g. listing ALL of the profiles in a cache for faster search later
     def base_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'email'])
 
     def impers_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors',
                                        'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author',
                                        'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
-                                       'favorite_music', 'pet_peeves', 'personality', 'views',
+                                       'favorite_music', 'pet_peeves', 'personality',
                                        'privacy', 'department', 'office', 'office_hours'])
 
     def view_other(self):
@@ -78,9 +74,8 @@ class Profile(Base):
                                        'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing',
                                        'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote',
                                        'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
-                                       'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy',
+                                       'favorite_music', 'pet_peeves', 'personality', 'privacy',
                                        'department', 'office', 'office_hours'])
-
 
 class ProfileView(Base):
     __tablename__ = 'profileviews'

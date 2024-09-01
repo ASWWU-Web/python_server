@@ -109,29 +109,9 @@ def search_profiles(search_criteria):
     thing = None
     try:
         search_statement = and_(search_term_generator(search_criteria))
-        thing = people_db.query(mask_model.Profile, label("views", func.sum(mask_model.ProfileView.num_views))). \
-            filter(search_statement). \
-            join(mask_model.Profile.views). \
-            group_by(mask_model.ProfileView.viewed).\
-            order_by(desc("views"))
+        thing = people_db.query(mask_model.Profile).filter(search_statement).all()
     except Exception as e:
-        logger.info(e)
-        people_db.rollback()
-    return thing
-
-
-def num_views(username):
-    thing = None
-    try:
-        thing = people_db.query(label("views", func.sum(mask_model.ProfileView.num_views))). \
-            group_by(mask_model.ProfileView.viewed). \
-            filter(mask_model.ProfileView.viewed == username)
-        try:
-            thing = thing.one().views
-        except Exception:
-            thing = None
-    except Exception as e:
-        logger.info(e)
+        logger.error(e)
         people_db.rollback()
     return thing
 

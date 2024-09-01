@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base
 
 import src.aswwu.models.bases as base
 

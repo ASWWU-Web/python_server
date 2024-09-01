@@ -9,8 +9,6 @@ from tornado.ioloop import IOLoop
 
 assert os.environ["ENVIRONMENT"] == "pytest" # make sure the pytest environment has been set
 
-
-
 tornado.options.define("port", default=settings.config.server.get('port'))
 tornado.options.define("log_name", default=settings.config.logging.get('log_name'))
 tornado.options.define("current_year", default=settings.config.mask.get('current_year'))
@@ -26,8 +24,6 @@ def testing_server():
     utils.reset_databases()
     utils.clean_temporary_folder(folder_path=settings.buildMediaPath("profile_pictures"))
 
-    
-
     # for now, we are manually threading the server until i can figure out the asyncio stuff
     server, event_loop_thread = start_server()
     yield
@@ -38,6 +34,8 @@ def start_server():
     from src.aswwu.application import Application
     application = Application()
     server = application.listen(tornado.options.options.port)
+
+    # TODO: move this to asyncio
     event_loop_thread = threading.Thread(target=IOLoop.current().start)
     event_loop_thread.daemon = True
     event_loop_thread.start()
