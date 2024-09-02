@@ -28,13 +28,11 @@ MEDIA_LOCATION = buildMediaPath("")
 # this is the root of all searches
 class SearchHandler(BaseHandler):
     # accepts a year and a query as parameters
-    def get(self, query_year, query):
+    def get(self, query_year: str, query: str):
         # if searching in the current year, access the Profile model
         server_year = self.application.options.current_year
-        if query_year == server_year:
-            model = mask_model.Profile
-        # otherwise we're going old school with the Archives
-        else:
+        # If the query year is not the current year, we're going old school with the Archives
+        if query_year != server_year:
             model = archive_model.get_archive_model(query_year)
             results = archive.archive_db.query(model)
             # break up the query <-- expected to be a standard URIEncodedComponent
@@ -63,16 +61,13 @@ class SearchHandler(BaseHandler):
             self.write({'results': [r.base_info() for r in results]})
             return
 
-        
         try:
             search_criteria = {}
             # Put query into JSON form
             temp_query = query.rstrip(";")
             for q in temp_query.split(";"):
                 search_criteria[q.split("=")[0]] = q.split("=")[1]
-            print(search_criteria)
             results = mask.search_profiles(search_criteria)
-
         except:
             search_criteria = query
             # If there's no search parameters
@@ -82,11 +77,11 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
-        keys = ['username', 'full_name', 'photo', 'email']
-        self.write({'results': [r.to_json(limitList=keys) for r in results]})
+        # NOTE: Is this really the best way to do this?
+        self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in results]})
 
 
-# get 10 (username, full_name) pairs based on query of fullname
+# get 5 (username, full_name) pairs based on query of fullname
 class SearchNamesFast(BaseHandler):
     def get(self):
         search_criteria = {}
@@ -113,8 +108,9 @@ class SearchAllHandler(BaseHandler):
         if profiles == None:
             self.write({'error': 'no profiles found'})
             return
-        keys = ['username', 'full_name', 'photo', 'email']
-        self.write({'results': [r.to_json(limitList=keys) for r in profiles]})
+        # TODO: why are we filtering after we get the profiles?
+
+        self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in profiles]})
 
 # get user's profile information
 class ProfileHandler(BaseHandler):

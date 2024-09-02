@@ -2,9 +2,8 @@
 
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc, asc, case
+from sqlalchemy import create_engine, func, or_, and_, desc, asc, case, select
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import label
 
 import src.aswwu.models.bases as base
 import src.aswwu.models.mask as mask_model
@@ -53,7 +52,10 @@ def search_all_profiles():
     profiles = None
     try:
         # https://stackoverflow.com/questions/28872013/how-to-order-by-case-descending
-        profiles = people_db.query(mask_model.Profile)\
+            profiles_statement = select(mask_model.Profile.username, 
+                                        mask_model.Profile.full_name, 
+                                        mask_model.Profile.photo, 
+                                        mask_model.Profile.email)\
             .join(mask_model.User, mask_model.Profile.username == mask_model.User.username)\
             .group_by(mask_model.User.username)\
             .order_by(asc(
@@ -64,6 +66,7 @@ def search_all_profiles():
                         (mask_model.Profile.photo == None, 2),
                         (mask_model.Profile.photo == 'images/default_mask/default.jpg', 2)
                     , else_=1)), func.random())
+            profiles = people_db.execute(profiles_statement).all()
 
     except Exception as e:
         logger.info(e)
@@ -108,8 +111,13 @@ def search_term_generator(search_criteria):
 def search_profiles(search_criteria):
     thing = None
     try:
-        search_statement = and_(search_term_generator(search_criteria))
-        thing = people_db.query(mask_model.Profile).filter(search_statement).all()
+        select_statement = select(
+            mask_model.Profile.username, 
+            mask_model.Profile.full_name, 
+            mask_model.Profile.photo, 
+            mask_model.Profile.email
+        ).where(and_(search_term_generator(search_criteria)))
+        thing = people_db.execute(select_statement).all()
     except Exception as e:
         logger.error(e)
         people_db.rollback()
