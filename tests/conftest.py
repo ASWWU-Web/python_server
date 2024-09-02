@@ -33,7 +33,8 @@ def start_server():
     # application must be imported after databases are setup
     from src.aswwu.application import Application
     application = Application()
-    server = application.listen(tornado.options.options.port)
+    # let's choose a port that is unlikely to be in use
+    server = application.listen(port=settings.config.server.get('port'))
 
     # TODO: move this to asyncio
     event_loop_thread = threading.Thread(target=IOLoop.current().start)

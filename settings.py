@@ -61,7 +61,7 @@ class Config:
             self.save()
     def setupTestingConfig(self):
         self.server = {
-            'port': 8888,
+            'port': 4688,
             'base_url': 'http://localhost',
             'temporary_files': './tmp'
         }
