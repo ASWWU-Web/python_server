@@ -5,8 +5,7 @@
 # each year just add another model class and add the year's shorthand (i.e. 1415) to the array at the bottom
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.orm import declarative_base
 
 # define a base model for the Archives
 class ArchiveBase(object):
@@ -34,17 +33,17 @@ class ArchiveBase(object):
         return obj
 
     def base_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'email', 'views'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'email'])
     # TODO: remove email from base_info
 
     def no_info(self):
-        return self.to_json(limitList=['username', 'full_name', 'photo', 'views', 'privacy'])
+        return self.to_json(limitList=['username', 'full_name', 'photo', 'privacy'])
 
     def impers_info(self):
         return self.to_json(limitList=['username', 'full_name', 'photo', 'gender', 'website', 'majors', 'minors',
                                        'graduate', 'preprofessional', 'relationship_status', 'quote', 'quote_author',
                                        'hobbies', 'career_goals', 'favorite_books', 'favorite_movies', 'favorite_music',
-                                       'pet_peeves', 'personality', 'views', 'privacy', 'department', 'office',
+                                       'pet_peeves', 'personality', 'privacy', 'department', 'office',
                                        'office_hours'])
 
     def view_other(self):
@@ -52,7 +51,7 @@ class ArchiveBase(object):
                                        'website', 'majors', 'minors', 'graduate', 'preprofessional', 'class_standing',
                                        'high_school', 'class_of', 'relationship_status', 'attached_to', 'quote',
                                        'quote_author', 'hobbies', 'career_goals', 'favorite_books', 'favorite_movies',
-                                       'favorite_music', 'pet_peeves', 'personality', 'views', 'privacy', 'department',
+                                       'favorite_music', 'pet_peeves', 'personality', 'privacy', 'department',
                                        'office', 'office_hours'])
 
     def export_info(self):
@@ -95,6 +94,7 @@ def set_archive_columns(self):
     self.favorite_music = Column(String(1000))
     self.pet_peeves = Column(String(500))
     self.personality = Column(String(250))
+    # DEPRECATED
     self.views = Column(Integer)
     self.privacy = Column(Integer)
     self.department = Column(String(250))

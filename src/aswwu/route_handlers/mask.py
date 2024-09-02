@@ -4,7 +4,8 @@ import logging
 import glob
 import io
 import base64
-from PIL import Image
+import os
+from PIL import Image, ImageOps
 
 import bleach
 import tornado.web
@@ -20,23 +21,43 @@ from settings import config, buildMediaPath
 logger = logging.getLogger(config.logging.get('log_name'))
 PROFILE_PHOTOS_LOCATION = buildMediaPath("profiles")
 PENDING_PROFILE_PHOTOS_LOCATION = buildMediaPath("pending_profile_photos")
+DISMAYED_PROFILE_PHOTOS_LOCATION = buildMediaPath("dismayed_profile_photos")
 CURRENT_YEAR = config.mask.get('current_year')
+MEDIA_LOCATION = buildMediaPath("")
 
 # this is the root of all searches
 class SearchHandler(BaseHandler):
     # accepts a year and a query as parameters
-    def get(self, query_year, query):
+    def get(self, query_year: str, query: str):
         # if searching in the current year, access the Profile model
         server_year = self.application.options.current_year
-        if query_year == server_year:
-            model = mask_model.Profile
-        # otherwise we're going old school with the Archives
-        else:
+        # If the query year is not the current year, we're going old school with the Archives
+        if query_year != server_year:
             model = archive_model.get_archive_model(query_year)
             results = archive.archive_db.query(model)
             # break up the query <-- expected to be a standard URIEncodedComponent
             fields = [q.split("=") for q in query.split(";")]
             for f in fields:
+                match len(f):
+                    case 0:
+                        break
+                    case 1:
+                        # throw %'s around everything to make the search relative
+                        # e.g. searching for "b" will return anything that has b *somewhere* in it
+                        v = '%' + f[0].replace(' ', '%').replace('.', '%') + '%'
+                        results = results.filter(or_(model.username.ilike(v), model.full_name.ilike(v)))
+                    case _:
+                        # we want these queries to matche exactly
+                        # e.g. "%male%" would also return "female"
+                        if f[0] in ['gender']:
+                            results = results.filter(getattr(model, f[0]).ilike(f[1]))
+                        else:
+                            attribute_arr = f[1].split(",")
+                            if len(attribute_arr) > 1:
+                                results = results.filter(
+                                    or_(getattr(model, f[0]).ilike("%" + v + "%") for v in attribute_arr))
+                            else:
+                                results = results.filter(getattr(model, f[0]).ilike('%' + f[1] + '%'))
                 match len(f):
                     case 0:
                         break
@@ -76,11 +97,11 @@ class SearchHandler(BaseHandler):
             elif len(search_criteria) > 0:
                 search_criteria = {"username": search_criteria.replace(' ', '%').replace('.', '%')}
                 results = mask.search_profiles(search_criteria)
-        keys = ['username', 'full_name', 'photo', 'email']
-        self.write({'results': [r[0].to_json(views=r[1], limitList=keys) for r in results]})
+        # NOTE: Is this really the best way to do this?
+        self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in results]})
 
 
-# get 10 (username, full_name) pairs based on query of fullname
+# get 5 (username, full_name) pairs based on query of fullname
 class SearchNamesFast(BaseHandler):
     def get(self):
         search_criteria = {}
@@ -107,8 +128,9 @@ class SearchAllHandler(BaseHandler):
         if profiles == None:
             self.write({'error': 'no profiles found'})
             return
-        keys = ['username', 'full_name', 'photo', 'email']
-        self.write({'results': [r.to_json(limitList=keys) for r in profiles]})
+        # TODO: why are we filtering after we get the profiles?
+
+        self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in profiles]})
 
 # get user's profile information
 class ProfileHandler(BaseHandler):
@@ -189,16 +211,17 @@ class ProfileUpdateHandler(BaseHandler):
         else:
             self.write({'error': 'invalid permissions'})
 
+# upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        # TODO: we should probably convert images to webp or some better format
+        data = json.loads(self.request.body)
+        if not data.get('image'):
+            self.set_status(status_code=400)
+            self.write({'error': 'incorrect format'})
+            self.flush()
+            return
         try:
-            data = json.loads(self.request.body)
-            if not data.get('image'):
-                self.set_status(status_code=400)
-                self.write({'error': 'incorrect format'})
-                self.flush()
             image_base64 = data.get('image')
             self.process_image(image_base64)
             self.write({'success': True})
@@ -208,11 +231,26 @@ class UploadProfilePhotoHandler(BaseHandler):
     get = post   # https://stackoverflow.com/questions/19006783/tornado-post-405-method-not-allowed
 
     def process_image(self, image):
+        # make a pillow object from the base64 string
         image = Image.open(io.BytesIO(base64.b64decode(image)))
+        # create the name and path
         image_name = f'{self.current_user.wwuid}_{int(datetime.now(UTC).timestamp() * 1000)}'
-        image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.{image.format.lower()}'
-        image.save(image_path)
+        image_path = f'{PENDING_PROFILE_PHOTOS_LOCATION}/{image_name}.jpg'
+        # transpose the image
+        image = ImageOps.exif_transpose(image)
 
+        # convert to RGB/JPEG
+        rgb_image = image.convert('RGB')
+        # Save the image, reducing the quality to 75% and optimizing
+        # This is so we have a smaller image size in general.
+        # We can do some further optimizations by implementing an image proxy. But that is for later.
+        rgb_image.save(image_path, quality=75, optimize=True)
+
+        # close the images
+        image.close()
+        rgb_image.close()
+
+# list profile photos
 class ListProfilePhotoHandler(BaseHandler):
     '''
     Return the authenticated user's profile pictures, example: {"photos": ["profiles/1718/12345_1234567.jpg"]}
@@ -229,6 +267,9 @@ class ListProfilePhotoHandler(BaseHandler):
             logger.info(e)
             raise Exception(e)
 
+# -- moderation --
+
+# list pending profile photos
 class ListPendingProfilePhotoHandler(BaseHandler):
     '''
     Return the authenticated user's pending profile pictures, example: {"photos": ["pending_profiles/12345_1234567.jpg"]}
@@ -239,7 +280,46 @@ class ListPendingProfilePhotoHandler(BaseHandler):
             glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
             photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+            print(photo_list)
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
             raise Exception(e)
+
+# approve profile photos
+class ApproveImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})
+
+# dismay profile photos
+class DismayImageHandler(BaseHandler):
+    def get(self, filename):
+        pending_image_name = MEDIA_LOCATION + "/" + filename
+        glob_results = glob.glob(pending_image_name)
+        if not glob_results:
+            self.write({'error': 'could not find: ' + filename})
+            return
+        destination_directory = DISMAYED_PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        if not os.path.exists(destination_directory):
+            os.mkdir(destination_directory)
+        image_id = filename.split("/")[1]
+        destination_path = destination_directory + "/" + image_id
+        os.rename(pending_image_name, destination_path)
+        glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
+        photo_list = glob.glob(glob_pattern)
+        photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
+        self.write({'photos': photo_list})

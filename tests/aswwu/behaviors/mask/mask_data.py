@@ -43,7 +43,6 @@ BASE_FIELDS = {
     "full_name",
     "photo",
     "username",
-    "views",
 }
 
 # fields that should only be visible to logged out users if the profile's privacy is "1"
