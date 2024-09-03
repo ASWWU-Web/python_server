@@ -128,11 +128,12 @@ def search_profiles(search_criteria):
 def query_by_wwuid(model, wwuid):
     thing = None
     try:
-        thing = people_db.query(model).filter_by(wwuid=str(wwuid)).all()
+        stmt = select(model).filter_by(wwuid=str(wwuid))
+        thing = people_db.execute(stmt).all()
     except Exception as e:
         logger.info(e)
         people_db.rollback()
-    return thing
+    return thing[0]
 
 
 # finds a single user by their username
@@ -140,17 +141,6 @@ def query_by_username(username):
     thing = None
     try:
         thing = people_db.query(mask_model.User).filter_by(username=str(username)).one()
-    except Exception as e:
-        logger.info(e)
-        people_db.rollback()
-    return thing
-
-
-# finds all rows for a given model matching the given ID
-def query_by_id(model, aid):
-    thing = None
-    try:
-        thing = people_db.query(model).filter_by(id=aid).first()
     except Exception as e:
         logger.info(e)
         people_db.rollback()
@@ -172,6 +162,7 @@ def query_by_field(model, field, value):
 def query_user(wwuid):
     thing = query_by_wwuid(mask_model.User, str(wwuid))
     if thing:
+        # get first element of the list and tuple
         thing = thing[0]
     return thing
 

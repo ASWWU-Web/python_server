@@ -9,7 +9,7 @@ from PIL import Image, ImageOps
 
 import bleach
 import tornado.web
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 
 from src.aswwu.base_handlers import BaseHandler
 import src.aswwu.models.mask as mask_model
@@ -137,16 +137,18 @@ class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            stmt = select(mask_model.Profile).filter_by(username=str(username))
+            profile = mask.people_db.execute(stmt).all()
         else:
-            profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            stmt = select(archive_model.get_archive_model(year)).filter_by(username=str(username))
+            profile = archive.archive_db.execute(stmt).all()
         # some quick error checking
-        if len(profile) == 0:
+        if len(profile) == 0 or len(profile[0]) == 0:
             self.write({'error': 'no profile found'})
-        elif len(profile) > 1:
+        elif len(profile) > 1 or len(profile[0]) > 1:
             self.write({'error': 'too many profiles found'})
         else:
-            profile = profile[0]
+            profile = profile[0][0]
             user = self.get_current_user()
             # if the user is logged in and isn't vainly looking at themselves
             # then we assume the searched for user is popular and give them a +1
@@ -166,14 +168,14 @@ class ProfileHandler(BaseHandler):
 class ProfileUpdateHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, username):
-        user = self.current_user
+        user = self.get_current_user()
         data = json.loads(self.request.body)
         if user.username == username or 'administrator' in user.roles:
             if user.username != username:
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))

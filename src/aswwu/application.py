@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from settings import config
 import os
 import signal
 
@@ -11,6 +12,8 @@ from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
     mask, forms, pages, homepage, elections, \
     froala_images as froala
+
+logger = logging.getLogger(config.logging.get('log_name'))
 
 
 class Application(tornado.web.Application):
@@ -82,13 +85,7 @@ class Application(tornado.web.Application):
             "debug": os.environ.get("ENVIRONMENT") == "development"
         }
         self.options = tornado.options.options
-        logger = logging.getLogger(tornado.options.options.log_name)
-        logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler("src/aswwu/"+tornado.options.options.log_name+".log")
-        fh.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("{'timestamp': %(asctime)s, 'loglevel' : %(levelname)s %(message)s }")
-        fh.setFormatter(formatter)
-        logger.addHandler(fh)
+        
         tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(tornado.options.options.port))
 
