@@ -42,15 +42,10 @@ class Base(object):
                 try:
                     if not isinstance(value, six.string_types):
                         value = str(value)
-                    # if the value is None, set it to an empty string
-                    # FIXME: this is a hacky fix
-                    if value is None or value == 'None':
-                        logger.warn("value is None, setting to empty string")
-                        value = ''
                     obj[key] = value
                 # if that doesn't work set the object to 'None' (output of str(None))
                 except Exception as e:
-                    obj[key] = ''
+                    obj[key] = 'None'
                     logger.debug("obj[{}] = {} failed to json encode in to_json. Error message: {}".format(key, value, e))
                     pass
         return obj

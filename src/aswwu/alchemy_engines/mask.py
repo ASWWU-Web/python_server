@@ -126,14 +126,15 @@ def search_profiles(search_criteria):
 
 # finds all rows for a given model matching the given WWUID
 def query_by_wwuid(model, wwuid):
-    thing = None
     try:
         stmt = select(model).filter_by(wwuid=str(wwuid))
         thing = people_db.execute(stmt).all()
+        return thing[0]
     except Exception as e:
         logger.info(e)
         people_db.rollback()
-    return thing[0]
+    return []
+    
 
 
 # finds a single user by their username
@@ -163,7 +164,7 @@ def query_user(wwuid):
     thing = query_by_wwuid(mask_model.User, str(wwuid))
     if thing:
         # get first element of the list and tuple
-        thing = thing[0]
+        return thing[0]
     return thing
 
 
