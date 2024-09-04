@@ -85,7 +85,6 @@ class Application(tornado.web.Application):
             "debug": os.environ.get("ENVIRONMENT") == "development"
         }
         self.options = tornado.options.options
-        
         tornado.web.Application.__init__(self, self.handlers, **settings)
         logger.info("Application started on port " + str(tornado.options.options.port))
 
