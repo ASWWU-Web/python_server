@@ -121,14 +121,10 @@ class SearchNamesFast(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        # cache client side for 24 hours, server side caching in nginx
-        self.add_header('Cache-control', 'max-age=86400')
-        self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
         if profiles == None:
             self.write({'error': 'no profiles found'})
             return
-        # TODO: why are we filtering after we get the profiles?
 
         self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in profiles]})
 
@@ -176,10 +172,11 @@ class ProfileUpdateHandler(BaseHandler):
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
             profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
+            # todo: we should probably do some validation here
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
-            profile.birthday = bleach.clean(data.get('birthday', ''))
+            profile.birthday = self.format_date(bleach.clean(data.get('birthday', '')))
             profile.email = bleach.clean(data.get('email', ''))
             profile.phone = bleach.clean(data.get('phone', ''))
             profile.majors = bleach.clean(data.get('majors', ''))
@@ -212,6 +209,16 @@ class ProfileUpdateHandler(BaseHandler):
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
+
+    # format the date for the frontend. we don't store years.
+    # this may change in the future
+    def format_date(self, input):
+        try:
+            date = datetime.strptime(input, '%Y-%m-%d')
+            date.year = datetime.now().year
+            return date.strftime('%m-%d-%Y')
+        except:
+            return input
 
 # upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):
