@@ -20,6 +20,7 @@ services:
       - SAML_ENDPOINT_KEY
       - EMAIL_USERNAME
       - EMAIL_PASSWORD
+      - AXIOM_TOKEN
     restart: unless-stopped
     stdin_open: true
     tty: true
