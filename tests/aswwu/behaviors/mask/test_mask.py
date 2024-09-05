@@ -39,11 +39,11 @@ def test_search_all(testing_server):
 
 def test_profile_noauth_private(testing_server):
     """
-    If a user's privacy is set to 0, then only base info should be returned to a viewer not logged in.
+    If a user's privacy is set to 1, then only base info should be returned to a viewer not logged in.
     :return:
     """
     viewee = USERS[0]
-    profile_data = build_profile_dict(viewee, {"privacy": "0"})
+    profile_data = build_profile_dict(viewee, {"privacy": "1"})
 
     viewee_session = assert_verify_login(viewee)[1]
     assert_update_profile(viewee, viewee_session, profile_data)
@@ -66,11 +66,11 @@ def test_profile_noauth_private(testing_server):
 
 def test_profile_noauth_public(testing_server):
     """
-    If a user's privacy is set to 1, then impersonal info should be returned to a viewer not logged in.
+    If a user's privacy is set to 0, then impersonal info should be returned to a viewer not logged in.
     :return:
     """
     viewee = USERS[0]
-    profile_data = build_profile_dict(viewee, {"privacy": "1"})
+    profile_data = build_profile_dict(viewee, {"privacy": "0"})
 
     viewee_session = assert_verify_login(viewee)[1]
     assert_update_profile(viewee, viewee_session, profile_data)
@@ -78,14 +78,13 @@ def test_profile_noauth_public(testing_server):
     profile_response = mask_requests.get_profile(CURRENT_YEAR, viewee["username"])
 
     hidden_keys = SELF_FIELDS.union(PERSONAL_FIELDS).union({"email"})
-    expected_profile = build_profile_dict(viewee, {"privacy": "1"}, hidden_keys)
+    expected_profile = build_profile_dict(viewee, {"privacy": "0"}, hidden_keys)
 
     actual_profile = json.loads(profile_response.text)
 
     assert profile_response.status_code == 200
     utils.assert_is_equal_sub_dict(expected_profile, actual_profile)
     utils.assert_does_not_contain_keys(actual_profile, hidden_keys)
-
 
 def test_profile_auth_other(testing_server):
     """
