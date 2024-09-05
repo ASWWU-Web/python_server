@@ -146,8 +146,6 @@ class ProfileHandler(BaseHandler):
         else:
             profile = profile[0][0]
             user = self.get_current_user()
-            # if the user is logged in and isn't vainly looking at themselves
-            # then we assume the searched for user is popular and give them a +1
             if not user:
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
