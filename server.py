@@ -6,14 +6,13 @@ import os
 from tornado.options import define
 import asyncio
 
+
 # environment variables
 from dotenv import load_dotenv
 load_dotenv()
 
 # import settings
 from settings import config
-
-
 
 if __name__ == "__main__":
     # TODO: generate env
@@ -29,6 +28,7 @@ if __name__ == "__main__":
     define("current_year", default=config.mask.get('current_year'), help="current school year")
     tornado.options.parse_command_line()
 
+    
     # setup logger
     logger = logging.getLogger(config.logging.get('log_name'))
     logger.setLevel(config.logging.get('level'))
