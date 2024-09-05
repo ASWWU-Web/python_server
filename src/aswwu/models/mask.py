@@ -52,7 +52,7 @@ class Profile(Base):
     personality = Column(String(250))
     # DEPRECATED
     views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
-    privacy = Column(Integer)
+    privacy = Column(Integer, CheckConstraint('privacy >= 0 AND privacy <= 1'), default=0)
     department = Column(String(250))
     office = Column(String(250))
     office_hours = Column(String(250))

@@ -147,7 +147,12 @@ class ProfileHandler(BaseHandler):
             profile = profile[0][0]
             user = self.get_current_user()
             if not user:
-                if profile.privacy == 1:
+                # this accounts for the archived profiles using the inverse of the privacy setting
+                # Riley: I changed this because of how the UI renders the privacy setting.
+                # additionally I believe it makes more sense for the profile to be private if the value is true
+                if profile.privacy == 0 and year == CURRENT_YEAR:
+                    self.write(profile.impers_info())
+                elif profile.privacy == 1 and year != CURRENT_YEAR:
                     self.write(profile.impers_info())
                 else:
                     self.write(profile.base_info())
