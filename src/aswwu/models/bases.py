@@ -11,7 +11,6 @@ from settings import config
 
 logger = logging.getLogger(config.logging.get('log_name'))
 
-
 # create a UUID generator function
 def uuid_gen():
     return str(uuid.uuid4())

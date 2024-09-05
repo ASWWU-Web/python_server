@@ -9,7 +9,7 @@ from PIL import Image, ImageOps
 
 import bleach
 import tornado.web
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 
 from src.aswwu.base_handlers import BaseHandler
 import src.aswwu.models.mask as mask_model
@@ -121,14 +121,10 @@ class SearchNamesFast(BaseHandler):
 # get all of the profiles in our database
 class SearchAllHandler(BaseHandler):
     def get(self):
-        # cache client side for 24 hours, server side caching in nginx
-        self.add_header('Cache-control', 'max-age=86400')
-        self.add_header('Cache-control', 'public')
         profiles = mask.search_all_profiles()
         if profiles == None:
             self.write({'error': 'no profiles found'})
             return
-        # TODO: why are we filtering after we get the profiles?
 
         self.write({'results': [{'username': r[0], 'full_name': r[1], 'photo': r[2], 'email': r[3]} for r in profiles]})
 
@@ -137,19 +133,19 @@ class ProfileHandler(BaseHandler):
     def get(self, year, username):
         # check if we're looking at the current year or going old school
         if year == tornado.options.options.current_year:
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).all()
+            stmt = select(mask_model.Profile).filter_by(username=str(username))
+            profile = mask.people_db.execute(stmt).all()
         else:
-            profile = archive.archive_db.query(archive_model.get_archive_model(year)).filter_by(username=str(username)).all()
+            stmt = select(archive_model.get_archive_model(year)).filter_by(username=str(username))
+            profile = archive.archive_db.execute(stmt).all()
         # some quick error checking
-        if len(profile) == 0:
+        if len(profile) == 0 or len(profile[0]) == 0:
             self.write({'error': 'no profile found'})
-        elif len(profile) > 1:
+        elif len(profile) > 1 or len(profile[0]) > 1:
             self.write({'error': 'too many profiles found'})
         else:
-            profile = profile[0]
+            profile = profile[0][0]
             user = self.get_current_user()
-            # if the user is logged in and isn't vainly looking at themselves
-            # then we assume the searched for user is popular and give them a +1
             if not user:
                 if profile.privacy == 1:
                     self.write(profile.impers_info())
@@ -166,18 +162,19 @@ class ProfileHandler(BaseHandler):
 class ProfileUpdateHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, username):
-        user = self.current_user
+        user = self.get_current_user()
         data = json.loads(self.request.body)
         if user.username == username or 'administrator' in user.roles:
             if user.username != username:
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = mask.people_db.query(mask_model.Profile).filter_by(username=str(username)).one()
+            profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
+            # todo: we should probably do some validation here
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
-            profile.birthday = bleach.clean(data.get('birthday', ''))
+            profile.birthday = self.format_date(bleach.clean(data.get('birthday', '')))
             profile.email = bleach.clean(data.get('email', ''))
             profile.phone = bleach.clean(data.get('phone', ''))
             profile.majors = bleach.clean(data.get('majors', ''))
@@ -210,6 +207,16 @@ class ProfileUpdateHandler(BaseHandler):
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
+
+    # format the date for the frontend. we don't store years.
+    # this may change in the future
+    def format_date(self, input):
+        try:
+            date = datetime.strptime(input, '%Y-%m-%d')
+            date.year = datetime.now().year
+            return date.strftime('%m-%d-%Y')
+        except:
+            return input
 
 # upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):

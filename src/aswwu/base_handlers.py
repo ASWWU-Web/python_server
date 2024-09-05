@@ -50,6 +50,7 @@ class LoggedInUser:
                     filter_by(wwuid=str(wwuid)).all()
             except:
                 old_profile = []
+
             new_profile = mask_model.Profile(wwuid=str(wwuid), username=user.username, full_name=user.full_name)
             if len(old_profile) == 1:
                 import_profile(new_profile, old_profile[0].export_info())
@@ -166,7 +167,7 @@ class BaseLogoutHandler(BaseHandler):
             self.set_status(401)
             self.write({'error': 'not logged in'})
             return
-        self.clear_cookie("token", domain=f".{config.server.get('base_url')}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
+        self.clear_cookie("token", domain=f".{config.server.get('base_url').split('://')[1]}", expires_days=14, path='/', samesite='Strict', secure=True, httponly=True)
         self.set_status(200)
         self.write({'status': 'logged out'})
 
@@ -227,7 +228,7 @@ class BaseVerifyLoginHandler(BaseHandler):
                                    username=email_address.split('@', 1)[0],
                                    full_name=full_name,
                                    status='Student')
-            mask.add_or_update(user)
+            user = mask.add_or_update(user)
         # return the new users token and information
         token = self.generate_token(user.wwuid)
         response = {
