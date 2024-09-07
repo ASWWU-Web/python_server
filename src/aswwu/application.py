@@ -7,8 +7,9 @@ import signal
 
 import tornado.web
 from tornado.options import options
-from opentelemetry.instrumentation.tornado import TornadoInstrumentor
-from src.aswwu.exporter import tracer
+if os.environ.get("ENVIRONMENT") in ["production", "staging"]:
+    from opentelemetry.instrumentation.tornado import TornadoInstrumentor
+    from src.aswwu.exporter import tracer
 
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \

@@ -175,7 +175,8 @@ class ProfileUpdateHandler(BaseHandler):
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
             profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
-            # todo: we should probably do some validation here
+            # todo: we should probably do some validation here. look into pydantic
+            # TODO: bleach is deprecated, we should probably move to NH3 or something
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
