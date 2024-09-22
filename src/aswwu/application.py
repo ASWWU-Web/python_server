@@ -7,9 +7,6 @@ import signal
 
 import tornado.web
 from tornado.options import options
-if os.environ.get("ENVIRONMENT") in ["production", "staging"]:
-    from opentelemetry.instrumentation.tornado import TornadoInstrumentor
-    from src.aswwu.exporter import tracer
 
 from src.aswwu import base_handlers as base
 from src.aswwu.route_handlers import \
@@ -18,8 +15,10 @@ from src.aswwu.route_handlers import \
 
 logger = logging.getLogger(config.logging.get('log_name'))
 
-
-TornadoInstrumentor().instrument()
+if os.environ.get("ENVIRONMENT") in ["production", "staging"]:
+    from opentelemetry.instrumentation.tornado import TornadoInstrumentor
+    from src.aswwu.exporter import tracer
+    TornadoInstrumentor().instrument()
 
 class Application(tornado.web.Application):
     handlers = [
