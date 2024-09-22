@@ -220,7 +220,6 @@ class ProfileUpdateHandler(BaseHandler):
     def format_date(self, input):
         try:
             date = datetime.strptime(input, '%Y-%m-%d')
-            date.year = datetime.now().year
             return date.strftime('%m-%d-%Y')
         except:
             return input
