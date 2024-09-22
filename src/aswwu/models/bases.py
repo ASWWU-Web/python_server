@@ -6,7 +6,6 @@ import uuid
 import six
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base
-
 from settings import config
 
 logger = logging.getLogger(config.logging.get('log_name'))

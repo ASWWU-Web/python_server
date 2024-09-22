@@ -204,6 +204,7 @@ class ProfileUpdateHandler(BaseHandler):
             profile.personality = bleach.clean(data.get('personality', ''))
             profile.privacy = bleach.clean(data.get('privacy', ''))
             profile.website = bleach.clean(data.get('website', ''))
+            # allow faculty to update department and office
             if user.status != "Student":
                 profile.department = bleach.clean(data.get('department', ''))
                 profile.office = bleach.clean(data.get('office', ''))
