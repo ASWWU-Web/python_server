@@ -11,9 +11,9 @@ from settings import config
 
 
 Base = base.Base
-ElectionBase = base.ElectionBase
-PagesBase = base.PagesBase
-JobsBase = base.JobsBase
+# ElectionBase = base.ElectionBase
+# PagesBase = base.PagesBase
+# JobsBase = base.JobsBase
 
 logger = logging.getLogger(config.logging.get('log_name'))
 
