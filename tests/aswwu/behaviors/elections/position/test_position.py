@@ -4,7 +4,10 @@ import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 from tests.aswwu.data.positions import POSITIONS
 import json
 from tests.conftest import testing_server
+import pytest
 
+
+pytestmark = pytest.mark.skip("code paths have been deprecated")
 
 def test_post_position(testing_server):
     session = election_utils.create_elections_admin()[1]
