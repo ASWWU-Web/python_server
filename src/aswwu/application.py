@@ -2,16 +2,11 @@ import asyncio
 import logging
 from settings import config
 import os
-import signal
-
-
 import tornado.web
 from tornado.options import options
 
 from src.aswwu import base_handlers as base
-from src.aswwu.route_handlers import \
-    mask, forms, pages, homepage, elections, \
-    froala_images as froala
+from src.aswwu.route_handlers import mask
 
 logger = logging.getLogger(config.logging.get('log_name'))
 
@@ -39,47 +34,48 @@ class Application(tornado.web.Application):
         (r"/update/dismay_photo/(.*)", mask.DismayImageHandler),
         (r"/update/upload_photo", mask.UploadProfilePhotoHandler),
         (r"/update/(.*)", mask.ProfileUpdateHandler),
-        # jobs
-        (r"/forms/job/new", forms.NewFormHandler),
-        (r"/forms/job/view/(.*)", forms.ViewFormHandler),
-        (r"/forms/job/delete", forms.DeleteFormHandler),
-        (r"/forms/job/edit/(.*)", forms.EditFormHandler),
-        (r"/forms/application/submit", forms.SubmitApplicationHandler),
-        (r"/forms/application/view/(.*)/(.*)", forms.ViewApplicationHandler),
-        (r"/forms/application/status", forms.ApplicationStatusHandler),
-        (r"/forms/resume/upload", forms.ResumeUploadHandler),
-        (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
-        # pages
-        (r"/pages", pages.GetAllHandler),
-        (r"/pages/search", pages.SearchHandler),
-        (r"/pages/categories", pages.CategoryHandler),
-        (r"/pages/departments", pages.DepartmentHandler),
-        (r"/pages/featureds", pages.FeaturedsHandler),
-        (r"/pages/featureds/(.*)", pages.AdminFeaturedsHandler),
-        (r"/pages/tags", pages.TagsHandler),
-        (r"/pages/admin", pages.AdminAllHandler),
-        (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
-        (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
-        (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
-        (r"/pages/media/upload_image", froala.UploadHandler),
-        (r"/pages/media/load_images", froala.LoadAllHandler),
-        (r"/pages/media/static/(.*)", froala.LoadImageHandler),
-        (r"/pages/(.*)", pages.GetHandler),
-        # homepage
-        (r"/homepage/open_forum", homepage.OpenForumHandler),
-        # elections
-        (r"/elections/vote", elections.VoteHandler),
-        (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
-        (r"/elections/election/(.*)/ballot", elections.BallotHandler),
-        (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler),
-        (r"/elections/election/(.*)/candidate", elections.CandidateHandler),
-        (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler),
-        (r"/elections/position", elections.PositionHandler),
-        (r"/elections/position/(.*)", elections.SpecifiedPositionHandler),
-        (r"/elections/election", elections.ElectionHandler),
-        (r"/elections/election/(.*)/count", elections.VoteCountHandler),
-        (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
-        (r"/elections/current", elections.CurrentHandler),
+        # TODO: remove these routes as they are deprecated
+        # # jobs
+        # (r"/forms/job/new", forms.NewFormHandler),
+        # (r"/forms/job/view/(.*)", forms.ViewFormHandler),
+        # (r"/forms/job/delete", forms.DeleteFormHandler),
+        # (r"/forms/job/edit/(.*)", forms.EditFormHandler),
+        # (r"/forms/application/submit", forms.SubmitApplicationHandler),
+        # (r"/forms/application/view/(.*)/(.*)", forms.ViewApplicationHandler),
+        # (r"/forms/application/status", forms.ApplicationStatusHandler),
+        # (r"/forms/resume/upload", forms.ResumeUploadHandler),
+        # (r"/forms/resume/download/(.*)/(.*)", forms.ViewResumeHandler),
+        # # pages
+        # (r"/pages", pages.GetAllHandler),
+        # (r"/pages/search", pages.SearchHandler),
+        # (r"/pages/categories", pages.CategoryHandler),
+        # (r"/pages/departments", pages.DepartmentHandler),
+        # (r"/pages/featureds", pages.FeaturedsHandler),
+        # (r"/pages/featureds/(.*)", pages.AdminFeaturedsHandler),
+        # (r"/pages/tags", pages.TagsHandler),
+        # (r"/pages/admin", pages.AdminAllHandler),
+        # (r"/pages/admin/(.*)/revision", pages.GetAllRevisionsHandler),
+        # (r"/pages/admin/(.*)/revision/(.*)", pages.SpecificRevisionHandler),
+        # (r"/pages/admin/(.*)", pages.AdminSpecificPageHandler),
+        # (r"/pages/media/upload_image", froala.UploadHandler),
+        # (r"/pages/media/load_images", froala.LoadAllHandler),
+        # (r"/pages/media/static/(.*)", froala.LoadImageHandler),
+        # (r"/pages/(.*)", pages.GetHandler),
+        # # homepage
+        # (r"/homepage/open_forum", homepage.OpenForumHandler),
+        # # elections
+        # (r"/elections/vote", elections.VoteHandler),
+        # (r"/elections/vote/(.*)", elections.SpecificVoteHandler),
+        # (r"/elections/election/(.*)/ballot", elections.BallotHandler),
+        # (r"/elections/election/(.*)/ballot/(.*)", elections.SpecifiedBallotHandler),
+        # (r"/elections/election/(.*)/candidate", elections.CandidateHandler),
+        # (r"/elections/election/(.*)/candidate/(.*)", elections.SpecifiedCandidateHandler),
+        # (r"/elections/position", elections.PositionHandler),
+        # (r"/elections/position/(.*)", elections.SpecifiedPositionHandler),
+        # (r"/elections/election", elections.ElectionHandler),
+        # (r"/elections/election/(.*)/count", elections.VoteCountHandler),
+        # (r"/elections/election/(.*)", elections.SpecifiedElectionHandler),
+        # (r"/elections/current", elections.CurrentHandler),
     ]
 
     def __init__(self):
