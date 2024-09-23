@@ -1,61 +1,65 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint
-from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import Mapped, mapped_column
 
-import src.aswwu.models.bases as base
-
-Base = declarative_base(cls=base.Base)
-
+from src.aswwu.models.bases import Base
 
 # you guessed it, our generic User model
 class User(Base):
     __tablename__ = 'users'
 
-    wwuid = Column(String(7), unique=True)
-    username = Column(String(250), nullable=False)
-    full_name = Column(String(250))
-    status = Column(String(250))
-    roles = Column(String(500))
+    wwuid: Mapped[str] = mapped_column(String(7), unique=True)
+    username: Mapped[str] = mapped_column(String(250), nullable=False)
+    full_name: Mapped[str] = mapped_column(String(250))
+    status: Mapped[str] = mapped_column(String(250))
+    roles: Mapped[str] = mapped_column(String(500))
 
+class ProfileView(Base):
+    __tablename__ = 'profileviews'
+
+    viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
+    viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
+    last_viewed = Column(DateTime)
+    num_views = Column(Integer, default=0, index=True)
 
 # table for profile data
 class Profile(Base):
     __tablename__ = 'profiles'
 
-    wwuid = Column(String(7), ForeignKey('users.wwuid'), nullable=False)
-    username = Column(String(250), CheckConstraint('LENGTH(username) < 250'))
-    full_name = Column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
-    photo = Column(String(250))
-    gender = Column(String(250))
-    birthday = Column(String(250))
-    email = Column(String(250), CheckConstraint('LENGTH(email) < 250'))
-    phone = Column(String(250), CheckConstraint('LENGTH(phone) < 250'))
-    website = Column(String(250))
-    majors = Column(String(500))
-    minors = Column(String(500))
-    graduate = Column(String(250))
-    preprofessional = Column(String(250))
-    class_standing = Column(String(250))
-    high_school = Column(String(250))
-    class_of = Column(String(250))
-    relationship_status = Column(String(250))
-    attached_to = Column(String(250))
-    quote = Column(String(1000))
-    quote_author = Column(String(250))
-    hobbies = Column(String(500))
-    career_goals = Column(String(1000))
-    favorite_books = Column(String(1000))
-    favorite_food = Column(String(1000))
-    favorite_movies = Column(String(1000))
-    favorite_music = Column(String(1000))
-    pet_peeves = Column(String(500))
-    personality = Column(String(250))
+    wwuid: Mapped[str] = mapped_column(String(7), ForeignKey('users.wwuid'), nullable=False)
+    username: Mapped[str] = mapped_column(String(250), CheckConstraint('LENGTH(username) < 250'))
+    full_name: Mapped[str] = mapped_column(String(250), CheckConstraint('LENGTH(full_name) < 250'))
+    photo: Mapped[str] = mapped_column(String(250), default='assets/mask/default.jpg')
+    gender: Mapped[str] = mapped_column(String(250), default='')
+    birthday: Mapped[str] = mapped_column(String(250), default='')
+    email: Mapped[str] = mapped_column(String(250), CheckConstraint('LENGTH(email) < 250'), default='')
+    phone: Mapped[str] = mapped_column(String(250), CheckConstraint('LENGTH(phone) < 250'), default='')
+    website: Mapped[str] = mapped_column(String(250), default='')
+    majors: Mapped[str] = mapped_column(String(500), default='')
+    minors: Mapped[str] = mapped_column(String(500), default='')
+    graduate: Mapped[str] = mapped_column(String(250), default='')
+    preprofessional: Mapped[str] = mapped_column(String(250), default='')
+    class_standing: Mapped[str] = mapped_column(String(250), default='')
+    high_school: Mapped[str] = mapped_column(String(250), default='')
+    class_of: Mapped[str] = mapped_column(String(250), default='')
+    relationship_status: Mapped[str] = mapped_column(String(250), default='')
+    attached_to: Mapped[str] = mapped_column(String(250), default='')
+    quote: Mapped[str] = mapped_column(String(1000), default='')
+    quote_author: Mapped[str] = mapped_column(String(250), default='')
+    hobbies: Mapped[str] = mapped_column(String(500), default='')
+    career_goals: Mapped[str] = mapped_column(String(1000), default='')
+    favorite_books: Mapped[str] = mapped_column(String(1000), default='')
+    favorite_food: Mapped[str] = mapped_column(String(1000), default='')
+    favorite_movies: Mapped[str] = mapped_column(String(1000), default='')
+    favorite_music: Mapped[str] = mapped_column(String(1000), default='')
+    pet_peeves: Mapped[str] = mapped_column(String(500), default='')
+    personality: Mapped[str] = mapped_column(String(250), default='')
     # DEPRECATED
     views = relationship("ProfileView", backref=backref("profile", uselist=False), lazy="dynamic")
-    privacy = Column(Integer, CheckConstraint('privacy >= 0 AND privacy <= 1'), default=0)
-    department = Column(String(250))
-    office = Column(String(250))
-    office_hours = Column(String(250))
+    privacy: Mapped[int] = mapped_column(Integer, CheckConstraint('privacy >= 0 AND privacy <= 1'), default=0)
+    department: Mapped[str] = mapped_column(String(250))
+    office: Mapped[str] = mapped_column(String(250))
+    office_hours: Mapped[str] = mapped_column(String(250))
 
     # sometimes useful to only get a small amount of information about a user
     # e.g. listing ALL of the profiles in a cache for faster search later
@@ -77,10 +81,5 @@ class Profile(Base):
                                        'favorite_music', 'pet_peeves', 'personality', 'privacy',
                                        'department', 'office', 'office_hours'])
 
-class ProfileView(Base):
-    __tablename__ = 'profileviews'
+    
 
-    viewer = Column(String(75), ForeignKey('users.username'), nullable=False)
-    viewed = Column(String(75), ForeignKey('profiles.username'), nullable=False)
-    last_viewed = Column(DateTime)
-    num_views = Column(Integer, default=0, index=True)

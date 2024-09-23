@@ -180,7 +180,7 @@ class ProfileUpdateHandler(BaseHandler):
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
-            profile.birthday = self.format_date(bleach.clean(data.get('birthday', '')))
+            profile.birthday = bleach.clean(data.get('birthday', ''))
             profile.email = bleach.clean(data.get('email', ''))
             profile.phone = bleach.clean(data.get('phone', ''))
             profile.majors = bleach.clean(data.get('majors', ''))
@@ -214,15 +214,6 @@ class ProfileUpdateHandler(BaseHandler):
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
-
-    # format the date for the frontend. we don't store years.
-    # this may change in the future
-    def format_date(self, input):
-        try:
-            date = datetime.strptime(input, '%Y-%m-%d')
-            return date.strftime('%m-%d-%Y')
-        except:
-            return input
 
 # upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):

@@ -5,7 +5,8 @@ import uuid
 
 import six
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase, declarative_base
+from sqlalchemy.orm import Mapped, mapped_column
 from settings import config
 
 logger = logging.getLogger(config.logging.get('log_name'))
@@ -16,11 +17,11 @@ def uuid_gen():
 
 
 # define a base model for all other models
-class Base(object):
+class Base(DeclarativeBase):
     # every model should also have an ID as a primary key
     # as well as a column indicated when the data was last updated
-    id = Column(String(50), primary_key=True, default=uuid_gen)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.now, default=datetime.datetime.now)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True, default=uuid_gen)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, onupdate=datetime.datetime.now, default=datetime.datetime.now)
 
     # a useful function is being able to call `model.to_json()` and getting valid JSON to send to the user
     def to_json(self, **kwargs):
@@ -50,7 +51,6 @@ class Base(object):
         return obj
 
 
-Base = declarative_base(cls=Base)
 
 
 class ElectionBase(object):
