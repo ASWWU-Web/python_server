@@ -6,6 +6,7 @@ import io
 import base64
 import os
 from PIL import Image, ImageOps
+import re
 
 import bleach
 import tornado.web
@@ -180,7 +181,7 @@ class ProfileUpdateHandler(BaseHandler):
             profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
-            profile.birthday = self.format_date(bleach.clean(data.get('birthday', '')))
+            profile.birthday = bleach.clean(data.get('birthday', ''))
             profile.email = bleach.clean(data.get('email', ''))
             profile.phone = bleach.clean(data.get('phone', ''))
             profile.majors = bleach.clean(data.get('majors', ''))
@@ -203,7 +204,17 @@ class ProfileUpdateHandler(BaseHandler):
             profile.pet_peeves = bleach.clean(data.get('pet_peeves', ''))
             profile.personality = bleach.clean(data.get('personality', ''))
             profile.privacy = bleach.clean(data.get('privacy', ''))
-            profile.website = bleach.clean(data.get('website', ''))
+
+
+            website = bleach.clean(data.get('website', ''))
+            website_regex = re.match("^[a-zA-Z_](?!.*?\.{2})[\w.]{1,28}[\w]$", website)
+            if website_regex.group(0) != website:
+                logger.info(f"website {website} is not valid")
+                self.write({'error': 'handle is not valid'})
+            else:
+                profile.website = website
+
+            # allow faculty to update department and office
             if user.status != "Student":
                 profile.department = bleach.clean(data.get('department', ''))
                 profile.office = bleach.clean(data.get('office', ''))
@@ -213,16 +224,6 @@ class ProfileUpdateHandler(BaseHandler):
             self.write(json.dumps('success'))
         else:
             self.write({'error': 'invalid permissions'})
-
-    # format the date for the frontend. we don't store years.
-    # this may change in the future
-    def format_date(self, input):
-        try:
-            date = datetime.strptime(input, '%Y-%m-%d')
-            date.year = datetime.now().year
-            return date.strftime('%m-%d-%Y')
-        except:
-            return input
 
 # upload profile photos
 class UploadProfilePhotoHandler(BaseHandler):
@@ -293,7 +294,6 @@ class ListPendingProfilePhotoHandler(BaseHandler):
             glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
             photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
-            print(photo_list)
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
@@ -301,18 +301,34 @@ class ListPendingProfilePhotoHandler(BaseHandler):
 
 # approve profile photos
 class ApproveImageHandler(BaseHandler):
-    def get(self, filename):
+    @tornado.web.authenticated
+    def get(self, filename: str):
+        current_user = self.get_current_user()
+        if not current_user.has_elevated_privileges():
+            self.write({'error': 'insufficient privileges'})
+            return
+        
         pending_image_name = MEDIA_LOCATION + "/" + filename
         glob_results = glob.glob(pending_image_name)
         if not glob_results:
             self.write({'error': 'could not find: ' + filename})
             return
         destination_directory = PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        # create the destination directory if it doesn't existf
         if not os.path.exists(destination_directory):
             os.mkdir(destination_directory)
         image_id = filename.split("/")[1]
         destination_path = destination_directory + "/" + image_id
         os.rename(pending_image_name, destination_path)
+        # set the users photo to the new image
+        profile = mask.query_by_wwuid(mask_model.Profile, image_id.split("_")[0])[0]
+        if profile:
+            profile.photo = "profiles/" + CURRENT_YEAR + "/" + image_id
+            mask.add_or_update(profile)
+        else:
+            logger.info("[ApprovedImageHandler] user not found")
+
+        # get the new list of pending photos
         glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
         photo_list = glob.glob(glob_pattern)
         photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
@@ -320,7 +336,12 @@ class ApproveImageHandler(BaseHandler):
 
 # dismay profile photos
 class DismayImageHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, filename):
+        if not self.current_user.has_elevated_privileges():
+            self.write({'error': 'insufficient privileges'})
+            return
+        
         pending_image_name = MEDIA_LOCATION + "/" + filename
         glob_results = glob.glob(pending_image_name)
         if not glob_results:

@@ -3,6 +3,10 @@ import tests.aswwu.behaviors.elections.candidate.candidate_utils as candidate_ut
 import tests.aswwu.behaviors.elections.election.election_utils as election_utils
 import json
 from tests.conftest import testing_server
+import pytest
+
+
+pytestmark = pytest.mark.skip("code paths have been deprecated")
 
 
 def test_post_candidate(testing_server):

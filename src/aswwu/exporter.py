@@ -9,18 +9,19 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 
 # Define the service name resource
 resource = Resource(attributes={
-    SERVICE_NAME: f"python_server_{os.environ.get('ENVIRONMENT')}"  # Replace with your actual service name
+    SERVICE_NAME: f"python_server_{os.environ.get('ENVIRONMENT')}"  
 })
 
 # Create a TracerProvider with the defined resource
 provider = TracerProvider(resource=resource)
 
 # Configure the OTLP/HTTP Span Exporter with necessary headers and endpoint
+# This is currently configured to send to Axiom's API. But we can eventually change this to our own endpoint
 otlp_exporter = OTLPSpanExporter(
     endpoint="https://api.axiom.co/v1/traces",
     headers={
         "Authorization": f"Bearer {os.environ.get('AXIOM_TOKEN')}",
-        "X-Axiom-Dataset": "python_server"    # Replace with your dataset name
+        "X-Axiom-Dataset": "python_server" 
     }
 )
 

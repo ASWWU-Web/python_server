@@ -26,6 +26,8 @@ env = os.environ['ENVIRONMENT']
 HMAC_KEY = os.environ['HMAC_KEY']
 SAML_ENDPOINT_KEY = os.environ['SAML_ENDPOINT_KEY']
 
+ELEVATED_PRIVILEGES = ['administrator', 'content-moderator']
+
 
 # model used only in this file
 # acts as an extension of the User and Profile models
@@ -69,6 +71,10 @@ class LoggedInUser:
     def to_json(self):
         return {'wwuid': str(self.wwuid), 'username': self.username, 'full_name': self.full_name,
                 'photo': self.photo, 'roles': ','.join(self.roles), 'status': self.status}
+    def has_elevated_privileges(self):
+        if set(self.roles).intersection(set(ELEVATED_PRIVILEGES)):
+            return True
+        return False
 
 
 # this is the root/base handler for all other handlers

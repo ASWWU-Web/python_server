@@ -13,6 +13,11 @@ import json
 import time
 from tests.conftest import testing_server
 
+import pytest
+
+
+pytestmark = pytest.mark.skip("code paths have been deprecated")
+
 
 def test_post_vote(testing_server):
     admin_session = election_utils.create_elections_admin()[1]
