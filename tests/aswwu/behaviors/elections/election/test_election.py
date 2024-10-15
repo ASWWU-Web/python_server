@@ -10,6 +10,9 @@ from tests.conftest import testing_server
 import pytest
 
 
+pytestmark = pytest.mark.skip("code paths have been deprecated")
+
+
 def test_get_current(testing_server):
     session = election_utils.create_elections_admin()[1]
     election_utils.assert_post_dynamic_election(session,

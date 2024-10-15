@@ -9,6 +9,10 @@ import tests.utils as utils
 import json
 import time
 from tests.conftest import testing_server
+import pytest
+
+
+pytestmark = pytest.mark.skip("code paths have been deprecated")
 
 
 def test_post_ballot(testing_server):

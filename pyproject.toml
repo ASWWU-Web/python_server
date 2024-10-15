@@ -5,3 +5,4 @@ pythonpath = ["src", "tests"]
 ENVIRONMENT = "pytest"
 HMAC_KEY = "secret_key"
 SAML_ENDPOINT_KEY = "secret_key"
+
