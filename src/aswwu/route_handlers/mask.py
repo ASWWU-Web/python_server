@@ -6,6 +6,7 @@ import io
 import base64
 import os
 from PIL import Image, ImageOps
+import re
 
 import bleach
 import tornado.web
@@ -203,7 +204,16 @@ class ProfileUpdateHandler(BaseHandler):
             profile.pet_peeves = bleach.clean(data.get('pet_peeves', ''))
             profile.personality = bleach.clean(data.get('personality', ''))
             profile.privacy = bleach.clean(data.get('privacy', ''))
-            profile.website = bleach.clean(data.get('website', ''))
+
+
+            website = bleach.clean(data.get('website', ''))
+            website_regex = re.match("^[a-zA-Z_](?!.*?\.{2})[\w.]{1,28}[\w]$", website)
+            if website_regex.group(0) != website:
+                logger.info(f"website {website} is not valid")
+                self.write({'error': 'handle is not valid'})
+            else:
+                profile.website = website
+
             # allow faculty to update department and office
             if user.status != "Student":
                 profile.department = bleach.clean(data.get('department', ''))
