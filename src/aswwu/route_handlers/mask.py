@@ -175,10 +175,15 @@ class ProfileUpdateHandler(BaseHandler):
                 f = open('adminLog', 'w')
                 f.write(user.username + " is updating the profile of " + username + "\n")
                 f.close()
-            profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
-            # todo: we should probably do some validation here. look into pydantic
+            profile: mask_model.Profile = mask.query_by_wwuid(mask_model.Profile, user.wwuid)[0]
+            
+            if not profile:
+                self.set_status(404)
+                self.write({"error": "user not found"})
+                return
+            
+            # TODO: we should probably do some validation here. look into pydantic
             # TODO: bleach is deprecated, we should probably move to NH3 or something
-            profile.full_name = bleach.clean(data.get('full_name'))
             profile.photo = bleach.clean(data.get('photo', ''))
             profile.gender = bleach.clean(data.get('gender', ''))
             profile.birthday = bleach.clean(data.get('birthday', ''))
@@ -205,6 +210,11 @@ class ProfileUpdateHandler(BaseHandler):
             profile.personality = bleach.clean(data.get('personality', ''))
             profile.privacy = bleach.clean(data.get('privacy', ''))
 
+            name = bleach.clean(data.get('full_name', ''))
+            if profile.full_name != name:
+                self.set_status(400)
+                self.write({"error": "the ability to change your full name has been disabled"})
+                return
 
             website = bleach.clean(data.get('website', ''))
             website_regex = re.match(r"^[a-zA-Z_](?!.*?\.{2})[\w.]{1,28}[\w]$", website)

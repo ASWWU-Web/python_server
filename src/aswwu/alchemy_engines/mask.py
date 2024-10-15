@@ -1,6 +1,7 @@
 # mask.py
 
 import logging
+from typing import TypeVar
 
 from sqlalchemy import create_engine, func, or_, and_, asc, case, select
 from sqlalchemy.orm import sessionmaker
@@ -123,9 +124,8 @@ def search_profiles(search_criteria):
         people_db.rollback()
     return thing
 
-
 # finds all rows for a given model matching the given WWUID
-def query_by_wwuid(model, wwuid):
+def query_by_wwuid(model, wwuid: str):
     try:
         stmt = select(model).filter_by(wwuid=str(wwuid))
         thing = people_db.execute(stmt).all()
@@ -133,7 +133,7 @@ def query_by_wwuid(model, wwuid):
     except Exception as e:
         logger.info(e)
         people_db.rollback()
-    return []
+    return [] 
     
 
 
