@@ -208,9 +208,11 @@ class ProfileUpdateHandler(BaseHandler):
 
             website = bleach.clean(data.get('website', ''))
             website_regex = re.match(r"^[a-zA-Z_](?!.*?\.{2})[\w.]{1,28}[\w]$", website)
-            if website_regex.group(0) != website:
-                logger.info(f"website {website} is not valid")
-                self.write({'error': 'handle is not valid'})
+            if website_regex is None:
+                logger.error(f"website {website} is not valid")
+                self.set_status(400)
+                self.write({"error": "handle is invalid"})
+                return
             else:
                 profile.website = website
 
