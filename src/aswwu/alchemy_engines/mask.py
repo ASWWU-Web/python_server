@@ -2,7 +2,7 @@
 
 import logging
 
-from sqlalchemy import create_engine, func, or_, and_, desc, asc, case, select
+from sqlalchemy import create_engine, func, or_, and_, asc, case, select
 from sqlalchemy.orm import sessionmaker
 
 import src.aswwu.models.bases as base

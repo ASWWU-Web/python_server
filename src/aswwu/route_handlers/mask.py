@@ -284,7 +284,6 @@ class ListPendingProfilePhotoHandler(BaseHandler):
             glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*'
             photo_list = glob.glob(glob_pattern)
             photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
-            print(photo_list)
             self.write({'photos': photo_list})
         except Exception as e:
             logger.info(e)
@@ -292,18 +291,34 @@ class ListPendingProfilePhotoHandler(BaseHandler):
 
 # approve profile photos
 class ApproveImageHandler(BaseHandler):
-    def get(self, filename):
+    @tornado.web.authenticated
+    def get(self, filename: str):
+        current_user = self.get_current_user()
+        if not current_user.has_elevated_privileges():
+            self.write({'error': 'insufficient privileges'})
+            return
+        
         pending_image_name = MEDIA_LOCATION + "/" + filename
         glob_results = glob.glob(pending_image_name)
         if not glob_results:
             self.write({'error': 'could not find: ' + filename})
             return
         destination_directory = PROFILE_PHOTOS_LOCATION + "/" + CURRENT_YEAR
+        # create the destination directory if it doesn't existf
         if not os.path.exists(destination_directory):
             os.mkdir(destination_directory)
         image_id = filename.split("/")[1]
         destination_path = destination_directory + "/" + image_id
         os.rename(pending_image_name, destination_path)
+        # set the users photo to the new image
+        profile = mask.query_by_wwuid(mask_model.Profile, image_id.split("_")[0])[0]
+        if profile:
+            profile.photo = "profiles/" + CURRENT_YEAR + "/" + image_id
+            mask.add_or_update(profile)
+        else:
+            logger.info("[ApprovedImageHandler] user not found")
+
+        # get the new list of pending photos
         glob_pattern = PENDING_PROFILE_PHOTOS_LOCATION + '/*.*' # SEARCHING WITH DASH
         photo_list = glob.glob(glob_pattern)
         photo_list = ['pending_profile_photos' + photo.replace(PENDING_PROFILE_PHOTOS_LOCATION, '') for photo in photo_list]
@@ -311,7 +326,12 @@ class ApproveImageHandler(BaseHandler):
 
 # dismay profile photos
 class DismayImageHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, filename):
+        if not self.current_user.has_elevated_privileges():
+            self.write({'error': 'insufficient privileges'})
+            return
+        
         pending_image_name = MEDIA_LOCATION + "/" + filename
         glob_results = glob.glob(pending_image_name)
         if not glob_results:
